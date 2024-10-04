@@ -28,5 +28,5 @@ See README_Maiko.md for more information about the original Maiko VM, and the fi
 licensing information.
 
 
-[^1]: actually "Geiko" would probably have been more terminologically obvious, but the term has an undesirable connotation; according to Wikipedia, "Gingko" (i.e. Ginkgo) is a "living fossil", which fits very well with Interlisp and Medley ;-)
+[^1]: actually "Geiko" would probably have been more terminologically obvious, but the term has an undesirable connotation; the name "Ginkgo" itself is [derived from a misspelling of the Japanese pronunciation "gin kyō"](https://en.wikipedia.org/wiki/Ginkgo_biloba#Etymology) (銀杏), meaning "silver apricot," a reference to the tree's fruit; in botanical contexts, both "Ginkgo" and "Gingko" are used interchangeably; according to Wikipedia, "Gingko" (i.e. Ginkgo) is a "living fossil", which fits very well with Interlisp and Medley ;-)
 

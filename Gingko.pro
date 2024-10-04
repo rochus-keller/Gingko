@@ -144,7 +144,6 @@ HEADERS += \
     eqfdefs.h \
     ether.h \
     etherdefs.h \
-    fast_dsp.h \
     findkeydefs.h \
     fpdefs.h \
     fvardefs.h \

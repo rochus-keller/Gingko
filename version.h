@@ -182,7 +182,6 @@ error Must specify RELEASE to build Medley.
 
 
 #ifdef NOASM
-#undef OPDISP
 #undef PROFILE
 #endif
 
