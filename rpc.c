@@ -126,7 +126,7 @@ LispPTR rpc(LispPTR *args)
     goto handle_error;
 
   /* Convert to network byte order */
-  sin1.sin_port = htons((u_short)port);
+  sin1.sin_port = htons((uint16_t)port);
 
   /* Send buffer out on the socket */
   if (sendto(s, outbuf, out_length, 0, (struct sockaddr *)&sin1, sizeof(sin1)) != out_length)

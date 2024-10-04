@@ -4,7 +4,7 @@ The present goal is to reduce complexity of the VM and make it easier to build a
 One idea is to replace the OS and display dependencies by a Qt (i.e. [LeanQt](https://github.com/rochus-keller/LeanQt/)) 
 based plattform abstraction layer (as e.g. done for [Oberon System 3](https://github.com/rochus-keller/OberonSystem3)).
 
-To avoid confusions with the original project, this version of the VM is called "Ginko" instead of "Maiko"[^1].
+To avoid confusions with the original project, this version of the VM is called "Gingko" (in reference to [Ginkgo](https://en.wikipedia.org/wiki/Ginkgo)) instead of "Maiko"[^1].
 
 #### Status on 2024-10-04
 
@@ -28,5 +28,5 @@ See README_Maiko.md for more information about the original Maiko VM, and the fi
 licensing information.
 
 
-[^1]: actually "Geiko" would probably have been more terminologically obvious, but the term has an undesirable connotation; according to Wikipedia, "Ginko" is a "living fossil", which fits very well with Interlisp and Medley ;-)
+[^1]: actually "Geiko" would probably have been more terminologically obvious, but the term has an undesirable connotation; according to Wikipedia, "Gingko" (i.e. Ginkgo) is a "living fossil", which fits very well with Interlisp and Medley ;-)
 

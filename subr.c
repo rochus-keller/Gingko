@@ -28,6 +28,7 @@
 */
 /***********************************************************/
 
+#define __USE_POSIX199309
 #include <stdio.h>         // for printf, sprintf, NULL
 #include <time.h>          // for nanosleep, timespec
 #include "adr68k.h"        // for NativeAligned2FromLAddr, NativeAligned4FromLAddr

@@ -210,7 +210,7 @@ LispPTR *NeedHardreturnCleanup_word;
 /*** Ethernet stuff (JRB) **/
 #ifdef MAIKO_ENABLE_ETHERNET
 extern int ether_fd;
-extern u_char ether_host[6];
+extern uint8_t ether_host[6];
 #endif /* MAIKO_ENABLE_ETHERNET */
 
 extern struct sockaddr_nit snit;

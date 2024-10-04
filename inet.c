@@ -70,6 +70,9 @@
 #define UDPSendto 130
 #define UDPRecvfrom 131
 
+#define	SIG_BLOCK     0		 /* Block signals.  */
+#define	SIG_UNBLOCK   1		 /* Unblock signals.  */
+
 extern int *Lisp_errno;
 extern fd_set LispReadFds;
 fd_set LispIOFds;
@@ -94,7 +97,7 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
       LispStringToCString(nameConn, namestring, 100);
       host = gethostbyname(namestring);
       if (!host) return (NIL);
-      res = ntohl(*(in_addr_t *)host->h_addr);
+      res = ntohl(*(in_addr_t *)host->h_addr_list);
       N_ARITH_SWITCH(res);
       break;
 
@@ -128,7 +131,7 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
       LispStringToCString(nameConn, namestring, 100);
       host = gethostbyname(namestring);
       if (!host) return (NIL);
-      memcpy((char *)&farend.sin_addr, (char *)host->h_addr, host->h_length);
+      memcpy((char *)&farend.sin_addr, (char *)host->h_addr_list, host->h_length);
     host_ok:
       sock = LispNumToCInt(proto);
       result = socket(AF_INET, SOCK_STREAM, 0);

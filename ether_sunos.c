@@ -82,11 +82,11 @@
 
 extern int      ether_fd;      /* file descriptor for ether socket */
 static int      ether_intf_type = 0;
-extern u_char   ether_host[6]; /* 48 bit address of this node */
-extern const u_char   broadcast[6];
+extern uint8_t   ether_host[6]; /* 48 bit address of this node */
+extern const uint8_t   broadcast[6];
 extern int      ether_bsize;   /* if nonzero then a receive is pending */
-extern u_char  *ether_buf;     /* address of receive buffer */
-static u_char   nit_buf[3000]; /* the current chunk read from NIT (one packet) */
+extern uint8_t  *ether_buf;     /* address of receive buffer */
+static uint8_t   nit_buf[3000]; /* the current chunk read from NIT (one packet) */
 extern LispPTR *PENDINGINTERRUPT68k;
 extern fd_set   LispReadFds;
 
@@ -378,7 +378,7 @@ LispPTR ether_get(LispPTR args[])
   sigprocmask(SIG_BLOCK, &signals, NULL);
 
   if (ether_fd > 0 && (MaxByteCount > 0)) {
-    ether_buf = (u_char *)NativeAligned2FromLAddr(args[1]);
+    ether_buf = (uint8_t *)NativeAligned2FromLAddr(args[1]);
     ether_bsize = MaxByteCount; /* do this LAST; it enables reads */
     result = get_packet();
     /*	check_ether(); for old behavior, move comment to above line */
@@ -407,10 +407,10 @@ LispPTR ether_send(LispPTR args[])
   struct sockaddr sa;
 
   LispPTR MaxByteCount;
-  u_char *BufferAddr; /* buffer address pointer(in native address) */
+  uint8_t *BufferAddr; /* buffer address pointer(in native address) */
 
   MaxByteCount = 2 * (0xFFFF & args[0]); /* words to bytes */
-  BufferAddr = (u_char *)NativeAligned2FromLAddr(args[1]);
+  BufferAddr = (uint8_t *)NativeAligned2FromLAddr(args[1]);
 
   if (ether_fd > 0) {
 #ifdef PKTFILTER
@@ -703,7 +703,7 @@ LispPTR get_packet(void) {
  *	Also believed obsolete
  **********************************************************************/
 
-static int ether_addr_equal(u_char add1[], u_char add2[])
+static int ether_addr_equal(uint8_t add1[], uint8_t add2[])
 {
   int i;
   for (i = 0; i < 6; i++)
@@ -717,7 +717,7 @@ static int ether_addr_equal(u_char add1[], u_char add2[])
  *	This is believed obsolete with packet filtering enabled
  **********************************************************************/
 
-static int check_filter(u_char *buffer)
+static int check_filter(uint8_t *buffer)
 {
   /* broadcast packets */
   if (ether_addr_equal(buffer, broadcast)) switch (((short *)buffer)[6]) {

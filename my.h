@@ -16,7 +16,7 @@
 /*	Manufactured in the United States of America.			*/
 /*									*/
 /************************************************************************/
-#include <sys/types.h>   // for u_char
+#include <sys/types.h>   // for uint8_t
 #include "version.h"     // for BIGVM
 #include "adr68k.h"      // for NativeAligned2FromLAddr, NativeAligned4FromLAddr, LAddrFromNative
 #include "arith.h"       // for N_ARITH_SWITCH, N_GETNUMBER
@@ -134,10 +134,10 @@ do {									\
         return(data);							\
         }								\
       case 67: { /* Character :  8 bits */				\
-        DLword new = data & 0xFFFF;					\
+        DLword new_ = data & 0xFFFF;					\
         if ((data & SEGMASK) != S_CHARACTER) ERROR_EXIT(tos);		\
-        if (new > 0xFF) ERROR_EXIT(tos);				\
-        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (u_char)new; \
+        if (new_ > 0xFF) ERROR_EXIT(tos);				\
+        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (uint8_t)new_; \
         return(data);							\
       }									\
       case 22: { /* signed : 32 bits */					\
@@ -147,16 +147,16 @@ do {									\
         return(data);							\
       }									\
       case 0: { /* unsigned : 1 bit per element */			\
-        int new;							\
-        N_GetPos(data, new, tos);					\
-        if (new > 1) ERROR_EXIT(tos);					\
-        if (new) {							\
-          new = (1 << (7 - (index & 7)));				\
-          GETBYTE(((u_char *)NativeAligned2FromLAddr(base)) + (index >> 3)) |= (u_char)new; \
+        int new_;							\
+        N_GetPos(data, new_, tos);					\
+        if (new_ > 1) ERROR_EXIT(tos);					\
+        if (new_) {							\
+          new_ = (1 << (7 - (index & 7)));				\
+          GETBYTE(((uint8_t *)NativeAligned2FromLAddr(base)) + (index >> 3)) |= (uint8_t)new_; \
         }								\
         else {								\
-          new = 0xFF - (1 << (7 - (index & 7)));			\
-          GETBYTE(((u_char *)NativeAligned2FromLAddr(base)) + (index >> 3)) &= (u_char)new; \
+          new_ = 0xFF - (1 << (7 - (index & 7)));			\
+          GETBYTE(((uint8_t *)NativeAligned2FromLAddr(base)) + (index >> 3)) &= (uint8_t)new_; \
         }								\
         return(data);							\
       }									\
@@ -164,7 +164,7 @@ do {									\
         int new;							\
         N_GetPos(data, new, tos);					\
         if (new > 0xFF) ERROR_EXIT(tos);				\
-        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (u_char)new; \
+        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (uint8_t)new; \
         return(data);							\
       }									\
       case 4: { /* unsigned : 16 bits per element */			\

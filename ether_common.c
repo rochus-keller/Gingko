@@ -22,19 +22,19 @@
  */
 
 extern int     ether_fd;
-extern u_char  ether_host[6];
-extern const u_char  broadcast[6];
+extern uint8_t  ether_host[6];
+extern const uint8_t  broadcast[6];
 extern int     ether_bsize;
-extern u_char *ether_buf;
+extern uint8_t *ether_buf;
 extern int     ETHEREventCount;
 
 int     ether_fd      = -1;    /* file descriptor for ether socket */
 
-u_char  ether_host[6] = {0, 0, 0, 0, 0, 0}; /* 48 bit address of this node */
-const u_char  broadcast[6]  = {255, 255, 255, 255, 255, 255};
+uint8_t  ether_host[6] = {0, 0, 0, 0, 0, 0}; /* 48 bit address of this node */
+const uint8_t  broadcast[6]  = {255, 255, 255, 255, 255, 255};
 
 int     ether_bsize   = 0;     /* if nonzero then a receive is pending */
-u_char *ether_buf     = NULL;  /* address of receive buffer */
+uint8_t *ether_buf     = NULL;  /* address of receive buffer */
 
 int     ETHEREventCount = 0;
 

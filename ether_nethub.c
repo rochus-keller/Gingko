@@ -45,10 +45,10 @@
 */
 
 extern int      ether_fd;      /* file descriptor for ether socket */
-extern u_char   ether_host[6]; /* 48 bit address of this node */
-extern const u_char   broadcast[6];
+extern uint8_t   ether_host[6]; /* 48 bit address of this node */
+extern const uint8_t   broadcast[6];
 extern int      ether_bsize;   /* if nonzero then a receive is pending */
-extern u_char  *ether_buf;     /* address of receive buffer */
+extern uint8_t  *ether_buf;     /* address of receive buffer */
 extern LispPTR *PENDINGINTERRUPT68k;
 extern fd_set   LispReadFds;
 
@@ -121,8 +121,8 @@ void setNethubLogLevel(int ll) {
 
 #define LONG_PTR_MASK ((long)(~((long)3)))
 
-static void dblwordsSwap(u_char* basePtr, int forBytes) {
-  u_char* dblwordPtr = (u_char*)((long)basePtr & LONG_PTR_MASK);
+static void dblwordsSwap(uint8_t* basePtr, int forBytes) {
+  uint8_t* dblwordPtr = (uint8_t*)((long)basePtr & LONG_PTR_MASK);
   int neededBytes = forBytes + (basePtr - dblwordPtr);
   int dblwordCount = (neededBytes + 3) / 4;
   word_swap_page((unsigned short*)dblwordPtr, dblwordCount);
@@ -312,7 +312,7 @@ static int recvPacket(void) {
 
 
 /* -1: failed/not connected; >= 0: packet bytes sent */
-static int sendPacket(u_char *source, int sourceLen) {
+static int sendPacket(uint8_t *source, int sourceLen) {
   struct msghdr msg = {0};
   struct iovec iov[2];
   uint16_t nhlength;
@@ -460,7 +460,7 @@ LispPTR ether_reset(LispPTR args[])
 LispPTR ether_get(LispPTR args[])
 {
   int receivedBytes;
-  u_char *target;
+  uint8_t *target;
   int maxByteCount;
 
   if (nethubHost == NULL) {
@@ -468,7 +468,7 @@ LispPTR ether_get(LispPTR args[])
   }
   log_debug(("ether_get() - begin\n"));
 
-  target = (u_char *)NativeAligned2FromLAddr(args[1]);
+  target = (uint8_t *)NativeAligned2FromLAddr(args[1]);
   maxByteCount = 2 * LispIntToCInt(args[0]); /* words to bytes */
   log_debug(("  target = %p maxBytecount: %d bytes\n", (void *)target, maxByteCount));
 
@@ -501,7 +501,7 @@ LispPTR ether_send(LispPTR args[])
   }
   log_debug(("ether_send() - begin\n"));
 
-  u_char *source = (u_char *)NativeAligned2FromLAddr(args[1]);
+  uint8_t *source = (uint8_t *)NativeAligned2FromLAddr(args[1]);
   int byteCount = 2 * LispIntToCInt(args[0]); /* words to bytes */
 
   log_debug(("   source = %p , bytecount: %d bytes\n", (void *)source, byteCount));

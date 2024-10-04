@@ -47,7 +47,7 @@ static Uint32 sdl_background;
 static int sdl_bytesperpixel;
 static SDL_PixelFormat *sdl_pixelformat;
 static int sdl_window_focusp = 0;
-extern void kb_trans(u_short keycode, u_short upflg);
+extern void kb_trans(uint16_t keycode, uint16_t upflg);
 extern int error(const char *s);
 
 extern int KBDEventFlg;

@@ -635,7 +635,7 @@ do  {				\
 #define UNIXDIRSEP '/'
 /* system includes may already define MAXNAMLEN */
 #if !defined(MAXNAMLEN)
-#define MAXNAMLEN NAME_MAX
+#define MAXNAMLEN 255
 #endif
 #endif
 

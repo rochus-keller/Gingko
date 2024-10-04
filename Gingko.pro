@@ -9,7 +9,7 @@ TEMPLATE = app
 
 DEFINES += SDL=2 RELEASE=351
 
-QMAKE_CFLAGS += -std=gnu99
+QMAKE_CFLAGS += -std=gnu99 #TODO: timer.c still depends on gnu
 
 LIBS += -lSDL2
 
@@ -106,6 +106,145 @@ SOURCES += \
     sdl.c \
     usrsubr.c \
     vdate.c
+
+HEADERS += \
+    address.h \
+    adr68k.h \
+    allocmdsdefs.h \
+    arith.h \
+    arithopsdefs.h \
+    array.h \
+    arrayopsdefs.h \
+    bb.h \
+    bbtsubdefs.h \
+    bindefs.h \
+    bindsdefs.h \
+    bitblt.h \
+    bitbltdefs.h \
+    bltdefs.h \
+    byteswapdefs.h \
+    car-cdrdefs.h \
+    cell.h \
+    chardevdefs.h \
+    commondefs.h \
+    conspagedefs.h \
+    dbgtooldefs.h \
+    dbprint.h \
+    debug.h \
+    devconf.h \
+    devif.h \
+    dirdefs.h \
+    display.h \
+    drawdefs.h \
+    dskdefs.h \
+    dspdata.h \
+    dspifdefs.h \
+    dspsubrsdefs.h \
+    emlglob.h \
+    eqfdefs.h \
+    ether.h \
+    etherdefs.h \
+    fast_dsp.h \
+    findkeydefs.h \
+    fpdefs.h \
+    fvardefs.h \
+    gc2defs.h \
+    gcarraydefs.h \
+    gccodedefs.h \
+    gcdata.h \
+    gcdefs.h \
+    gcfinaldefs.h \
+    gchtfinddefs.h \
+    gcmain3defs.h \
+    gcoflowdefs.h \
+    gcrcelldefs.h \
+    gcrdefs.h \
+    gcscandefs.h \
+    gvar2defs.h \
+    hardrtndefs.h \
+    ifpage.h \
+    inetdefs.h \
+    initatms.h \
+    initdspdefs.h \
+    initkbddefs.h \
+    initsoutdefs.h \
+    inlineC.h \
+    intcalldefs.h \
+    iopage.h \
+    kbdsubrsdefs.h \
+    keyboard.h \
+    keyeventdefs.h \
+    kprintdefs.h \
+    ldsoutdefs.h \
+    lineblt8defs.h \
+    lisp2cdefs.h \
+    lispemul.h \
+    lispmap.h \
+    lispver2.h \
+    llcolordefs.h \
+    llstkdefs.h \
+    locfile.h \
+    loopsopsdefs.h \
+    lowlev1defs.h \
+    lowlev2defs.h \
+    lspglob.h \
+    lsptypes.h \
+    lsthandldefs.h \
+    maindefs.h \
+    medleyfp.h \
+    misc7defs.h \
+    miscndefs.h \
+    miscstat.h \
+    mkatomdefs.h \
+    mkcelldefs.h \
+    mvsdefs.h \
+    my.h \
+    opcodes.h \
+    osmsg.h \
+    osmsgdefs.h \
+    perrnodefs.h \
+    pilotbbt.h \
+    platform.h \
+    print.h \
+    return.h \
+    returndefs.h \
+    rpcdefs.h \
+    rplconsdefs.h \
+    sdldefs.h \
+    shiftdefs.h \
+    stack.h \
+    storagedefs.h \
+    stream.h \
+    subr0374defs.h \
+    subrdefs.h \
+    subrs.h \
+    sxhashdefs.h \
+    testtooldefs.h \
+    timeout.h \
+    timerdefs.h \
+    tos1defs.h \
+    tosfns.h \
+    tosret.h \
+    tty.h \
+    ttydefs.h \
+    typeofdefs.h \
+    ubf1defs.h \
+    ubf2defs.h \
+    ubf3defs.h \
+    ufsdefs.h \
+    unixcommdefs.h \
+    unwinddefs.h \
+    uraiddefs.h \
+    uraidextdefs.h \
+    usrsubrdefs.h \
+    uutilsdefs.h \
+    vars3defs.h \
+    version.h \
+    vmemsave.h \
+    vmemsavedefs.h \
+    xcdefs.h \
+    xrdoptdefs.h \
+    z2defs.h
 
 
 

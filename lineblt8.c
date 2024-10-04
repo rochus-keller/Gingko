@@ -34,8 +34,8 @@ static const unsigned int ConvBM_tbl[] = {0,          0xff,       0xff00,     0x
 #define WriteLongW(srcpattern, destptr, op1, op2)                                      \
   {                                                                                    \
     int cnt;                                                                  \
-    u_char *des, *src;                                                        \
-    for (cnt = 0, des = (u_char *)(destptr), src = (u_char *)(&(srcpattern)); cnt < 4; \
+    uint8_t *des, *src;                                                        \
+    for (cnt = 0, des = (uint8_t *)(destptr), src = (uint8_t *)(&(srcpattern)); cnt < 4; \
          cnt++, des++, src++)                                                          \
       (*des) op1(*src);                                                                \
   }
@@ -58,9 +58,9 @@ static const unsigned int ConvBM_tbl[] = {0,          0xff,       0xff00,     0x
 #define LineBLT8(srcWptr, offset, width, dstLptr, op1, op2)                                \
   do {                                                                                     \
     DLword *srcw;                                                                 \
-    u_int temp1;                                                                  \
+    uint32_t temp1;                                                                  \
     for (srcw = (srcWptr) + (offset) / BITSPERDLWORD; ((width)-BITSPERNIBBLE) >= 0;        \
-         (width) -= BITSPERNIBBLE, (dstLptr) = (u_char *)((u_int *)(dstLptr) + 1),         \
+         (width) -= BITSPERNIBBLE, (dstLptr) = (uint8_t *)((uint32_t *)(dstLptr) + 1),         \
         (offset) += BITSPERNIBBLE) {                                                       \
       switch ((offset) % 16) {                                                             \
         case 0: WriteLongW(color_array[(*srcw) >> 12], dstLptr, op1, op2); break;          \
@@ -98,13 +98,13 @@ static const unsigned int ConvBM_tbl[] = {0,          0xff,       0xff00,     0x
     }   /* for end */                                                                      \
     /* process for the rest bits (0~3)*/                                                   \
     switch (width) {                                                                       \
-      u_char *destc;                                                              \
+      uint8_t *destc;                                                              \
       int mod;                                                                    \
       case 0: /* already finished */ break;                                                \
       case 1:                                                                              \
       case 2:                                                                              \
       case 3:                                                                              \
-        destc = (u_char *)(dstLptr);                                                       \
+        destc = (uint8_t *)(dstLptr);                                                       \
         while ((width)--) {                                                                \
           if (BitMaskArray[mod = ((offset) % 16)] & *srcw)                                 \
             (*destc++) op1(color1);                                                        \
@@ -130,10 +130,10 @@ static const unsigned int ConvBM_tbl[] = {0,          0xff,       0xff00,     0x
 
 /* I don't care sourcetype & operation NOW */
 
-void lineBlt8(DLword *srcbase, int offset, u_char *destl, int width,
-              u_char color0, u_char color1, LispPTR sourcetype, LispPTR operation)
+void lineBlt8(DLword *srcbase, int offset, uint8_t *destl, int width,
+              uint8_t color0, uint8_t color1, LispPTR sourcetype, LispPTR operation)
 
-/* u_int *destl;*/
+/* uint32_t *destl;*/
 /* for SPARC */
 
 /* Background color */
@@ -155,7 +155,7 @@ void lineBlt8(DLword *srcbase, int offset, u_char *destl, int width,
   if ((beforecolor0 != color0) || (beforecolor1 != color1)) {
     /* making color-mapped array */
     int i;
-    u_int longcol0, longcol1;
+    uint32_t longcol0, longcol1;
 
     beforecolor0 = color0;
     beforecolor1 = color1;

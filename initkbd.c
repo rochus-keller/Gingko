@@ -103,12 +103,12 @@ DLword *EmKbdAd568K;
 DLword *EmDispInterrupt68K;
 DLword *EmCursorBitMap68K;
 
-/*u_char SUNLispKeyMap[128];*/
-extern u_char *SUNLispKeyMap;
-u_char *SUNLispKeyMap;
+/*uint8_t SUNLispKeyMap[128];*/
+extern uint8_t *SUNLispKeyMap;
+uint8_t *SUNLispKeyMap;
 
 /* keymap for type3 */
-static u_char SUNLispKeyMap_for3[128] = {
+static uint8_t SUNLispKeyMap_for3[128] = {
     /*   0 */ 255,  61, 255,  91, 255,  97,  99, 255,
     /*   8 */ 100, 255,  67, 255,  68, 255, 101, 255,
     /*  16 */  66, 104,  80,  47, 255,  73,  74,  75,
@@ -129,7 +129,7 @@ static u_char SUNLispKeyMap_for3[128] = {
 
 /* for type4 */
 
-static u_char SUNLispKeyMap_for4[128] = {
+static uint8_t SUNLispKeyMap_for4[128] = {
     /*   0 */ 255,  61, 255,  91, 255,  97,  99, 106,
     /*   8 */ 100, 107,  67, 108,  68,  47, 101,  30,
     /*  16 */  66, 104,  80,  31, 255,  75, 110,  74,
@@ -150,7 +150,7 @@ static u_char SUNLispKeyMap_for4[128] = {
 
 /* for jle */
 
-static u_char SUNLispKeyMap_jle[128] = {
+static uint8_t SUNLispKeyMap_jle[128] = {
     /*   0 */ 255,  61, 255,  91, 255,  97,  99, 106,
     /*   8 */ 100, 107,  67, 108,  68,  47, 101,  71,
     /*  16 */  66, 104,  80,  31, 255,  75, 110,  74,
@@ -176,12 +176,12 @@ static u_char SUNLispKeyMap_jle[128] = {
 /* [116] 255 -> 103 Henkan */
 /* [117] 255 -> 109 Nihongo On-Off */
 
-static u_char *XGenericKeyMap; /* filled in with malloc if needed */
+static uint8_t *XGenericKeyMap; /* filled in with malloc if needed */
 
 /* For the IBM-101 kbd FF marks exceptions */
 
 #ifdef NEVER
-u_char DOSLispKeyMap_101[0x80] = {
+uint8_t DOSLispKeyMap_101[0x80] = {
     /*         0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
 
     /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
@@ -196,7 +196,7 @@ u_char DOSLispKeyMap_101[0x80] = {
 
 #ifdef DOS
 /* For the IBM-101 kbd FF marks exceptions */
-static u_char DOSLispKeyMap_101[0x80] = {
+static uint8_t DOSLispKeyMap_101[0x80] = {
     /*         0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
 
     /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
@@ -305,7 +305,7 @@ void set_kbd_iopointers(void) {
  * 
  */
 
-static int find_unused_key(KeySym *map, int minkey, int codecount, int symspercode, int sym, u_char *table)
+static int find_unused_key(KeySym *map, int minkey, int codecount, int symspercode, int sym, uint8_t *table)
 {
   int i;
 
@@ -335,8 +335,8 @@ static int find_unused_key(KeySym *map, int minkey, int codecount, int symsperco
 /*									*/
 /************************************************************************/
 
-static u_char *make_X_keymap(void) {
-  u_char *table = (u_char *)malloc(256); /* the final result table */
+static uint8_t *make_X_keymap(void) {
+  uint8_t *table = (uint8_t *)malloc(256); /* the final result table */
   int lisp_codes_used[256];              /* Keep track of the Lisp key #s we've used */
   int last_KEYSYM = -1;
   int sym_used = 0;
@@ -493,7 +493,7 @@ void keyboardtype(int fd)
       break;
 #ifdef XWINDOW
     case KB_X:
-      XGenericKeyMap = (u_char *)make_X_keymap();
+      XGenericKeyMap = (uint8_t *)make_X_keymap();
       SUNLispKeyMap = XGenericKeyMap;
       InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
       break;

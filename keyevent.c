@@ -85,11 +85,11 @@ extern DspInterface currentdsp;
 #define PUTBASEBIT68K(base68k, offset, bitvalue)               \
   do {                                                            \
     if (bitvalue)                                              \
-      *((DLword *)(base68k) + (((u_short)(offset)) >> 4)) |=   \
-          1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD);    \
+      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) |=   \
+          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);    \
     else                                                       \
-      *((DLword *)(base68k) + (((u_short)(offset)) >> 4)) &=   \
-          ~(1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD)); \
+      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) &=   \
+          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD)); \
   } while (0)
 #else
 
@@ -101,18 +101,18 @@ extern DspInterface currentdsp;
     int real68kbase;                                                   \
     real68kbase = 2 ^ ((int)(base68k));                                \
     if (bitvalue)                                                      \
-      GETWORD((DLword *)(real68kbase) + (((u_short)(offset)) >> 4)) |= \
-          1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD);            \
+      GETWORD((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)) |= \
+          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);            \
     else                                                               \
-      GETWORD((DLword *)(real68kbase) + (((u_short)(offset)) >> 4)) &= \
-          ~(1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD));         \
+      GETWORD((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)) &= \
+          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD));         \
   } while (0)
 #endif
 #endif /* NEVER */
 
 extern DLword *EmMouseX68K, *EmMouseY68K, *EmKbdAd068K, *EmRealUtilin68K, *EmUtilin68K;
 extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K;
-extern u_char *SUNLispKeyMap;
+extern uint8_t *SUNLispKeyMap;
 extern int RS232C_Fd, RS232C_remain_data;
 extern fd_set LispIOFds;
 fd_set LispReadFds;
@@ -229,7 +229,7 @@ void process_io_events(void)
 {
 #ifndef DOS
   fd_set rfds;
-  u_int iflags;
+  uint32_t iflags;
   int i;
 
   memcpy(&rfds, &LispReadFds, sizeof(rfds));
@@ -266,8 +266,8 @@ void process_io_events(void)
     for (i = 0; i < 32; i++)
         if (FD_ISSET(i, &rfds) & FD_ISSET(i, &LispIOFds)) iflags |= 1 << i;
     if (iflags) { /* There's activity on a Lisp-opened FD.  Tell Lisp. */
-      u_int *flags;
-      flags = (u_int *)NativeAligned4FromLAddr(*IOINTERRUPTFLAGS_word);
+      uint32_t *flags;
+      flags = (uint32_t *)NativeAligned4FromLAddr(*IOINTERRUPTFLAGS_word);
       *flags = iflags;
 
       ((INTSTAT *)NativeAligned4FromLAddr(*INTERRUPTSTATE_word))->IOInterrupt = 1;
@@ -289,7 +289,7 @@ void process_io_events(void)
 /*									*/
 /************************************************************************/
 
-void kb_trans(u_short keycode, u_short upflg)
+void kb_trans(uint16_t keycode, uint16_t upflg)
 {
   if (keycode < 64) /* DLKBDAD0 ~ 3	*/
   {
