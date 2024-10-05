@@ -661,10 +661,6 @@ int main(int argc, char *argv[])
                             JDS -- 1/18/90 also BITBLTSUB does it now. */
   }
 
-#ifdef OS5
-  tzset();
-#endif /* OS5 */
-
   /* now start up lisp */
   start_lisp();
   return (0);

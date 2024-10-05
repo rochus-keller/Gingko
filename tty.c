@@ -51,11 +51,7 @@ void tty_open(void)
   if (TTY_Fd < 0) {
     if ((TTY_Fd = open(TTY_Dev, O_RDWR)) >= 0) {
       tcgetattr(TTY_Fd, &options);
-#ifndef MAIKO_OS_HAIKU
       options.c_iflag &= ~(IMAXBEL|IXOFF|INPCK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON|IGNPAR);
-#else
-      options.c_iflag &= ~(IXOFF|INPCK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON|IGNPAR);
-#endif
       options.c_iflag |= IGNBRK;
       options.c_oflag &= ~OPOST;
       options.c_lflag &= ~(ECHO|ECHOE|ECHOK|ECHONL|ICANON|ISIG|IEXTEN|NOFLSH|TOSTOP);

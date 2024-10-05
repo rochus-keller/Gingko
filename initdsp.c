@@ -31,10 +31,6 @@
 #include "lspglob.h"
 #include "lsptypes.h"
 
-#ifdef OS4
-#include <vfork.h>
-#endif /* OS4 */
-
 /* from /usr/include/sun/fbio.h some machines don't have following def. */
 #ifndef FBTYPE_SUNROP_COLOR
 #define FBTYPE_SUNROP_COLOR 13 /* MEMCOLOR with rop h/w */

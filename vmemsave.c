@@ -422,13 +422,7 @@ LispPTR vmem_save(char *sysout_file_name)
 	return ((errno == ENOSPC) || (errno == EDQUOT)) ? NOFILESPACE : FILECANNOTWRITE;
   }
 
-#ifdef OS5
-  /* Seems to write all pages at close, so timeout
-     is WAY to short, no matter how big.  JDS 960925 */
-  rval = close(sysout);
-#else
   TIMEOUT(rval = close(sysout));
-#endif /* OS5 */
   if (rval == -1) { return (FILECANNOTWRITE); }
 
   TIMEOUT(rval = unlink(sysout_file_name));

@@ -257,11 +257,6 @@ void keyboardtype(int fd)
   int i;
   char *key;
 
-#if defined(OS4)
-  for (i = 0; i < 5000; i++) { /* IDLE LOOP */
-  }                            /* because of a SunOS bug */
-#endif
-
   /* clear the keyboard field in devconfig */
   InterfacePage->devconfig &= 0xfff8;
 

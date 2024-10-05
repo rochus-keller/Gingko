@@ -37,11 +37,7 @@
 #include <sys/select.h>
 #endif /* DOS */
 
-#ifdef OS5
-#include <stropts.h>
-#endif /* OS5 */
-
-#if defined(MAIKO_OS_FREEBSD) || defined(MAIKO_OS_MACOS) || defined(OS5)
+#if defined(MAIKO_OS_FREEBSD) || defined(MAIKO_OS_MACOS)
 /* vfork is deprecated */
 #define vfork fork
 #endif

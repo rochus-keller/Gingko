@@ -37,10 +37,6 @@
 #include <sys/time.h>
 #endif /* DOS */
 
-#ifdef MAIKO_OS_HAIKU
-#include <OS.h>
-#endif
-
 #if defined(USE_DLPI)
 #include <stropts.h>
 extern int ether_fd;

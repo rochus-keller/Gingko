@@ -82,9 +82,6 @@ LispPTR cgfour_init_color_display(LispPTR color_bitmapbase) /* SUBR 0210 */ /* C
   pr_rop(ColorFb, 0, 0, displaywidth, displayheight, PIX_SRC, color_source, 0, 0);
 
   mmapstat = (int)mmap(ColorDisplayRegion68k, Dispcolorsize, PROT_READ | PROT_WRITE,
-#ifdef OS4
-                       MAP_FIXED |
-#endif
                            MAP_SHARED,
                        FrameBufferFd, 0x40000);
   if (mmapstat == -1) {
@@ -168,9 +165,6 @@ LispPTR cgfour_change_screen_mode(LispPTR which_screen)
 #ifdef DISPLAYBUFFER
       restore_color_screen();
       mmapstat = (int)mmap(ColorDisplayRegion68k, Dispcolorsize, PROT_READ | PROT_WRITE,
-#ifdef OS4
-                           MAP_FIXED |
-#endif
                                MAP_SHARED,
                            FrameBufferFd, 0x40000);
       if (mmapstat == -1) {

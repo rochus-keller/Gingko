@@ -50,10 +50,6 @@
 #include "commondefs.h"
 #include "osmsgdefs.h"
 
-#ifdef OS4
-#include <stropts.h>
-#endif
-
 #ifdef MAIKO_HANDLE_CONSOLE_MESSAGES
 #define MESSAGE_BUFFER_SIZE 1024
 static int cons_tty;
