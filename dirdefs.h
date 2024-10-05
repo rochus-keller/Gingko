@@ -1,7 +1,7 @@
 #ifndef DIRDEFS_H
 #define DIRDEFS_H 1
 
-#include <sys/types.h>      // for u_short, ino_t
+#include <sys/types.h>      // for uint16_t, ino_t
 #include "lispemul.h"       // for LispPTR
 #include "locfile.h"        // for MAXNAMLEN
 /*

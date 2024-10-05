@@ -18,6 +18,7 @@
 /*									*/
 /************************************************************************/
 
+#define __USE_BSD
 #ifndef DOS
 #include <pwd.h>         // for getpwuid, passwd
 #endif

@@ -17,8 +17,9 @@
 /************************************************************************/
 
 #include "version.h"
+#define __USE_BSD
+#define __USE_XOPEN2K8
 
-#define __USE_POSIX199309
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
@@ -258,7 +259,7 @@ static int gettime(int casep)
     case 7:
       return (305); /* this is wrong, only works in PST */
 
-    case 8:
+    case 8: {
       /* other methods of determining timezone offset are unreliable and/or deprecated */
       /* timezone is declared in <time.h>; the time mechanisms must be initialized     */
       /* Unfortunately, FreeBSD does not support the timezone external variable, nor   */
@@ -269,8 +270,13 @@ static int gettime(int casep)
       struct tm *tm = localtime(&tv);
       return (tm->tm_gmtoff / -3600);
 #else
-      return (timezone / 3600); /* timezone, extern, is #secs diff GMT to local. */
+      time_t t = time( NULL );
+      struct tm *local = localtime( &t );
+      struct tm *zulu  = gmtime( &t );
+      return zulu->tm_hour - local->tm_hour;
+      // return (timezone / 3600); /* timezone, extern, is #secs diff GMT to local. */
 #endif
+      }
     default: return (0);
   }
 }
@@ -455,8 +461,11 @@ static void int_timer_service(int sig)
 /*									*/
 /************************************************************************/
 
-static void int_timer_init(void)
+#ifndef SA_RESTART
+# define SA_RESTART   0x10000000 /* Restart syscall on signal return.  */
+#endif
 
+static void int_timer_init(void)
 {
 #ifdef DOS
   /******************************************************************************
@@ -506,6 +515,10 @@ static void int_timer_init(void)
 /*									*/
 /*									*/
 /************************************************************************/
+
+#ifndef F_SETOWN
+# define F_SETOWN	__F_SETOWN /* Get owner (process receiving SIGIO).  */
+#endif
 
 void int_io_open(int fd)
 {

@@ -19,6 +19,9 @@
 #ifndef MAP_FAILED
 #define MAP_FAILED	((void *)-1)
 #endif
+#ifndef MAP_ANONYMOUS
+#  define MAP_ANONYMOUS	0x20		/* Don't use a file.  */
+#endif
 #include <sys/stat.h>     // for stat, fstat
 #include <sys/types.h>    // for off_t
 #include <unistd.h>       // for lseek, read, close, getpagesize
@@ -177,7 +180,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 
   /* allocate Virtual Memory Space */
 
-  lispworld_scratch = mmap(0, sys_size * MBYTE, PROT_READ|PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+  lispworld_scratch = mmap(0, sys_size * MBYTE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (lispworld_scratch == MAP_FAILED) {
     (void)fprintf(stderr, "sysout_loader: can't allocate Lisp %dMBytes VM \n", sys_size);
     exit(-1);

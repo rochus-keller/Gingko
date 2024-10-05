@@ -7,9 +7,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-DEFINES += SDL=2 RELEASE=351
-
-QMAKE_CFLAGS += -std=gnu99 #TODO: timer.c still depends on gnu
+QMAKE_CFLAGS += -std=c99
 
 LIBS += -lSDL2
 

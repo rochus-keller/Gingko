@@ -11,8 +11,6 @@
 /*									*/
 /************************************************************************/
 
-#include <stdint.h>
-#include "platform.h" // IWYU pragma: export
 
 /************************************************************************/
 /*									*/
@@ -51,9 +49,14 @@
 
   /* The current values */
 
+#define RELEASE 351
+#define SDL 2
+#define _POSIX_C_SOURCE 199309L
+
 #define LVERSION 21000
 #define MINBVERSION 21001
 
+#include "platform.h" // IWYU pragma: export
 
   /* But remember old values, if we can figure them out from ifdef's */
 
@@ -185,6 +188,8 @@ error Must specify RELEASE to build Medley.
 #undef PROFILE
 #endif
 
+#include <stdint.h>
+
 	/* Set up defaults */
 #define UNALIGNED_FETCH_OK
 typedef uintptr_t UNSIGNED;
@@ -221,15 +226,7 @@ typedef intptr_t INT;
 	/*							*/
 	/********************************************************/
 
-#ifdef DOS
-typedef unsigned char u_char;
-typedef unsigned long u_int;
-typedef unsigned short u_short;
-#undef UNALIGNED_FETCH_OK
-typedef unsigned USHORT;
-#else
 typedef unsigned short USHORT;
-#endif /* DOS */
 
 	/****************************************************************/
 	/* 	    End of architecture-specific flag settings		*/

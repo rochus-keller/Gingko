@@ -225,25 +225,13 @@ do  {				\
 		*Lisp_errno = errno;				\
 		(type) = 0;					\
 	} else {  						\
-		switch (lf_statbuf.st_mode & S_IFMT) {		\
-								\
-		      case S_IFDIR:				\
-                        (type) = -1;				\
-			break;					\
-								\
-		      case S_IFREG:				\
-                        (type) = 1;				\
-			break;					\
-								\
-		      default:					\
-			/*					\
-			 * Should we deal with the other	\
-			 * types?				\
-			 */					\
-                        (type) = 0;				\
-			break;					\
-		}						\
-	}							\
+        if(S_ISREG(lf_statbuf.st_mode)) \
+            (type) = 1;				\
+        else if(S_ISDIR(lf_statbuf.st_mode)) \
+            (type) = -1;				\
+        else \
+            (type) = 0; \
+        }							\
   } while (0)
 
 #define	DIRP(path, dir, buf) do {				\

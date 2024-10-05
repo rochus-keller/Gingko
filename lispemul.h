@@ -145,11 +145,11 @@ typedef struct wbits {
 #define PUTBASEBIT68K(base68k, offset, bitvalue)               \
   do {                                                         \
     if (bitvalue)                                              \
-      *((DLword *)(base68k) + (((u_short)(offset)) >> 4)) |=   \
-          1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD);    \
+      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) |=   \
+          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);    \
     else                                                       \
-      *((DLword *)(base68k) + (((u_short)(offset)) >> 4)) &=   \
-          ~(1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD)); \
+      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) &=   \
+          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD)); \
   } while (0)
 
 #else
@@ -290,11 +290,11 @@ typedef struct wbits {
     UNSIGNED real68kbase;                                                                    \
     real68kbase = 2 ^ ((UNSIGNED)(base68k));                                                 \
     if (bitvalue)                                                                            \
-      (*(DLword *)(2 ^ (UNSIGNED)((DLword *)(real68kbase) + (((u_short)(offset)) >> 4)))) |= \
-          1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD);                                  \
+      (*(DLword *)(2 ^ (UNSIGNED)((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)))) |= \
+          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);                                  \
     else                                                                                     \
-      (*(DLword *)(2 ^ (UNSIGNED)((DLword *)(real68kbase) + (((u_short)(offset)) >> 4)))) &= \
-          ~(1 << (15 - ((u_short)(offset)) % BITSPER_DLWORD));                               \
+      (*(DLword *)(2 ^ (UNSIGNED)((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)))) &= \
+          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD));                               \
   } while (0)
 
 #endif /* BYTESWAP */

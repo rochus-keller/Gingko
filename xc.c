@@ -28,13 +28,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-#ifdef DOS
-#include <i32.h> /* Defines "#pragma interrupt"  */
-#include <stk.h> /* _XSTACK struct definition    */
-#include <dos.h> /* Defines REGS & other structs */
-#else            /* DOS */
 #include <sys/time.h>
-#endif /* DOS */
 
 #include "lispemul.h"
 #include "emlglob.h"
@@ -43,6 +37,7 @@
 #include "stack.h"
 #include "return.h"
 #include "dbprint.h"
+#include "opcodes.h"
 
 #include "lspglob.h"
 #include "lsptypes.h"
@@ -98,19 +93,7 @@
 #include "ubf3defs.h"
 #include "unwinddefs.h"
 #include "vars3defs.h"
-#ifdef XWINDOW
-#include "xwinmandefs.h"
-#endif
 #include "z2defs.h"
-
-#ifdef DOS
-#include "devif.h"
-extern KbdInterface currentkbd;
-extern DspInterface currentdsp;
-extern MouseInterface currentmouse;
-#elif defined(XWINDOW)
-extern DspInterface currentdsp;
-#endif /* DOS */
 
 #ifdef SDL
 extern void process_SDLevents();
@@ -248,335 +231,335 @@ nextopcode:
 #endif
 
   switch (Get_BYTE_PCMAC0) {
-    case 000: { goto op_ufn; } /* unused */
-    case 001:
+    case opc_unused_0: { goto op_ufn; } /* unused */
+    case opc_CAR:
       OPCAR;
-    case 002:
+    case opc_CDR:
       OPCDR;
-    case 003:
+    case opc_LISP:
       LISTP;
-    case 004:
+    case opc_NTYPX:
       NTYPEX;
-    case 005:
+    case opc_TYPEP:
       TYPEP(Get_BYTE_PCMAC1);
-    case 056:
-    case 006:
+    case opc_TYPECHECK:
+    case opc_DTEST:
       DTEST(Get_AtomNo_PCMAC1);
-    case 007:
+    case opc_UNWIND:
       UNWIND(Get_BYTE_PCMAC1, Get_BYTE_PCMAC2);
-    case 010:
+    case opc_FN0:
       FN0;
-    case 011:
+    case opc_FN1:
       FN1;
-    case 012:
+    case opc_FN2:
       FN2;
-    case 013:
+    case opc_FN3:
       FN3;
-    case 014:
+    case opc_FN4:
       FN4;
-    case 015:
+    case opc_FNX:
       FNX;
-    case 016:
+    case opc_APPLYFN:
       APPLY;
 
-    case 017:
+    case opc_CHECKAPPLY:
       CHECKAPPLY;
-    case 020:
+    case opc_RETURN:
       RETURN;
 
-    case 021:
+    case opc_BIND:
       /* UB: left shift of negative value -4 */
       BIND;
-    case 022:
+    case opc_UNBIND:
       UNBIND;
-    case 023:
+    case opc_DUNBIND:
       DUNBIND;
-    case 024:
+    case opc_RPLPTR_N:
       RPLPTR(Get_BYTE_PCMAC1);
-    case 025:
+    case opc_GCREF:
       GCREF(Get_BYTE_PCMAC1);
-    case 026:
+    case opc_ASSOC:
       ASSOC;
-    case 027:
+    case opc_GVAR_:
       GVAR_(Get_AtomNo_PCMAC1);
-    case 030:
+    case opc_RPLACA:
       RPLACA;
-    case 031:
+    case opc_RPLACD:
       RPLACD;
-    case 032:
+    case opc_CONS:
       CONS;
-    case 033:
+    case opc_CMLASSOC:
       CLASSOC;
-    case 034:
+    case opc_FMEMB:
       FMEMB;
-    case 035:
+    case opc_CMLMEMBER:
       CLFMEMB;
-    case 036:
+    case opc_FINDKEY:
       FINDKEY(Get_BYTE_PCMAC1);
-    case 037:
+    case opc_CREATECELL:
       CREATECELL;
-    case 040:
+    case opc_BIN:
       BIN;
-    case 041: { goto op_ufn; } /* BOUT */
-    case 042: { goto op_ufn; } /* POPDISP - prolog only */
-    case 043:
+    case opc_BOUT: { goto op_ufn; } /* BOUT */
+    case opc_POPDISP: { goto op_ufn; } /* POPDISP - prolog only */
+    case opc_RESTLIST:
       RESTLIST(Get_BYTE_PCMAC1);
-    case 044:
+    case opc_MISCN:
       MISCN(Get_BYTE_PCMAC1, Get_BYTE_PCMAC2);
-    case 045: { goto op_ufn; } /* unused */
-    case 046:
+    case opc_unused_37: { goto op_ufn; } /* unused */
+    case opc_RPLCONS:
       RPLCONS;
-    case 047:
+    case opc_LISTGET:
       LISTGET;
-    case 050: { goto op_ufn; } /* unused */
-    case 051: { goto op_ufn; } /* unused */
-    case 052: { goto op_ufn; } /* unused */
-    case 053: { goto op_ufn; } /* unused */
-    case 054:
+    case opc_unused_40: { goto op_ufn; } /* unused */
+    case opc_unused_41: { goto op_ufn; } /* unused */
+    case opc_unused_42: { goto op_ufn; } /* unused */
+    case opc_unused_43: { goto op_ufn; } /* unused */
+    case opc_EVAL:
       EVAL;
-    case 055:
+    case opc_ENVCALL:
       ENVCALL;
 
     /*  case 056 : case056: @ 006 */
-    case 057:
+    case opc_STKSCAN:
       STKSCAN;
-    case 060:{ goto op_ufn; } /* BUSBLT - DLion only */
-    case 061:{ goto op_ufn; } /* MISC8 - no longer used */
-    case 062:
+    case opc_BUSBLT:{ goto op_ufn; } /* BUSBLT - DLion only */
+    case opc_MISC8:{ goto op_ufn; } /* MISC8 - no longer used */
+    case opc_UBFLOAT3:
       UBFLOAT3(Get_BYTE_PCMAC1);
-    case 063:
+    case opc_TYPEMASK_N:
       TYPEMASK(Get_BYTE_PCMAC1);
-    case 064: { goto op_ufn; } /* rdprologptr */
-    case 065: { goto op_ufn; } /* rdprologtag */
-    case 066: { goto op_ufn; } /* writeptr&tag */
-    case 067: { goto op_ufn; } /* writeptr&0tag */
-    case 070:
+    case opc_RDPROLOGPTR: { goto op_ufn; } /* rdprologptr */
+    case opc_RDPROLOGTAG: { goto op_ufn; } /* rdprologtag */
+    case opc_WRTPTRTAG: { goto op_ufn; } /* writeptr&tag */
+    case opc_WRTPTR0TAG: { goto op_ufn; } /* writeptr&0tag */
+    case opc_MISC7:
       MISC7(Get_BYTE_PCMAC1); /* misc7 (pseudocolor, fbitmapbit) */
-    case 071: { goto op_ufn; } /* dovemisc - dove only */
-    case 072:
+    case opc_DOVEMISC: { goto op_ufn; } /* dovemisc - dove only */
+    case opc_EQL:
       EQLOP;
-    case 073:
+    case opc_DRAWLINE:
       DRAWLINE;
-    case 074:
+    case opc_STORE_N:
       STOREN(Get_BYTE_PCMAC1);
-    case 075:
+    case opc_COPY_N:
       COPYN(Get_BYTE_PCMAC1);
-    case 076: { goto op_ufn; } /* RAID */
-    case 077: { goto op_ufn; } /* \RETURN */
+    case opc_RAID: { goto op_ufn; } /* RAID */
+    case opc_SLRETURN: { goto op_ufn; } /* \RETURN */
 
-    case 0100:
+    case opc_IVAR0:
       IVARMACRO(0);
-    case 0101:
+    case opc_IVAR1:
       IVARMACRO(1);
-    case 0102:
+    case opc_IVAR2:
       IVARMACRO(2);
-    case 0103:
+    case opc_IVAR3:
       IVARMACRO(3);
-    case 0104:
+    case opc_IVAR4:
       IVARMACRO(4);
-    case 0105:
+    case opc_IVAR5:
       IVARMACRO(5);
-    case 0106:
+    case opc_IVAR6:
       IVARMACRO(6);
-    case 0107:
+    case opc_IVARX:
       IVARX(Get_BYTE_PCMAC1);
 
-    case 0110:
+    case opc_PVAR0:
       PVARMACRO(0);
-    case 0111:
+    case opc_PVAR1:
       PVARMACRO(1);
-    case 0112:
+    case opc_PVAR2:
       PVARMACRO(2);
-    case 0113:
+    case opc_PVAR3:
       PVARMACRO(3);
-    case 0114:
+    case opc_PVAR4:
       PVARMACRO(4);
-    case 0115:
+    case opc_PVAR5:
       PVARMACRO(5);
-    case 0116:
+    case opc_PVAR6:
       PVARMACRO(6);
 
-    case 0117:
+    case opc_PVARX:
       PVARX(Get_BYTE_PCMAC1);
 
-    case 0120:
+    case opc_FVAR0:
       FVAR(0);
-    case 0121:
+    case opc_FVAR1:
       FVAR(2);
-    case 0122:
+    case opc_FVAR2:
       FVAR(4);
-    case 0123:
+    case opc_FVAR3:
       FVAR(6);
-    case 0124:
+    case opc_FVAR4:
       FVAR(8);
-    case 0125:
+    case opc_FVAR5:
       FVAR(10);
-    case 0126:
+    case opc_FVAR6:
       FVAR(12);
-    case 0127:
+    case opc_FVARX:
       FVARX(Get_BYTE_PCMAC1);
 
-    case 0130:
+    case opc_PVAR_0:
       PVARSETMACRO(0);
-    case 0131:
+    case opc_PVAR_1:
       PVARSETMACRO(1);
-    case 0132:
+    case opc_PVAR_2:
       PVARSETMACRO(2);
-    case 0133:
+    case opc_PVAR_3:
       PVARSETMACRO(3);
-    case 0134:
+    case opc_PVAR_4:
       PVARSETMACRO(4);
-    case 0135:
+    case opc_PVAR_5:
       PVARSETMACRO(5);
-    case 0136:
+    case opc_PVAR_6:
       PVARSETMACRO(6);
 
-    case 0137:
+    case opc_PVARX_:
       PVARX_(Get_BYTE_PCMAC1);
 
-    case 0140:
+    case opc_GVAR:
       GVAR(Get_AtomNo_PCMAC1);
-    case 0141:
+    case opc_ARG0:
       ARG0;
-    case 0142:
+    case opc_IVARX_:
       IVARX_(Get_BYTE_PCMAC1);
-    case 0143:
+    case opc_FVARX_:
       FVARX_(Get_BYTE_PCMAC1);
-    case 0144:
+    case opc_COPY:
       COPY;
-    case 0145:
+    case opc_MYARGCOUNT:
       MYARGCOUNT;
-    case 0146:
+    case opc_MYALINK:
       MYALINK;
 
     /******** Aconst	********/
-    case 0147: {
+    case opc_ACONST: {
       PUSH(Get_AtomNo_PCMAC1);
       nextop_atom;
     }
-    case 0150: { PUSHATOM(NIL_PTR); }
-    case 0151: { PUSHATOM(ATOM_T); }
-    case 0152: { PUSHATOM(S_POSITIVE); } /* '0 */
-    case 0153: { PUSHATOM(0xE0001); } /* '1 */
+    case opc_NIL: { PUSHATOM(NIL_PTR); }
+    case opc_T: { PUSHATOM(ATOM_T); }
+    case opc_0: { PUSHATOM(S_POSITIVE); } /* '0 */
+    case opc_1: { PUSHATOM(0xE0001); } /* '1 */
 
     /********* SIC		********/
-    case 0154: {
+    case opc_SIC: {
       PUSH(S_POSITIVE | Get_BYTE_PCMAC1);
       nextop2;
     }
 
     /********* SNIC		********/
-    case 0155: {
+    case opc_SNIC: {
       PUSH(S_NEGATIVE | 0xff00 | Get_BYTE_PCMAC1);
       nextop2;
     }
 
     /********* SICX		********/
-    case 0156: {
+    case opc_SICX: {
       PUSH(S_POSITIVE | Get_DLword_PCMAC1);
       nextop3;
     }
 
     /********* GCONST	********/
-    case 0157: {
+    case opc_GCONST: {
       PUSH(Get_Pointer_PCMAC1);
       nextop_ptr;
     }
 
-    case 0160: { goto op_ufn; } /* unused */
-    case 0161: { goto op_ufn; } /* readflags */
-    case 0162: { goto op_ufn; } /* readrp */
-    case 0163: { goto op_ufn; } /* writemap */
-    case 0164: { goto op_ufn; } /* readprinterport */
-    case 0165: { goto op_ufn; } /* writeprinterport */
+    case opc_unused_112: { goto op_ufn; } /* unused */
+    case opc_READFLAGS: { goto op_ufn; } /* readflags */
+    case opc_READRP: { goto op_ufn; } /* readrp */
+    case opc_WRITEMAP: { goto op_ufn; } /* writemap */
+    case opc_READPRINTERPORT: { goto op_ufn; } /* readprinterport */
+    case opc_WRITEPRINTERPORT: { goto op_ufn; } /* writeprinterport */
 
-    case 0166:
+    case opc_PILOTBITBLT:
       PILOTBITBLT;
-    case 0167:
+    case opc_RCLK:
       RCLK;
-    case 0170: { goto op_ufn; } /* MISC1, dorado only */
-    case 0171: { goto op_ufn; } /* MISC2, dorado only */
-    case 0172:
+    case opc_MISC1: { goto op_ufn; } /* MISC1, dorado only */
+    case opc_MISC2: { goto op_ufn; } /* MISC2, dorado only */
+    case opc_RECLAIMCELL:
       RECLAIMCELL;
-    case 0173:
+    case opc_GCSCAN1:
       GCSCAN1;
-    case 0174:
+    case opc_GCSCAN2:
       GCSCAN2;
-    case 0175: {
+    case opc_SUBRCALL: {
       EXT;
       OP_subrcall(Get_BYTE_PCMAC1, Get_BYTE_PCMAC2);
       RET;
       nextop0;
     }
-    case 0176: { CONTEXTSWITCH; }
-    case 0177: { goto op_ufn; } /* RETCALL */
+    case opc_CONTEXTSWITCH: { CONTEXTSWITCH; }
+    case opc_RETCALL: { goto op_ufn; } /* RETCALL */
 
     /* JUMP */
 
-    case 0200: { JUMPMACRO(2); }
-    case 0201: { JUMPMACRO(3); }
-    case 0202: { JUMPMACRO(4); }
-    case 0203: { JUMPMACRO(5); }
-    case 0204: { JUMPMACRO(6); }
-    case 0205: { JUMPMACRO(7); }
-    case 0206: { JUMPMACRO(8); }
-    case 0207: { JUMPMACRO(9); }
-    case 0210: { JUMPMACRO(10); }
-    case 0211: { JUMPMACRO(11); }
-    case 0212: { JUMPMACRO(12); }
-    case 0213: { JUMPMACRO(13); }
-    case 0214: { JUMPMACRO(14); }
-    case 0215: { JUMPMACRO(15); }
-    case 0216: { JUMPMACRO(16); }
-    case 0217: { JUMPMACRO(17); }
+    case opc_JUMP0: { JUMPMACRO(2); }
+    case opc_JUMP1: { JUMPMACRO(3); }
+    case opc_JUMP2: { JUMPMACRO(4); }
+    case opc_JUMP3: { JUMPMACRO(5); }
+    case opc_JUMP4: { JUMPMACRO(6); }
+    case opc_JUMP5: { JUMPMACRO(7); }
+    case opc_JUMP6: { JUMPMACRO(8); }
+    case opc_JUMP7: { JUMPMACRO(9); }
+    case opc_JUMP8: { JUMPMACRO(10); }
+    case opc_JUMP9: { JUMPMACRO(11); }
+    case opc_JUMP10: { JUMPMACRO(12); }
+    case opc_JUMP11: { JUMPMACRO(13); }
+    case opc_JUMP12: { JUMPMACRO(14); }
+    case opc_JUMP13: { JUMPMACRO(15); }
+    case opc_JUMP14: { JUMPMACRO(16); }
+    case opc_JUMP15: { JUMPMACRO(17); }
 
     /* FJUMP */
 
-    case 0220: { FJUMPMACRO(2); }
-    case 0221: { FJUMPMACRO(3); }
-    case 0222: { FJUMPMACRO(4); }
-    case 0223: { FJUMPMACRO(5); }
-    case 0224: { FJUMPMACRO(6); }
-    case 0225: { FJUMPMACRO(7); }
-    case 0226: { FJUMPMACRO(8); }
-    case 0227: { FJUMPMACRO(9); }
-    case 0230: { FJUMPMACRO(10); }
-    case 0231: { FJUMPMACRO(11); }
-    case 0232: { FJUMPMACRO(12); }
-    case 0233: { FJUMPMACRO(13); }
-    case 0234: { FJUMPMACRO(14); }
-    case 0235: { FJUMPMACRO(15); }
-    case 0236: { FJUMPMACRO(16); }
-    case 0237: { FJUMPMACRO(17); }
+    case opc_FJUMP0: { FJUMPMACRO(2); }
+    case opc_FJUMP1: { FJUMPMACRO(3); }
+    case opc_FJUMP2: { FJUMPMACRO(4); }
+    case opc_FJUMP3: { FJUMPMACRO(5); }
+    case opc_FJUMP4: { FJUMPMACRO(6); }
+    case opc_FJUMP5: { FJUMPMACRO(7); }
+    case opc_FJUMP6: { FJUMPMACRO(8); }
+    case opc_FJUMP7: { FJUMPMACRO(9); }
+    case opc_FJUMP8: { FJUMPMACRO(10); }
+    case opc_FJUMP9: { FJUMPMACRO(11); }
+    case opc_FJUMP10: { FJUMPMACRO(12); }
+    case opc_FJUMP11: { FJUMPMACRO(13); }
+    case opc_FJUMP12: { FJUMPMACRO(14); }
+    case opc_FJUMP13: { FJUMPMACRO(15); }
+    case opc_FJUMP14: { FJUMPMACRO(16); }
+    case opc_FJUMP15: { FJUMPMACRO(17); }
 
     /* TJUMP */
 
-    case 0240: { TJUMPMACRO(2); }
-    case 0241: { TJUMPMACRO(3); }
-    case 0242: { TJUMPMACRO(4); }
-    case 0243: { TJUMPMACRO(5); }
-    case 0244: { TJUMPMACRO(6); }
-    case 0245: { TJUMPMACRO(7); }
-    case 0246: { TJUMPMACRO(8); }
-    case 0247: { TJUMPMACRO(9); }
-    case 0250: { TJUMPMACRO(10); }
-    case 0251: { TJUMPMACRO(11); }
-    case 0252: { TJUMPMACRO(12); }
-    case 0253: { TJUMPMACRO(13); }
-    case 0254: { TJUMPMACRO(14); }
-    case 0255: { TJUMPMACRO(15); }
-    case 0256: { TJUMPMACRO(16); }
-    case 0257: { TJUMPMACRO(17); }
+    case opc_TJUMP0: { TJUMPMACRO(2); }
+    case opc_TJUMP1: { TJUMPMACRO(3); }
+    case opc_TJUMP2: { TJUMPMACRO(4); }
+    case opc_TJUMP3: { TJUMPMACRO(5); }
+    case opc_TJUMP4: { TJUMPMACRO(6); }
+    case opc_TJUMP5: { TJUMPMACRO(7); }
+    case opc_TJUMP6: { TJUMPMACRO(8); }
+    case opc_TJUMP7: { TJUMPMACRO(9); }
+    case opc_TJUMP8: { TJUMPMACRO(10); }
+    case opc_TJUMP9: { TJUMPMACRO(11); }
+    case opc_TJUMP10: { TJUMPMACRO(12); }
+    case opc_TJUMP11: { TJUMPMACRO(13); }
+    case opc_TJUMP12: { TJUMPMACRO(14); }
+    case opc_TJUMP13: { TJUMPMACRO(15); }
+    case opc_TJUMP14: { TJUMPMACRO(16); }
+    case opc_TJUMP15: { TJUMPMACRO(17); }
 
     /******* JUMPX ********/
-    case 0260: {
+    case opc_JUMPX: {
       CHECK_INTERRUPT;
       PCMACL += Get_SBYTE_PCMAC1;
       nextop0;
     }
 
     /******* JUMPXX ********/
-    case 0261: {
+    case opc_JUMPXX: {
       CHECK_INTERRUPT;
       /* UB: left shift of negative value -1 */
       PCMACL += (Get_SBYTE_PCMAC1 << 8) | Get_BYTE_PCMAC2;
@@ -584,7 +567,7 @@ nextopcode:
     }
 
     /******* FJumpx *******/
-    case 0262: {
+    case opc_FJUMPX: {
       if (TOPOFSTACK != 0) { goto PopNextop2; }
       CHECK_INTERRUPT;
       POP;
@@ -594,7 +577,7 @@ nextopcode:
 
     /******* TJumpx *******/
 
-    case 0263: {
+    case opc_TJUMPX: {
       if (TOPOFSTACK == 0) { goto PopNextop2; }
       CHECK_INTERRUPT;
       POP;
@@ -604,7 +587,7 @@ nextopcode:
 
     /******* NFJumpx *******/
 
-    case 0264: {
+    case opc_NFJUMPX: {
       if (TOPOFSTACK != 0) { goto PopNextop2; }
       CHECK_INTERRUPT;
       PCMACL += Get_SBYTE_PCMAC1;
@@ -613,133 +596,133 @@ nextopcode:
 
     /******* NTJumpx *******/
 
-    case 0265: {
+    case opc_NTJUMPX: {
       if (TOPOFSTACK == 0) { goto PopNextop2; }
       CHECK_INTERRUPT;
       PCMACL += Get_SBYTE_PCMAC1;
       nextop0;
     }
 
-    case 0266:
+    case opc_AREF1:
       AREF1;
-    case 0267:
+    case opc_ASET1:
       ASET1;
 
-    case 0270:
+    case opc_PVARSETPOP0:
       PVARSETPOPMACRO(0);
-    case 0271:
+    case opc_PVARSETPOP1:
       PVARSETPOPMACRO(1);
-    case 0272:
+    case opc_PVARSETPOP2:
       PVARSETPOPMACRO(2);
-    case 0273:
+    case opc_PVARSETPOP3:
       PVARSETPOPMACRO(3);
-    case 0274:
+    case opc_PVARSETPOP4:
       PVARSETPOPMACRO(4);
-    case 0275:
+    case opc_PVARSETPOP5:
       PVARSETPOPMACRO(5);
-    case 0276:
+    case opc_PVARSETPOP6:
       PVARSETPOPMACRO(6);
 
-    case 0277: {
+    case opc_POP: {
       POP;
       nextop1;
     }
 
-    case 0300:
+    case opc_POP_N:
       POPN(Get_BYTE_PCMAC1);
-    case 0301:
+    case opc_ATOMCELL_N:
       ATOMCELL_N(Get_BYTE_PCMAC1);
-    case 0302:
+    case opc_GETBASEBYTE:
       GETBASEBYTE;
-    case 0303:
+    case opc_INSTANCEP:
       INSTANCEP(Get_AtomNo_PCMAC1);
-    case 0304:
+    case opc_BLT:
       BLT;
-    case 0305: { goto op_ufn; } /* MISC10 */
-    case 0306: { goto op_ufn; } /* P-MISC2 ??? */
-    case 0307:
+    case opc_MISC10: { goto op_ufn; } /* MISC10 */
+    case opc_P_MISC2: { goto op_ufn; } /* P-MISC2 ??? */
+    case opc_PUTBASEBYTE:
       PUTBASEBYTE;
-    case 0310:
+    case opc_GETBASE_N:
       GETBASE_N(Get_BYTE_PCMAC1);
-    case 0311:
+    case opc_GETBASEPTR_N:
       GETBASEPTR_N(Get_BYTE_PCMAC1);
-    case 0312:
+    case opc_GETBITS_N_FD:
       GETBITS_N_M(Get_BYTE_PCMAC1, Get_BYTE_PCMAC2);
-    case 0313: { goto op_ufn; } /* unused */
-    case 0314:
+    case opc_unused_203: { goto op_ufn; } /* unused */
+    case opc_CMLEQUAL:
       CLEQUAL;
-    case 0315:
+    case opc_PUTBASE_N:
       PUTBASE_N(Get_BYTE_PCMAC1);
-    case 0316:
+    case opc_PUTBASEPTR_N:
       PUTBASEPTR_N(Get_BYTE_PCMAC1);
-    case 0317:
+    case opc_PUTBITS_N_FD:
       PUTBITS_N_M(Get_BYTE_PCMAC1, Get_BYTE_PCMAC2);
 
-    case 0320:
+    case opc_ADDBASE:
       N_OP_ADDBASE;
-    case 0321:
+    case opc_VAG2:
       N_OP_VAG2;
-    case 0322:
+    case opc_HILOC:
       N_OP_HILOC;
-    case 0323:
+    case opc_LOLOC:
       N_OP_LOLOC;
-    case 0324:
+    case opc_PLUS2:
       PLUS2; /* PLUS */
-    case 0325:
+    case opc_DIFFERENCE:
       DIFFERENCE; /* DIFFERENCE */
-    case 0326:
+    case opc_TIMES2:
       TIMES2; /* TIMES2 */
-    case 0327:
+    case opc_QUOTIENT:
       QUOTIENT;                          /* QUOTIENT */
-    case 0330:
+    case opc_IPLUS2:
       IPLUS2; /* IPLUS2 only while PLUS has no float */
-    case 0331:
+    case opc_IDIFFERENCE:
       IDIFFERENCE; /* IDIFFERENCE only while no float */
-    case 0332:
+    case opc_ITIMES2:
       ITIMES2; /* ITIMES2 only while no float */
-    case 0333:
+    case opc_IQUOTIENT:
       IQUOTIENT; /* IQUOTIENT */
-    case 0334:
+    case opc_IREMAINDER:
       IREMAINDER;
-    case 0335:
+    case opc_IPLUS_N:
       IPLUS_N(Get_BYTE_PCMAC1);
-    case 0336:
+    case opc_IDIFFERENCE_N:
       IDIFFERENCE_N(Get_BYTE_PCMAC1);
-    case 0337: { goto op_ufn; } /* BASE-< */
-    case 0340:
+    case opc_BASE_LESSTHAN: { goto op_ufn; } /* BASE-< */
+    case opc_LLSH1:
       LLSH1;
-    case 0341:
+    case opc_LLSH8:
       LLSH8;
-    case 0342:
+    case opc_LRSH1:
       LRSH1;
-    case 0343:
+    case opc_LRSH8:
       LRSH8;
-    case 0344:
+    case opc_LOGOR2:
       LOGOR;
-    case 0345:
+    case opc_LOGAND2:
       LOGAND;
-    case 0346:
+    case opc_LOGXOR2:
       LOGXOR;
-    case 0347:
+    case opc_LSH:
       LSH;
-    case 0350:
+    case opc_FPLUS2:
       FPLUS2;
-    case 0351:
+    case opc_FDIFFERENCE:
       FDIFFERENCE;
-    case 0352:
+    case opc_FTIMES2:
       FTIMES2;
-    case 0353:
+    case opc_FQUOTIENT:
       FQUOTIENT;
-    case 0354:
+    case opc_UBFLOAT2:
       UBFLOAT2(Get_BYTE_PCMAC1);
-    case 0355:
+    case opc_UBFLOAT1:
       UBFLOAT1(Get_BYTE_PCMAC1);
-    case 0356:
+    case opc_AREF2:
       AREF2;
-    case 0357:
+    case opc_ASET2:
       ASET2;
 
-    case 0360: {
+    case opc_EQ: {
       if (TOPOFSTACK == POP_TOS_1)
         TOPOFSTACK = ATOM_T;
       else
@@ -747,35 +730,35 @@ nextopcode:
       nextop1;
     }
 
-    case 0361:
+    case opc_IGREATERP:
       IGREATERP; /* IGREATERP if no float */
-    case 0362:
+    case opc_FGREATERP:
       FGREATERP;
-    case 0363:
+    case opc_GREATERP:
       GREATERP;
-    case 0364:
+    case opc_EQUAL:
       ILEQUAL;
-    case 0365:
+    case opc_MAKENUMBER:
       MAKENUMBER;
-    case 0366:
+    case opc_BOXIPLUS:
       BOXIPLUS;
-    case 0367:
+    case opc_BOXIDIFFERENCE:
       BOXIDIFFERENCE;
-    case 0370: { goto op_ufn; } /* FLOATBLT */
-    case 0371: { goto op_ufn; } /* FFTSTEP */
-    case 0372:
+    case opc_FLOATBLT: { goto op_ufn; } /* FLOATBLT */
+    case opc_FFTSTEP: { goto op_ufn; } /* FFTSTEP */
+    case opc_MISC3:
       MISC3(Get_BYTE_PCMAC1);
-    case 0373:
+    case opc_MISC4:
       MISC4(Get_BYTE_PCMAC1);
-    case 0374: { goto op_ufn; } /* upctrace */
-    case 0375:
+    case opc_UPCTRACE: { goto op_ufn; } /* upctrace */
+    case opc_SWAP:
       SWAP;
-    case 0376:
+    case opc_NOP:
       NOP;
-    case 0377:
+    case opc_CL_EQUAL:
       CLARITHEQUAL;
 
-    default: error("should not default");
+    default: error("unknown opcode");
 
   } /* switch */
 
@@ -837,9 +820,6 @@ check_interrupt:
      * If the system is configured with SIGIO handling we have a hint
      * that allows us to cheaply skip if there's nothing to do
      */
-#ifdef XWINDOW
-    process_Xevents(currentdsp);
-#endif
 #ifdef SDL
     process_SDLevents();
 #endif
@@ -874,50 +854,10 @@ check_interrupt:
             it will bottom out and just set period_cnt to 0 */
           }
         }
-
-#ifdef DOS
-        if (currentkbd->URaid == TRUE) {
-          currentkbd->URaid = NIL;
-          (currentkbd->device.exit)(currentkbd); /* Install the original handler */
-          error("Call URaid by User Interrupt");
-        } else if (currentmouse->Cursor.Moved) {
-          union REGS regs;
-
-          currentdsp->device.locked++;
-
-          /* Remove the mouse from the old place on the screen */
-          (currentdsp->mouse_invisible)(currentdsp, IOPage);
-
-          /* Find the new delta */
-          regs.w.eax = 0x000B; /* Function 0xB = get delta mickeys */
-          int86(0x33, &regs, &regs);
-          currentmouse->Cursor.New.x += (short)regs.w.ecx;
-          currentmouse->Cursor.New.y += (short)regs.w.edx;
-
-          if (currentmouse->Cursor.New.x < 0)
-            currentmouse->Cursor.New.x = 0;
-          else if (currentmouse->Cursor.New.x > (currentdsp->Display.width - 1))
-            currentmouse->Cursor.New.x = currentdsp->Display.width - 1;
-
-          if (currentmouse->Cursor.New.y < 0)
-            currentmouse->Cursor.New.y = 0;
-          else if (currentmouse->Cursor.New.y > (currentdsp->Display.height - 1))
-            currentmouse->Cursor.New.y = currentdsp->Display.height - 1;
-
-          IOPage->dlmousex = IOPage->dlcursorx = currentmouse->Cursor.New.x;
-          IOPage->dlmousey = IOPage->dlcursory = currentmouse->Cursor.New.y;
-
-          /* Paint the mouse back up on the screen on the new place */
-          (currentdsp->mouse_visible)(currentmouse->Cursor.New.x, currentmouse->Cursor.New.y);
-          currentmouse->Cursor.Moved = FALSE;
-          currentdsp->device.locked--;
-        }
-#else
         if (URaid_req == T) {
           URaid_req = NIL;
           error("Call URaid by User Interrupt");
         }
-#endif /* DOS */
         else if ((KBDEventFlg > 0) && (*KEYBUFFERING68k == ATOM_T)) {
           *KEYBUFFERING68k = ATOM_STARTED;
           cause_interruptcall(DOBUFFEREDTRANSITION_index);

@@ -121,7 +121,7 @@ LispPTR rpc(LispPTR *args)
   /* Resolve the host address. */
   if (hp) {
     sin1.sin_family = hp->h_addrtype;
-    memcpy(&sin1.sin_addr, hp->h_addr, hp->h_length);
+    memcpy(&sin1.sin_addr, hp->h_addr_list, hp->h_length);
   } else
     goto handle_error;
 
