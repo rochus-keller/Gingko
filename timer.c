@@ -62,11 +62,6 @@ extern int ether_fd;
 #include "mkcelldefs.h"
 #include "keyeventdefs.h"
 
-#ifdef XWINDOW
-#include "devif.h"
-extern DspInterface currentdsp;
-#endif /* XWINDOW */
-
 #define LISP_UNIX_TIME_DIFF 29969152
 #define LISP_ALTO_TIME_MASK 0x80000000
 #define UNIX_ALTO_TIME_DIFF 2177452800U

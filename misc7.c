@@ -78,14 +78,6 @@ LispPTR N_OP_misc7(LispPTR arg1, LispPTR arg2, LispPTR arg3, LispPTR arg4, LispP
   default: GETWORDBASEWORD(base, offset) = bmdata | bmmask;
   }
 
-
-#ifdef XWINDOW
-  if (in_display_segment(base)) {
-    /* NB: base + offset doesn't need WORDPTR() wrapper */
-    flush_display_ptrregion(base + offset, 0, 16, 1);
-  }
-#endif /* XWINDOW */
-
   ScreenLocked = NIL;
   DBPRINT(("FBITMAPBIT old bit = 0x%x.\n", oldbit));
   return (S_POSITIVE | (oldbit ? 1 : 0));

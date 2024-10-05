@@ -27,17 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef XWINDOW
-#ifndef DOS
-#include <sys/ioctl.h>
-#endif /* DOS */
-#include <sys/types.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include "xdefs.h"
-#endif /* XWINDOW */
-
-
 #include "lispemul.h"
 #include "lspglob.h"
 #include "lispmap.h"
@@ -457,13 +446,9 @@ do_it_now:
     }
 #endif
 
-#ifdef XWINDOW
-  if (in_display_segment(dstbase)) flush_display_region(dx, dty, w, h);
-#endif /* XWINDOW */
-
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_region(dx, dty, w, h);
-#endif /* XWINDOW */
+#endif /* SDL */
 
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;
@@ -802,10 +787,6 @@ do_it_now:
     }
 #endif
 
-#ifdef XWINDOW
-  if (in_display_segment(dstbase)) flush_display_region(dlx, dty, width, height);
-#endif /* XWINDOW */
-
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_region(dlx, dty, width, height);
 #endif /* SDL */
@@ -1045,10 +1026,6 @@ do_it_now:
     }
 #endif
 
-#ifdef XWINDOW
-  if (in_display_segment(dstbase)) flush_display_region(left, dty, width, height);
-#endif /* XWINDOW */
-
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_region(left, dty, width, height);
 #endif /* SDL */
@@ -1169,10 +1146,6 @@ void bltchar(LispPTR *args)
 
     if (in_display_segment(dstbase)) { flush_display_lineregion(dx, dstbase, w, h); }
 #endif
-
-#ifdef XWINDOW
-  if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
-#endif /* XWINDOW */
 
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
@@ -1387,9 +1360,6 @@ void newbltchar(LispPTR *args) {
     }
 #endif
 
-#ifdef XWINDOW
-  if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
-#endif /* XWINDOW */
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
 #endif /* SDL */

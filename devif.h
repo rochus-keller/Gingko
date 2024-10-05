@@ -11,10 +11,6 @@
 /************************************************************************/
 #include "lispemul.h" /* for LispPTR, DLword */
 
-#ifdef XWINDOW
-#include <X11/Xlib.h>
-#endif /* XWINDOW */
-
 typedef struct
   {
     short type;		/* Type of event */
@@ -209,16 +205,6 @@ typedef struct DspInterfaceRec
   } DspInterfaceRec;
 typedef DspInterfaceRec *DspInterface;
 
-
-
-#ifdef XWINDOW
-#define DefineCursor(dsp, window, mycursor)                     \
-  do {								\
-    XLOCK;                                                      \
-    XDefineCursor((dsp)->display_id, window, *(mycursor) );     \
-    XUNLOCK(dsp);                                               \
-  } while (0)
-#endif /* XWINDOW */
 
 #define OUTER_SB_WIDTH(dsp) ((dsp)->ScrollBarWidth + 2*((dsp)->InternalBorderWidth))
 

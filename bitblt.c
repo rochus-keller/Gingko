@@ -12,11 +12,6 @@
 
 #include <stdio.h>
 
-
-#ifdef XWINDOW
-#define DISPLAYBUFFER
-#endif /* XWINDOW */
-
 #include "lispemul.h"
 #include "lspglob.h"
 #include "lispmap.h"
@@ -98,11 +93,6 @@ LispPTR N_OP_pilotbitblt(LispPTR pilot_bt_tbl, LispPTR tos)
   curr_gray_line = ((TEXTUREBBT *)pbt)->pbtgrayoffset;
 
   new_bitblt_code;
-
-
-#ifdef XWINDOW
-  flush_display_lineregion(dx, dstbase, w, h);
-#endif /* XWINDOW */
 
   ScreenLocked = NIL;
 

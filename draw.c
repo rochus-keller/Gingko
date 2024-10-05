@@ -110,10 +110,6 @@ plot:
         numy	step count for Y steps
 */
 
-#ifdef XWINDOW
-#define DISPLAYBUFFER
-#endif /* XWINDOW */
-
 int N_OP_drawline(LispPTR ptr, int curbit, int xsize, int width, int ysize, int op, int delta, int numx, int numy)
 {
   DLword *dataptr;
@@ -285,9 +281,9 @@ int N_OP_drawline(LispPTR ptr, int curbit, int xsize, int width, int ysize, int 
       if (start_x > end_x) start_x = end_x;
       if (start_y > end_y) start_y = end_y;
 
-#if defined(XWINDOW) || defined(BYTESWAP)
+#if defined(BYTESWAP)
       flush_display_region(start_x, start_y, w, h);
-#endif /* XWINDOW */
+#endif /* BYTESWAP */
     }
   }
 #endif /* DISPLAYBUFFER */
@@ -298,8 +294,5 @@ int N_OP_drawline(LispPTR ptr, int curbit, int xsize, int width, int ysize, int 
 
 } /* end N_OP_drawline()  */
 
-#ifdef XWINDOW
-#undef DISPLAYBUFFER
-#endif /* XWINDOW */
 
 /* end module */

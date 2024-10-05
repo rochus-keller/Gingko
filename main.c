@@ -278,7 +278,7 @@ const char *nethubHelpstring = "";
 extern int insnsCountdownForTimerAsyncEmulation;
 #endif
 
-#if defined(XWINDOW) || defined(SDL)
+#if defined(SDL)
 char foregroundColorName[64] = {0};
 extern char foregroundColorName[64];
 char backgroundColorName[64] = {0};
@@ -327,11 +327,6 @@ int main(int argc, char *argv[])
     strncpy(sysout_name_first_arg, argv[1], MAXPATHLEN);
     i++;
   }
-
-
-#ifdef XWINDOW
-  read_Xoption(&argc, argv);
-#endif /* XWINDOW */
 
   save_argc = argc;
   save_argv = argv;

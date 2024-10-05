@@ -39,10 +39,6 @@ extern DLword *DISP_MAX_Address;
 #define Expand4Bit(BITS)	\
 		((BITS) | ((BITS) << 4) | ((BITS) << 8) | ((BITS) << 12))
 
-#ifdef XWINDOW
-#define DISPLAYBUFFER
-#endif /* XWINDOW */
-
 #ifdef SDL
 #define DISPLAYBUFFER
 #endif /* SDL */
@@ -68,9 +64,5 @@ extern DLword *DisplayRegion68k;
     (((DisplayRegion68k <= (baseaddr)) &&               \
       ((baseaddr) <= DISP_MAX_Address)) ? T : NIL )
 #endif
-
-#ifdef XWINDOW
-#undef DISPLAYBUFFER
-#endif /* XWINDOW */
 
 #endif

@@ -43,9 +43,6 @@
 
 #include "keyeventdefs.h"
 #include "osmsgdefs.h"
-#ifdef XWINDOW
-#include "xwinmandefs.h"
-#endif
 
 #if defined(MAIKO_ENABLE_ETHERNET) || defined(MAIKO_ENABLE_NETHUB)
 #include "etherdefs.h"

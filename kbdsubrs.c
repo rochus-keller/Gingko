@@ -24,10 +24,6 @@
 
 #include "kbdsubrsdefs.h"
 #include "commondefs.h"
-#ifdef XWINDOW
-#include "lisp2cdefs.h"
-#include "xwinmandefs.h"
-#endif
 
 /****************************************************
  *
@@ -35,11 +31,6 @@
  *			called from (\KB_enable X)
  *
  ****************************************************/
-
-
-#ifdef XWINDOW
-#include <X11/Xlib.h>
-#endif /* XWINDOW */
 
 extern fd_set LispReadFds;
 

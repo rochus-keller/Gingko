@@ -467,19 +467,11 @@ void decusecount68k(FX *frame68k) {
 #ifdef ORG_FILPCORSORBAR
 extern DLword *EmCursorBitMap68K;
 
-#ifdef XWINDOW
-extern int Current_Hot_X, Current_Hot_Y;
-#endif /* XWINDOW */
-
 extern struct cursor CurrentCursor;
 void flip_cursorbar(int n)
 {
   GETWORD(EmCursorBitMap68K + n) = ~(GETWORD(EmCursorBitMap68K + n));
 
-#ifdef XWINDOW
-  /* JDS 011213 When using current_hot_y, remember fn does 15-it! */
-  Set_XCursor(Current_Hot_X, 15 - Current_Hot_Y);
-#endif /* XWINDOW */
 }
 #else
 extern short *DisplayRegion68k;

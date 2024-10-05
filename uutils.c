@@ -201,9 +201,7 @@ LispPTR unix_getparm(LispPTR *args) {
   } else if (strcmp(envname, "ARCH") == 0) {
     envvalue = MAIKO_ARCH_NAME;
   } else if (strcmp(envname, "DISPLAY") == 0) {
-#if defined(XWINDOW)
-    envvalue = "X";
-#elif defined(SDL)
+#if defined(SDL)
     envvalue = "SDL";
 #elif defined(DISPLAYBUFFER)
     envvalue = "BUFFERED";

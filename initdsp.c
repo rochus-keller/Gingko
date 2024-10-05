@@ -30,9 +30,6 @@
 #include "lispemul.h"     // for DLword, BITSPER_DLWORD, T
 #include "lspglob.h"
 #include "lsptypes.h"
-#ifdef XWINDOW
-#include "xcursordefs.h"  // for Init_XCursor
-#endif
 
 #ifdef OS4
 #include <vfork.h>
@@ -74,11 +71,6 @@ extern int MonoOrColor;
 extern void sdl_notify_damage(int, int, int, int);
 #endif /* SDL */
 
-#ifdef XWINDOW
-DLword *DisplayRegion68k_end_addr;
-extern int *Xdisplay; /* DAANGER -jarl nilsson 27-apr-92 */
-#endif                /* XWINDOW */
-
 
 /************************************************************************/
 /*									*/
@@ -99,10 +91,6 @@ void init_cursor(void) {
 /*									*/
 /************************************************************************/
 void set_cursor(void) {
-
-#ifdef XWINDOW
-  Init_XCursor();
-#endif /* XWINDOW */
 
   DBPRINT(("After Set cursor\n"));
 }

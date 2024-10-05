@@ -37,10 +37,6 @@
 #include <sys/select.h>
 #endif /* DOS */
 
-#ifdef XWINDOW
-#include <X11/Xlib.h>      // for ConnectionNumber
-#endif
-
 #ifdef OS5
 #include <stropts.h>
 #endif /* OS5 */
@@ -803,21 +799,8 @@ extern struct pixrect *ColorDisplayPixrect, *DisplayRegionPixrect;
 
 
 int device_before_raid(void) {
-#ifdef XWINDOW
-  sigset_t signals;
-#endif
 
   int_block();
-
-#ifdef XWINDOW
-  /* So X events still get recognized. */
-  sigemptyset(&signals);
-#ifndef MAIKO_OS_HAIKU
-  sigaddset(&signals, SIGIO);
-#endif
-  sigprocmask(SIG_UNBLOCK, &signals, NULL);
-#endif
-
 
 #ifdef MAIKO_ENABLE_ETHERNET
 #ifdef ETHERINT
@@ -921,13 +904,6 @@ int device_after_raid(void) {
     }
 #endif /* USE_DLPI */
 #endif /* MAIKO_ENABLE_ETHERNET */
-
-#ifdef XWINDOW
-#ifdef I_SETSIG
-  if (ioctl(ConnectionNumber(currentdsp->display_id), I_SETSIG, S_INPUT) < 0)
-    perror("SETSIG on X fd failed");
-#endif /* I_SETSIG */
-#endif /* XWINDOW */
 
   int_init();
 
