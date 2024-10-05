@@ -75,7 +75,6 @@ LispPTR CHAR_openfile(LispPTR *args)
 /* args[1]            access */
 /* args[2]            errno */
 {
-#ifndef DOS
   int fd;    /* return value  of open system call. */
   int flags; /* open system call's argument */
   /* struct stat statbuf; */
@@ -106,7 +105,6 @@ LispPTR CHAR_openfile(LispPTR *args)
   fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
 
   return (GetSmallp(fd));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -127,7 +125,6 @@ LispPTR CHAR_closefile(LispPTR *args)
 /* args[0]            fd      */
 /* args[1]            errno   */
 {
-#ifndef DOS
   int fd; /* file descriptor */
   int rval;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[1]);
@@ -148,7 +145,6 @@ LispPTR CHAR_closefile(LispPTR *args)
     return (NIL);
   }
   return (ATOM_T);
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -171,7 +167,6 @@ LispPTR CHAR_closefile(LispPTR *args)
 
 LispPTR CHAR_ioctl(LispPTR *args)
 {
-#ifndef DOS
   int fd, request;
   void *data;
   int rval;
@@ -187,7 +182,6 @@ LispPTR CHAR_ioctl(LispPTR *args)
     return (NIL);
   }
   return (ATOM_T);
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -203,7 +197,6 @@ LispPTR CHAR_ioctl(LispPTR *args)
 
 LispPTR CHAR_bin(int fd, LispPTR errn)
 {
-#ifndef DOS
   ssize_t rval;
   unsigned char ch[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
@@ -220,7 +213,6 @@ LispPTR CHAR_bin(int fd, LispPTR errn)
     return (NIL);
   }
   return (GetPosSmallp(ch[0]));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -235,7 +227,6 @@ LispPTR CHAR_bin(int fd, LispPTR errn)
 
 LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
 {
-#ifndef DOS
   ssize_t rval;
   char buf[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
@@ -254,7 +245,6 @@ LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
     return (NIL);
   }
   return (ATOM_T);
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -280,7 +270,6 @@ LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
 
 LispPTR CHAR_bins(LispPTR *args)
 {
-#ifndef DOS
   int fd;
   ssize_t rval;
   char *buffer;
@@ -306,7 +295,6 @@ LispPTR CHAR_bins(LispPTR *args)
 #endif /* BYTESWAP */
 
   return (GetPosSmallp(rval));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -332,7 +320,6 @@ LispPTR CHAR_bins(LispPTR *args)
 
 LispPTR CHAR_bouts(LispPTR *args)
 {
-#ifndef DOS
   int fd;
   ssize_t rval;
   char *buffer;
@@ -361,5 +348,4 @@ LispPTR CHAR_bouts(LispPTR *args)
     return (NIL);
   }
   return (GetSmallp(rval));
-#endif /* DOS */
 }

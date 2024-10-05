@@ -49,16 +49,9 @@ extern int DisplayRasterWidth;
 #define	MOUSEYH	((int)*EmMouseY68K + YDELTA)
 
 
-#ifdef DOS
-#define HideCursor { (currentdsp->mouse_invisible)(currentdsp, IOPage); }
-#define ShowCursor { (currentdsp->mouse_visible)(IOPage->dlmousex, \
-												  IOPage->dlmousey); }
-
-#else
 extern DLword *EmCursorX68K,*EmCursorY68K;
 #define	HideCursor	{ taking_mouse_down();}
 #define ShowCursor	{ taking_mouse_up(*EmCursorX68K,*EmCursorY68K);}
-#endif
 
 #define refresh_CG6 										\
 	HideCursor;											\
@@ -75,14 +68,8 @@ extern DLword *EmCursorX68K,*EmCursorY68K;
 
 /* Macro for locking and unlocking screen to prevent multiple updates */
 
-#ifdef DOS
-#define LOCKSCREEN currentdsp->device.locked++
-#define UNLOCKSCREEN currentdsp->device.locked--
-
-#else
 
 #define LOCKSCREEN ScreenLocked = T
 #define UNLOCKSCREEN ScreenLocked = NIL
 
-#endif /* DOS */
 #endif /* BITBLT_H */

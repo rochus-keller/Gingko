@@ -79,7 +79,6 @@ fd_set LispIOFds;
 
 LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, LispPTR bufaddr, LispPTR maxlen)
 {
-#ifndef DOS
   int sock, len, buflen, res;
   unsigned ures;
   char namestring[100];
@@ -346,5 +345,4 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
 
     default: return (NIL);
   }
-#endif /* DOS */
 }

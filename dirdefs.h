@@ -57,9 +57,6 @@ typedef struct dfinfo {
   FINFO *next; /* FINFO structure generated next time. */
 } DFINFO;
 
-#ifdef DOS
-int make_old_version(char *old, char *file);
-#endif
 #ifdef FSDEBUG
 void print_finfo(FINFO *fp);
 #endif

@@ -36,11 +36,6 @@
 extern int kbd_for_makeinit;
 #endif
 
-#ifdef DOS
-#include "devif.h"
-extern DspInterface currentdsp;
-#endif
-
 extern int ScreenLocked;
 
 #ifdef COLOR
@@ -60,9 +55,6 @@ LispPTR N_OP_pilotbitblt(LispPTR pilot_bt_tbl, LispPTR tos)
 {
   PILOTBBT *pbt;
   DLword *srcbase, *dstbase;
-#if defined(SUNDISPLAY) || defined(DOS)
-  int displayflg;
-#endif
   int sx, dx, w, h, srcbpl, dstbpl, backwardflg;
   int src_comp, op, gray, num_gray, curr_gray_line;
 
@@ -92,16 +84,7 @@ LispPTR N_OP_pilotbitblt(LispPTR pilot_bt_tbl, LispPTR tos)
   sx = pbt->pbtsourcebit;
   backwardflg = pbt->pbtbackward;
 /* if displayflg != 0 then source or destination is DisplayBitMap */
-#ifdef DOS
-  currentdsp->device.locked++;
-#else
   ScreenLocked = T;
-#endif /* DOS */
-
-#if defined(SUNDISPLAY) || defined(DOS)
-  displayflg = cursorin(pbt->pbtdesthi, (pbt->pbtdestlo + (dx >> 4)), w, h, backwardflg) ||
-               cursorin(pbt->pbtsourcehi, (pbt->pbtsourcelo + (sx >> 4)), w, h, backwardflg);
-#endif /* SUNDISPLAY */
 
   srcbase = (DLword *)NativeAligned2FromLAddr(VAG2(pbt->pbtsourcehi, pbt->pbtsourcelo));
   dstbase = (DLword *)NativeAligned2FromLAddr(VAG2(pbt->pbtdesthi, pbt->pbtdestlo));
@@ -114,27 +97,14 @@ LispPTR N_OP_pilotbitblt(LispPTR pilot_bt_tbl, LispPTR tos)
   num_gray = ((TEXTUREBBT *)pbt)->pbtgrayheightlessone + 1;
   curr_gray_line = ((TEXTUREBBT *)pbt)->pbtgrayoffset;
 
-#ifdef DOS
-  if (displayflg) (currentdsp->mouse_invisible)(currentdsp, IOPage);
-  ;
-#endif /* SUNDISPLAY / DOS */
-
   new_bitblt_code;
 
-#ifdef DOS
-      flush_display_lineregion(dx, dstbase, w, h);
-  if (displayflg) (currentdsp->mouse_visible)(IOPage->dlmousex, IOPage->dlmousey);
-#endif /* SUNDISPLAY / DOS */
 
 #ifdef XWINDOW
   flush_display_lineregion(dx, dstbase, w, h);
 #endif /* XWINDOW */
 
-#ifdef DOS
-  currentdsp->device.locked--;
-#else
   ScreenLocked = NIL;
-#endif /* DOS */
 
   return (pilot_bt_tbl);
 

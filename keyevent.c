@@ -25,19 +25,6 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/time.h>
-#else
-#include <time.h>
-#endif /* DOS */
-#ifdef DOS
-
-#include <i32.h> /* Defines "#pragma interrupt"  */
-#include <dos.h> /* Defines REGS & other structs */
-#include <stk.h> /* _XSTACK struct definition    */
-#pragma interrupt(Mouse_hndlr)
-
-void Mouse_hndlr(void); /* Fields mouse events from driver        */
-                        /*  (during servicing of mouse interrupt) */
-
 #endif /* DOS */
 
 #include "lispemul.h"
@@ -65,10 +52,6 @@ void Mouse_hndlr(void); /* Fields mouse events from driver        */
 #endif /* MAIKO_ENABLE_ETHERNET or MAIKO_ENABLE_NETHUB */
 
 #include "dbprint.h"
-#if (defined(DOS) || defined(XWINDOW))
-#include "devif.h"
-extern DspInterface currentdsp;
-#endif /* DOS */
 
 /* for contextsw */
 #define AS_OPCODE 1
@@ -127,9 +110,7 @@ extern int ether_fd;
 
 extern DLword *DisplayRegion68k;
 
-#ifndef DOS
 static struct timeval SelectTimeout = {0, 0};
-#endif /* DOS */
 
 LispPTR *LASTUSERACTION68k;
 LispPTR *CLastUserActionCell68k;
@@ -227,7 +208,6 @@ DLword ColorCursor_savebitmap[CURSORWIDTH / COLORPIXELS_IN_DLWORD * CURSORHEIGHT
 
 void process_io_events(void)
 {
-#ifndef DOS
   fd_set rfds;
   uint32_t iflags;
   int i;
@@ -277,7 +257,6 @@ void process_io_events(void)
     }
   }
 /* #endif */
-#endif /* DOS */
 } /* end process_io_events */
 
 
@@ -353,9 +332,6 @@ void taking_mouse_down(void) {
   static int sx, dx, w, h, srcbpl, dstbpl, backwardflg = 0;
   static int src_comp = 0, op = 0, gray = 0, num_gray = 0, curr_gray_line = 0;
 
-#ifdef DOS
-  (currentdsp->mouse_invisible)(currentdsp, IOPage);
-#else
   if (!DisplayInitialized) return;
 
   /* restore saved image */
@@ -372,7 +348,6 @@ void taking_mouse_down(void) {
 #ifdef DISPLAYBUFFER
   flush_display_region(dx, (LastCursorY), w, h);
 #endif /* DISPLAYBUFFER */
-#endif /* DOS */
 }
 #else
 
@@ -506,9 +481,6 @@ void copy_cursor(int newx, int newy)
 /* I'll make it MACRO */
 void taking_mouse_up(int newx, int newy)
 {
-#ifdef DOS
-  (currentdsp->mouse_visible)(newx, newy);
-#else
   if (!DisplayInitialized) return;
   /* save hidden bitmap */
   cursor_hidden_bitmap(newx, newy);
@@ -518,7 +490,6 @@ void taking_mouse_up(int newx, int newy)
 #endif
   LastCursorX = newx;
   LastCursorY = newy;
-#endif
 }
 
 /* store bitmap image inside rect. which specified by x,y */

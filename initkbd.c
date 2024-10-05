@@ -22,26 +22,6 @@
 #include <sys/select.h>
 #endif /* DOS */
 
-#ifdef DOS
-#include <i32.h>   /* "#pragma interrupt" & '_chain_intr'*/
-#include <dos.h>   /* defines REGS & other structs       */
-#include <stdio.h> /* define NULL                        */
-#include <conio.h>
-#include <time.h>
-#include <stk.h>
-#endif /* DOS */
-
-
-#ifdef XWINDOW
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
-#include <X11/keysymdef.h>
-#include "XKeymap.h"
-#include "xdefs.h"
-#endif /* XWINDOW */
-
 #include "lispemul.h"
 #include "lispmap.h"
 #include "lspglob.h"
@@ -54,19 +34,6 @@
 
 #include "initkbddefs.h"
 #include "initdspdefs.h"
-
-#ifdef XWINDOW
-#include "devif.h"
-#include "xinitdefs.h"
-extern DspInterface currentdsp;
-#endif /* XWINDOW */
-
-#ifdef DOS
-#include "devif.h"
-extern MouseInterface currentmouse;
-extern KbdInterface currentkbd;
-extern DspInterface currentdsp;
-#endif /* DOS */
 
 extern int LispKbdFd;
 int LispKbdFd = -1;
@@ -194,21 +161,6 @@ uint8_t DOSLispKeyMap_101[0x80] = {
     /* 7*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 #endif /* NEVER */
 
-#ifdef DOS
-/* For the IBM-101 kbd FF marks exceptions */
-static uint8_t DOSLispKeyMap_101[0x80] = {
-    /*         0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-
-    /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
-    /* 1*/ 19,   18,   3,    48,   49,   51,   6,    23,   25,   11,   58,   29,   44,   36,   21,   20,
-    /* 2*/ 5,    35,   50,   52,   38,   9,    26,   43,   28,   45,   41,   105,  40,   24,   37,   7,
-    /* 3*/ 39,   54,   55,   27,   42,   12,   60,   95,   31,   57,   56,   97,   99,   100,  67,   68,
-    /* 4*/ 101,  66,   104,  80,   106,  73,   74,   62,   130,  63,   96,   129,  85,   132,  102,  90,
-    /* 5*/ 131,  91,   89,   46,   0xff, 0xff, 0xff, 107,  108,  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    /* 6*/ 89,   62,   63,   46,   90,   91,   130,  129,  131,  132,  92,   61,   0xff, 0xff, 0xff, 0xff,
-    /* 7*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-#endif
-
 void init_keyboard(int flg) /* if 0 init else re-init */
 {
   set_kbd_iopointers();
@@ -217,31 +169,11 @@ void init_keyboard(int flg) /* if 0 init else re-init */
    */
   if (flg == 0) { keyboardtype(LispKbdFd); }
 
-#if   XWINDOW
-  init_Xevent(currentdsp);
-#elif DOS
-  if (flg == 0) { /* Install the handlers ONLY when we */
-    /* init the kbd the init the kbd the */
-    /* first time. */
-
-    /* turn on kbd */
-    make_kbd_instance(currentkbd);
-    (currentkbd->device.enter)(currentkbd);
-
-    /* turn on mouse */
-    make_mouse_instance(currentmouse);
-    (currentmouse->device.enter)(currentmouse, currentdsp);
-  }
-#endif /* XWINDOW DOS */
 }
 
 /*  ----------------------------------------------------------------*/
 
 void device_before_exit(void) {
-#ifdef   DOS
-  (currentmouse->device.exit)(currentmouse);
-  (currentkbd->device.exit)(currentkbd);
-#endif /* SUNDISPLAY DOS*/
   display_before_exit();
 }
 
@@ -441,13 +373,9 @@ void keyboardtype(int fd)
 
   /* Get keytype from LDEKBDTYPE  */
   if ((key = getenv("LDEKBDTYPE")) == 0) {
-#ifdef XWINDOW
-    type = KB_X;
-#elif DOS
-    type = KB_DOS;
-#elif SDL
+#ifdef SDL
     type = KB_SDL;
-#endif /* XWINDOW */
+#endif /* SDL */
   } /* if end */
   else {
     if (strcmp("as3000j", key) == 0)
@@ -491,24 +419,11 @@ void keyboardtype(int fd)
       SUNLispKeyMap = SUNLispKeyMap_for4;
       InterfacePage->devconfig |= type - MIN_KEYTYPE; /* 7 */
       break;
-#ifdef XWINDOW
-    case KB_X:
-      XGenericKeyMap = (uint8_t *)make_X_keymap();
-      SUNLispKeyMap = XGenericKeyMap;
-      InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
-      break;
-#endif /* XWINDOW */
 #ifdef SDL
   case KB_SDL:
     InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
     break;
 #endif /* SDL */
-#ifdef DOS
-    case KB_DOS:
-      SUNLispKeyMap = DOSLispKeyMap_101;
-      InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
-      break;
-#endif /* DOS */
     default: {
       char errmsg[200];
       sprintf(errmsg, "Unsupported keyboard type: %d", type);

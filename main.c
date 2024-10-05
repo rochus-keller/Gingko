@@ -25,10 +25,6 @@
 #ifndef DOS
 #include <sys/param.h>
 #include <unistd.h>
-#else /* DOS */
-#include <i32.h>
-#define MAXPATHLEN 128
-#define R_OK 04
 #endif /* DOS */
 
 #ifdef MAIKO_ENABLE_ETHERNET
@@ -238,49 +234,13 @@ unsigned sysout_size = 0;    /* ditto */
 
 int flushing = FALSE; /* see dbprint.h if set, all debug/trace printing will call fflush(stdout) after each printf */
 
-#if defined(DOS) || defined(XWINDOW)
-#include "devif.h"
-extern DspInterface currentdsp;
-#endif /* DOS || XWINDOW */
 #ifdef SDL
 extern int init_SDL(char*, int, int, int);
 #endif
 extern const time_t MDate;
 extern int nokbdflag;
 extern int nomouseflag;
-#ifdef DOS
-int dosdisplaymode = 0;
-int twobuttonflag = FALSE;
-int eurokbd = TRUE; /* Assume eurokbd by default. */
-const char *helpstring =
-    "\n\
-medley [sysout-name] [<options>] ...\n\
-Where <options> are:\n\
- sysout-name  The filename of your sysout.(see manual.)\n\
- -m <size>    Virtual memory size in  Mega Bytes(from 8 to 32)\n\
- -vga         Use standard VGA 640x480 screen resolution\n\
- -vesa102     Use VESA 800x600 screen resolution\n\
- -vesa104     Use VESA 1024x768 screen resolution\n\
- -2button     Force two button mouse handling\n\
- -3button     Force three button mouse handling\n\
- -noeurokbd   Force old style kbd handling (for 2.0 and earlier sysouts)\n\
- -eurokbd     Force new style kbd handling (for 2.01 and later sysouts)\n\
- -nokbd       Turn the kbd handling off (for debugging only)\n\
- -nomouse     Turn the mouse handling off (for debugging only)\n\
- -info        Print general info about the system\n\
- -help        Print this message\n";
-#elif XWINDOW
-const char *helpstring =
-    "\n\
- either setenv LDESRCESYSOUT or do:\n\
- medley [<sysout-name>] [<options>]\n\
- -info                    Print general info about the system\n\
- -help                    Print this message\n\
- -d[isplay] host:srv.scr  The host, X server and screen you want Medley on\n\
- -bw <pixels>             The Medley screen borderwidth\n\
- -g[eometry] <geom>]      The Medley screen geometry\n\
- -sc[reen] <w>x<h>]       The Medley screen geometry\n";
-#elif SDL
+#ifdef SDL
 const char *helpstring =
     "\n\
  either setenv LDESRCESYSOUT or do:\n\
@@ -293,14 +253,14 @@ const char *helpstring =
  -sc[reen] <w>x<h>]       The Medley screen geometry\n\
  -t <title>               The window title\n\
  -title <title>           The window title\n";
-#else  /* not DOS, not XWINDOW, not SDL */
+#else
 const char *helpstring =
     "\n\
  either setenv LDESRCESYSOUT or do:\n\
  lde[ether] [sysout-name] [<options>]\n\
  -info        Print general info about the system\n\
  -help        Print this message\n";
-#endif /* DOS */
+#endif
 
 #if defined(MAIKO_ENABLE_NETHUB)
 const char *nethubHelpstring =
@@ -443,28 +403,6 @@ int main(int argc, char *argv[])
     else if (!strcmp(argv[i], "-INIT")) { /*** init sysout, no packaged */
       for_makeinit = 1;
     }
-#ifdef DOS
-    else if ((strcmp(argv[i], "-vga") == 0) || (strcmp(argv[i], "-VGA") == 0)) {
-      dosdisplaymode = 1;
-    } else if ((strcmp(argv[i], "-vesa102") == 0) || (strcmp(argv[i], "-VESA102") == 0)) {
-      dosdisplaymode = 0x102;
-    } else if ((strcmp(argv[i], "-vesa104") == 0) || (strcmp(argv[i], "-VESA104") == 0)) {
-      dosdisplaymode = 0x104;
-    } else if ((strcmp(argv[i], "-2button") == 0) || (strcmp(argv[i], "-2BUTTON") == 0)) {
-      twobuttonflag = TRUE;
-    } else if ((strcmp(argv[i], "-3button") == 0) || (strcmp(argv[i], "-3BUTTON") == 0)) {
-      twobuttonflag = FALSE;
-    } else if ((strcmp(argv[i], "-noeurokbd") == 0) || (strcmp(argv[i], "-NOEUROKBD") == 0)) {
-      eurokbd = FALSE;
-    } else if ((strcmp(argv[i], "-eurokbd") == 0) || (strcmp(argv[i], "-EUROKBD") == 0)) {
-      eurokbd = TRUE;
-    } else if ((strcmp(argv[i], "-nokbd") == 0) || (strcmp(argv[i], "-NOKBD") == 0)) {
-      nokbdflag = TRUE;
-    } else if ((strcmp(argv[i], "-nomouse") == 0) || (strcmp(argv[i], "-NOMOUSE") == 0)) {
-      nomouseflag = TRUE;
-    }
-
-#endif /* DOS */
 #ifdef SDL
     else if ((strcmp(argv[i], "-sc") == 0) || (strcmp(argv[i], "-SC") == 0)) {
       if (argc > ++i) {
@@ -647,14 +585,10 @@ int main(int argc, char *argv[])
   else if ((envname = getenv("LDESOURCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
   else if (sysout_name_xrm[0] != '\0') { strncpy(sysout_name, sysout_name_xrm, MAXPATHLEN); }
   else {
-#ifdef DOS
-    strncpy(sysout_name, "lisp.vm", MAXPATHLEN);
-#else
     if ((envname = getenv("HOME")) != NULL) {
       strncpy(sysout_name, envname, MAXPATHLEN);
       strncat(sysout_name, "/lisp.virtualmem", MAXPATHLEN - 17);
     }
-#endif /* DOS */
   }
   if ((sysout_name[0] == '\0') || (access(sysout_name, R_OK))) {
     perror("Couldn't find a sysout to run");
@@ -673,9 +607,6 @@ int main(int argc, char *argv[])
 
 
 /* Sanity checks. */
-#ifdef DOS
-  probemouse(); /* See if the mouse is connected. */
-#else
   if (getuid() != geteuid()) {
     (void)fprintf(stderr, "Effective user is not real user.  Resetting uid\n");
     if (setuid(getuid()) == -1) {
@@ -683,7 +614,6 @@ int main(int argc, char *argv[])
       exit(1);
     }
   }
-#endif /* DOS */
 
   FD_ZERO(&LispReadFds);
 
@@ -695,9 +625,6 @@ int main(int argc, char *argv[])
   connectToHub();
 #endif
 
-#ifdef DOS
-  init_host_filesystem();
-#else
   /* Fork Unix was called in kickstarter; if we forked, look up the */
   /* pipe handles to the subprocess and set them up.		      */
 
@@ -705,11 +632,7 @@ int main(int argc, char *argv[])
   {                    /* in case we're re-starting a savevm w/open ptys */
     if (please_fork) (void)fprintf(stderr, "Failed to find UNIXCOMM file handles; no processes\n");
   }
-#endif /* DOS */
 
-#if defined(DOS) || defined(XWINDOW)
-  make_dsp_instance(currentdsp, 0, 0, 0, 1); /* All defaults the first time */
-#endif                                       /* DOS || XWINDOW */
 #if defined(SDL)
   init_SDL(windowtitle, width, height, pixelscale);
 #endif /* SDL */
@@ -742,13 +665,6 @@ int main(int argc, char *argv[])
                          you used the proper switches when building LDE.
                             JDS -- 1/18/90 also BITBLTSUB does it now. */
   }
-
-#ifdef DOS
-  _setrealmode(0x3f); /* Don't interrupt on FP overflows */
-  _getrealerror();
-
-  tzset();
-#endif
 
 #ifdef OS5
   tzset();
@@ -805,9 +721,6 @@ void start_lisp(void) {
   /*       entering the bytecode dispatch loop; interrupts get     */
   /*       unblocked here 					   */
   int_init();
-#ifdef DOS
-  _dpmi_lockregion((void *)&dispatch, 32768);
-#endif /* DOS */
   dispatch();
 }
 

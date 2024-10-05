@@ -38,16 +38,6 @@
 #include <vfork.h>
 #endif /* OS4 */
 
-
-#ifdef DOS
-#define getpagesize() 512
-#endif /* DOS */
-
-#if defined(XWINDOW) || defined(DOS)
-DLword *DisplayRegion68k_end_addr;
-extern DspInterface currentdsp;
-#endif /* DOS */
-
 /* from /usr/include/sun/fbio.h some machines don't have following def. */
 #ifndef FBTYPE_SUNROP_COLOR
 #define FBTYPE_SUNROP_COLOR 13 /* MEMCOLOR with rop h/w */
@@ -128,11 +118,6 @@ void set_cursor(void) {
 #ifndef COLOR
 void clear_display(void) {
 
-#ifdef DOS
-  TPRINT(("Enter Clear_display\n"));
-  (currentdsp->cleardisplay)(currentdsp);
-  TPRINT(("Exit Clear_display\n"));
-#endif /* DOS */
 }
 
 #else /* COLOR */
@@ -170,11 +155,6 @@ void init_display2(DLword *display_addr, unsigned display_max)
   DisplayRegion68k = (DLword *)display_addr;
 
 
-#if (defined(XWINDOW) || defined(DOS))
-  (currentdsp->device.enter)(currentdsp);
-  displaywidth = currentdsp->Display.width;
-  displayheight = currentdsp->Display.height;
-#endif /* XWINDOW */
 #if (defined(SDL))
   displaywidth = sdl_displaywidth;
   displayheight = sdl_displayheight;
@@ -187,11 +167,6 @@ void init_display2(DLword *display_addr, unsigned display_max)
 
   DBPRINT(("FBIOGTYPE w x h = %d x %d\n", displaywidth, displayheight));
 
-
-#ifdef XWINDOW
-  DisplayType = SUN2BW;
-  DisplayRegion68k_end_addr = DisplayRegion68k + DisplayRasterWidth * displayheight;
-#endif /* XWINDOW */
 #ifdef SDL
   DisplayType = SUN2BW;
 #endif /* SDL */
@@ -203,11 +178,7 @@ void init_display2(DLword *display_addr, unsigned display_max)
   DBPRINT(("        pg size: 0x%x\n", getpagesize()));
 
 
-#ifdef DOS
-  (currentdsp->cleardisplay)(currentdsp);
-#else  /* DOS */
   clear_display();
-#endif /* DOS */
 
   DBPRINT(("after clear_display()\n"));
 
@@ -229,13 +200,9 @@ void display_before_exit(void) {
 #endif /* TRUECOLOR */
 
   clear_display();
-
-#if defined(XWINDOW) || defined(DOS)
-  (currentdsp->device.exit)(currentdsp);
-#endif /* DOS */
 }
 
-#if defined(DISPLAYBUFFER) || defined(DOS)
+#if defined(DISPLAYBUFFER)
 /************************************************************************/
 /*									*/
 /*		    i n _ d i s p l a y _ s e g m e n t			*/
@@ -269,16 +236,6 @@ void flush_display_buffer(void) {
 #ifdef SDL
   sdl_notify_damage(0, 0, sdl_displaywidth, sdl_displayheight);
 #endif
-#ifdef XWINDOW
-  (currentdsp->bitblt_to_screen)(currentdsp, DisplayRegion68k, currentdsp->Visible.x,
-                                 currentdsp->Visible.y, currentdsp->Visible.width,
-                                 currentdsp->Visible.height);
-#elif DOS
-  TPRINT(("Enter flush_display_buffer\n"));
-  (currentdsp->bitblt_to_screen)(currentdsp, DisplayRegion68k, 0, 0, currentdsp->Display.width,
-                                 currentdsp->Display.height);
-  TPRINT(("Exit flush_display_buffer\n"));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -300,11 +257,6 @@ void flush_display_region(int x, int y, int w, int h)
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
 #endif
-#if (defined(XWINDOW) || defined(DOS))
-  TPRINT(("Enter flush_display_region x=%d, y=%d, w=%d, h=%d\n", x, y, w, h));
-  (currentdsp->bitblt_to_screen)(currentdsp, DisplayRegion68k, x, y, w, h);
-  TPRINT(("Exit flush_display_region\n"));
-#endif /* DOS */
 }
 #ifdef BYTESWAP
 void byte_swapped_displayregion(int x, int y, int w, int h)
@@ -346,11 +298,6 @@ void flush_display_lineregion(UNSIGNED x, DLword *ybase, int w, int h)
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
 #endif
-#if (defined(XWINDOW) || defined(DOS))
-  TPRINT(("Enter flush_display_lineregion x=%p, y=%d, w=%d, h=%d\n", (void *)x, y, w, h));
-  (currentdsp->bitblt_to_screen)(currentdsp, DisplayRegion68k, x, y, w, h);
-  TPRINT(("Exit flush_display_lineregion\n"));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -380,9 +327,4 @@ void flush_display_ptrregion(DLword *ybase, UNSIGNED bitoffset, int w, int h)
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
 #endif
-#if   (defined(XWINDOW) || defined(DOS))
-  TPRINT(("Enter flush_display_ptrregion\n x=%d, y=%d, w=%d, h=%d\n", x, y, w, h));
-  (currentdsp->bitblt_to_screen)(currentdsp, DisplayRegion68k, x, y, w, h);
-  TPRINT(("Exit flush_display_ptrregion\n"));
-#endif /* DOS */
 }

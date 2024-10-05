@@ -91,11 +91,7 @@ extern int MonoOrColor;
 /*  take care of cursor movement & hiding  */
 /*  (during bitblts to screen) ourselves.  */
 /*******************************************/
-#if defined(SUNDISPLAY) || defined(DOS)
-#define REALCURSOR
-#else
 #undef REALCURSOR
-#endif
 
 /* same definition is in my.h */
 #ifdef BIGVM
@@ -435,11 +431,7 @@ void bitbltsub(LispPTR *argv) {
   }
 
 do_it_now:
-#ifdef DOS
-  currentdsp->device.locked++;
-#else
   ScreenLocked = T;
-#endif /* DOS */
 
 #ifdef REALCURSOR
   displayflg |= n_new_cursorin(dstbase, dx, dty, w, h);
@@ -473,23 +465,11 @@ do_it_now:
   if (in_display_segment(dstbase)) flush_display_region(dx, dty, w, h);
 #endif /* XWINDOW */
 
-#ifdef DOS
-  /* Copy the changed section of display bank to the frame buffer */
-  if (in_display_segment(dstbase)) {
-    /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",dx, dty, w,h)); */
-    flush_display_region(dx, dty, w, h);
-  }
-#endif /* DOS */
-
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;
 #endif /* REALCURSOR */
 
-#ifdef DOS
-  currentdsp->device.locked--;
-#else
   ScreenLocked = NIL;
-#endif /* DOS */
 
 } /* end of bitbltsub */
 
@@ -830,14 +810,6 @@ do_it_now:
   if (in_display_segment(dstbase)) flush_display_region(dlx, dty, width, height);
 #endif /* SDL */
 
-#ifdef DOS
-  /* Copy the changed section of display bank to the frame buffer */
-  if (in_display_segment(dstbase)) {
-    /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",dx, dty, w,h)); */
-    flush_display_region(dlx, dty, width, height);
-  }
-#endif /* DOS */
-
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;
 #endif /* REALCURSOR */
@@ -1081,14 +1053,6 @@ do_it_now:
   if (in_display_segment(dstbase)) flush_display_region(left, dty, width, height);
 #endif /* SDL */
 
-#ifdef DOS
-  /* Copy the changed section of display bank to the frame buffer */
-  if (in_display_segment(dstbase)) {
-    /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",dx, dty, w,h)); */
-    flush_display_region(left, dty, width, height);
-  }
-#endif /* DOS */
-
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;
 #endif /*  REALCURSOR */
@@ -1213,10 +1177,6 @@ void bltchar(LispPTR *args)
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
 #endif /* SDL */
-
-#ifdef DOS
-  if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
-#endif /* DOS */
 
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;
@@ -1433,9 +1393,6 @@ void newbltchar(LispPTR *args) {
 #ifdef SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
 #endif /* SDL */
-#ifdef DOS
-  if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
-#endif /* DOS */
 
 #ifdef REALCURSOR
   if (displayflg) ShowCursor;

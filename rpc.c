@@ -48,7 +48,6 @@
 
 LispPTR rpc(LispPTR *args)
 {
-#ifndef DOS
   /* Arguments are:
      args[0]:Destination Address; hostname or internet address are both supported.
      args[1]:Remote port for this program.
@@ -194,5 +193,4 @@ getbuf:
  */
 handle_error:
   return (NIL_PTR);
-#endif /* DOS */
 }

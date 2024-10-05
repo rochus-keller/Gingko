@@ -61,8 +61,8 @@
 #include <sys/mbuf.h>
 #endif
 #include <nlist.h>
-#endif /* DOS */
 #endif /* MAIKO_ENABLE_ETHERNET */
+#endif /* DOS */
 
 #include "commondefs.h"
 #include "lispemul.h"

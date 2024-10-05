@@ -12,10 +12,7 @@
 
 #include <errno.h>
 #include <stdio.h>
-#ifdef DOS
-#include <time.h>
-#include <conio.h>
-#else
+#ifndef DOS
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -31,17 +28,6 @@
 #include "lisp2cdefs.h"
 #include "xwinmandefs.h"
 #endif
-
-#ifdef DOS
-#define PORT_A 0x60
-#include "devif.h"
-extern KbdInterface currentkbd;
-extern DspInterface currentdsp;
-#elif XWINDOW
-#include "devif.h"
-extern KbdInterface currentkbd;
-extern DspInterface currentdsp;
-#endif /* DOS */
 
 /****************************************************
  *
@@ -63,17 +49,7 @@ void KB_enable(LispPTR *args) /* args[0] :	ON/OFF flag
                                      */
 {
   if (args[0] == ATOM_T) {
-#if   XWINDOW
-    enable_Xkeyboard(currentdsp);
-#elif DOS
-    (currentkbd->device.enter)(currentkbd);
-#endif /* DOS */
   } else if (args[0] == NIL) {
-#if   XWINDOW
-    disable_Xkeyboard(currentdsp);
-#elif DOS
-    (currentkbd->device.exit)(currentkbd);
-#endif /* DOS */
   } else {
     error("KB_enable: illegal arg \n");
     printf("KB_enable: arg = %d\n", args[0]);
@@ -93,34 +69,12 @@ struct timeval belltime ={
 */
 extern int LispKbdFd;
 
-#ifdef DOS
-int bell_status_word;
-#endif /* DOS */
-
 void KB_beep(LispPTR *args) /* args[0] :	ON/OFF flag
                                    *		T -- ON
                                    *		NIL -- OFF
                                    * args[1] :	frequency
                                    */
 {
-#if   XWINDOW
-  if (args[0] == ATOM_T) beep_Xkeyboard(currentdsp);
-#elif DOS
-  if (args[0] == ATOM_T) {
-    bell_status_word = inp(0x61);
-    outp(0x61, bell_status_word | 0x3); /* Turn on the speaker */
-    /* Prepare timer by sending 10111100 to port 43. */
-    outp(0x43, 0xb6);
-
-    /* Divide input frequency by timer ticks per second and
-     * write (byte by byte) to timer. */
-    outp(0x42, (char)(1193180L / (LispIntToCInt(args[1]))));
-    outp(0x42, (char)(1193180L / (LispIntToCInt(args[1])) >> 8));
-  } else {
-    outp(0x61, bell_status_word & ~0x3); /* Turn off the speaker (with */
-    /* bits 0 and 1). */
-  }
-#endif /* SUNDISPLAY, XWINDOW, DOS */
 }
 
 /****************************************************
@@ -150,9 +104,4 @@ void KB_setmp(LispPTR *args) /* args[0] :	MPCODE	*/
 
 void KB_setled(LispPTR *args)
 {
-#ifdef DOS
-  outp(PORT_A, (unsigned char)0xED);
-  outp(PORT_A,
-       (unsigned char)(((args[0] != NIL) << 2) | ((args[1] != NIL) << 1) | (args[2] != NIL)));
-#endif /* DOS */
 }

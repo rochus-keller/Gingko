@@ -18,6 +18,7 @@ To avoid confusions with the original project, this version of the VM is called 
 - Refactored interpreter loop
 - Defined SDL and RELEASE in version.h
 - A lot of changes to make the code C99 compatible
+- Removed a lot of unused code and defines (DOS, Haiku, Sun OS4/5 and X no longer supported)
 - The VM can now be simply built using the cc *.c command (see below)
 
 #### Precompiled versions

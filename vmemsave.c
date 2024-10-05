@@ -29,12 +29,6 @@
 #include <sys/param.h>
 #include <pwd.h>
 #include <unistd.h>
-#else
-#include <direct.h>
-#include <stdlib.h>
-#define MAXPATHLEN _MAX_PATH
-#define MAXNAMLEN _MAX_PATH
-#define alarm(x) 1
 #endif /* DOS */
 
 
@@ -70,9 +64,6 @@
 
 extern struct pixrect *CursorBitMap, *InvisibleCursorBitMap;
 extern struct cursor CurrentCursor, InvisibleCursor;
-#ifdef DOS
-extern DspInterface currentdsp;
-#endif /* DOS */
 
 extern int *Lisp_errno;
 extern int Dummy_errno; /* Used if errno cell isn't provided by Lisp.*/
@@ -137,12 +128,7 @@ LispPTR vmem_save0(LispPTR *args)
 {
   char *def;
   char pathname[MAXPATHLEN], sysout[MAXPATHLEN], host[MAXNAMLEN];
-#ifdef DOS
-  char pwd[MAXNAMLEN];
-  char drive[1];
-#else
   struct passwd *pwd;
-#endif /* DOS */
 
   Lisp_errno = &Dummy_errno;
 
@@ -150,34 +136,19 @@ LispPTR vmem_save0(LispPTR *args)
     /* Check of lispstringP is safer for LispStringToCString */
     LispStringToCString(args[0], pathname, MAXPATHLEN);
     separate_host(pathname, host);
-#ifdef DOS
-    if (!unixpathname(pathname, sysout, 0, 0, drive, 0, 0)) return (BADFILENAME);
-#else
     if (!unixpathname(pathname, sysout, 0, 0)) return (BADFILENAME);
-#endif /* DOS */
     return (vmem_save(sysout));
   } else {
     if ((def = getenv("LDEDESTSYSOUT")) == 0) {
-#ifdef DOS
-      if (getcwd(pwd, MAXNAMLEN) == NULL) return (FILETIMEOUT);
-      strcpy(sysout, pwd);
-      strcat(sysout, "/lisp.vm");
-#else
       pwd = getpwuid(getuid()); /* NEED TIMEOUT */
       if (pwd == (struct passwd *)NULL) return (FILETIMEOUT);
       strcpy(sysout, pwd->pw_dir);
       strcat(sysout, "/lisp.virtualmem");
-#endif /* DOS */
     } else {
       if (*def == '~' && (*(def + 1) == '/' || *(def + 1) == '\0')) {
-#ifdef DOS
-        if (getcwd(pwd, MAXNAMLEN) == NULL) return (FILETIMEOUT);
-        strcpy(sysout, pwd);
-#else
         pwd = getpwuid(getuid()); /* NEED TIMEOUT */
         if (pwd == (struct passwd *)NULL) return (FILETIMEOUT);
         strcpy(sysout, pwd->pw_dir);
-#endif /* DOS */
         strcat(sysout, def + 1);
       } else {
         strcpy(sysout, def);
@@ -311,22 +282,9 @@ LispPTR vmem_save(char *sysout_file_name)
   ssize_t rsize;
   off_t roff;
   int rval;
-#ifndef DOS
-  extern int ScreenLocked;
-  extern DLword *EmCursorX68K;
-  extern DLword *EmCursorY68K;
-  extern DLword NullCursor[];
-  extern DLword *EmCursorBitMap68K;
-#endif /* DOS */
 
 /* remove cursor image from screen */
 
-#ifdef   DOS
-  /*  For DOS, must also take the mouse cursor away (it's  */
-  /*  written into the display-region bitmap).	     */
-  currentdsp->device.locked++;
-  (currentdsp->mouse_invisible)(currentdsp, IOPage);
-#endif /* SUNDISPLAY || DOS */
 
   /* set FPTOVP */
   fptovp = FPtoVP + 1;
@@ -342,12 +300,7 @@ LispPTR vmem_save(char *sysout_file_name)
   */
 
   SETJMP(FILETIMEOUT);
-#ifdef DOS
-  /* Bloddy 8 char filenames in dos ... /jarl */
-  make_old_version(tempname, sysout_file_name);
-#else  /* DOS */
   sprintf(tempname, "%s-temp", sysout_file_name);
-#endif /* DOS */
 
   /* Confirm protection of specified file by open/close */
 
@@ -492,12 +445,6 @@ LispPTR vmem_save(char *sysout_file_name)
   }
 
 /* restore cursor image to screen */
-#ifdef DOS
-  /* Must also put the mouse back. */
-  (currentdsp->mouse_visible)(IOPage->dlmousex, IOPage->dlmousey);
-  currentdsp->device.locked--;
-
-#endif /* SUNDISPLAY */
 
   /*printf("vmem is saved completely.\n");*/
   return (COMPLETESYSOUT);
@@ -528,8 +475,5 @@ void lisp_finish(void) {
     /* if (UnixPID >= 0) kill(UnixPID, SIGKILL);*/   /* Then kill fork_Unix itself */
   }
   device_before_exit();
-#ifdef DOS
-  exit_host_filesystem();
-#endif /* DOS */
   exit(0);
 }

@@ -55,10 +55,6 @@ int Storage_expanded; /*  T or NIL */
 /*      Load the sysout file into memory.                               */
 /*                                                                      */
 /************************************************************************/
-#if defined(DOS) || defined(XWINDOW)
-#include "devif.h"
-extern DspInterface currentdsp;
-#endif /* DOS || XWINDOW */
 
 /* sys_size is sysout size in megabytes */
 unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
@@ -158,16 +154,10 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
               "\nsysout loader: Error, secondary space in use. You can't specify size.\nProcess "
               "size = %d\nSys size = %d\n",
               ifpage.process_size, sys_size);
-#ifdef DOS
-      /* Note that we have an initialized display by now. */
-      /* Hence we have to observe the display protocol. */
-      VESA_errorexit(tmp);
-#else
       (void)fprintf(stderr, "sysout_loader: You can't specify the process size.\n");
       (void)fprintf(stderr, "Because, secondary space is already used.\n");
       (void)fprintf(stderr, "(size is %d, you specified %d.)\n", ifpage.process_size, sys_size);
       exit(-1);
-#endif /* DOS */
     }
     /*Can use this sys_size as the process size */
     /* The sys_size should be same as the previous one */
@@ -282,28 +272,6 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
   /* read sysout file to lispworld */
 
   for (unsigned i = 0; i < (sysout_size / 2); i++) {
-#ifdef DOS
-    /* Dial that floats from left to right on the top line of the */
-    /* displaty. Dial shows % of sysout loaded by digits and */
-    /* position. */
-    int columns;
-    switch (currentdsp->graphicsmode) {
-      case 0x104:
-        columns = 120; /* 131 - 10 */
-        break;
-      case 0x102:
-        columns = 69; /* 79 - 10 */
-        break;
-      default:
-        columns = 69; /* 79 - 10 */
-        break;
-    }
-    _settextposition((short)0, (short)0);
-    if ((i & 0xf) == 0) {
-      for (int j = 0; j < (columns * i) / (sysout_size >> 1); j++) putchar(' ');
-      printf("-=(%2d%%)=-\n", (100 * i) / (sysout_size >> 1));
-    }
-#endif /* DOS */
     if (GETPAGEOK(fptovp, i) != 0177777) {
       /* only seek if not already at desired position */
       if (i * BYTESPER_PAGE != cfp) {
@@ -335,11 +303,11 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
   free(fptovp);
   DBPRINT(("sysout file is read completely.\n"));
 
-#if (defined(DISPLAYBUFFER) || defined(XWINDOW) || defined(DOS))
+#if defined(DISPLAYBUFFER)
   TPRINT(("Flushing display buffer...\n"));
   flush_display_buffer();
   TPRINT(("After Flushing display buffer\n"));
-#endif /* DISPLAYBUFFER || XWINDOW || DOS */
+#endif /* DISPLAYBUFFER */
 
   close(sysout);
   return (sys_size);

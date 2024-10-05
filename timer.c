@@ -32,19 +32,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifdef DOS
-#include <dos.h>
-#include <i32.h>   /* "#pragma interrupt" & '_chain_intr'*/
-/******************************************************************************
-*   Global variables
-******************************************************************************/
-void (*prev_int_1c)(void); /* keeps address of previous 1c handlr*/
-                       /* used for chaining & restore at exit*/
-#pragma interrupt(DOStimer)
-void DOStimer(void);
-
-unsigned long tick_count = 0; /* approx 18 ticks per sec            */
-#else /* DOS */
+#ifndef DOS
 #include <sys/resource.h>
 #include <sys/time.h>
 #endif /* DOS */
@@ -113,18 +101,7 @@ static int gettime(int casep);
 /************************************************************************/
 
 void update_miscstats(void) {
-#ifdef DOS
-  struct dostime_t dtm; /* holds DOS time, so we can get .01 secs */
-  _dos_gettime(&dtm);
-
-  MiscStats->totaltime = (time(0) * 1000) + (10 * dtm.hsecond);
-  MiscStats->swapwaittime = 0;
-  MiscStats->pagefaults = 0;
-  MiscStats->swapwrites = 0;
-  MiscStats->diskiotime = 0; /* ?? not available ?? */
-  MiscStats->diskops = 0;
-  MiscStats->secondstmp = MiscStats->secondsclock = (time(0) + UNIX_ALTO_TIME_DIFF);
-#elif defined(MAIKO_OS_EMSCRIPTEN)
+#if defined(MAIKO_OS_EMSCRIPTEN)
   /* Emscripten does not provide getrusage() functionality */
   struct timeval timev;
 
@@ -151,7 +128,7 @@ void update_miscstats(void) {
   MiscStats->diskops = ru.ru_inblock + ru.ru_oublock;
   gettimeofday(&timev, NULL);
   MiscStats->secondstmp = MiscStats->secondsclock = (timev.tv_sec + UNIX_ALTO_TIME_DIFF);
-#endif /* DOS */
+#endif
 }
 
 /************************************************************************/
@@ -214,20 +191,11 @@ LispPTR subr_gettime(LispPTR args[])
 
 static int gettime(int casep)
 {
-#ifdef DOS
-  struct dostime_t dtm; /* for hundredths of secs */
-#else
   struct timeval timev;
-#endif /* DOS */
   switch (casep) {
     case 0: /* elapsed time in alto milliseconds */
-#ifdef DOS
-      _dos_gettime(&dtm);
-      return ((time(0) + UNIX_ALTO_TIME_DIFF) * 1000) + (10 * dtm.hsecond);
-#else  /* DOS */
       gettimeofday(&timev, NULL);
       return ((timev.tv_sec + UNIX_ALTO_TIME_DIFF) * 1000 + timev.tv_usec / 1000);
-#endif /* DOS */
 
     case 1: /* starting elapsed time in milliseconds */ return (MiscStats->starttime);
 
@@ -238,20 +206,12 @@ static int gettime(int casep)
     case 3: /* total GC time in milliseconds */ return (MiscStats->gctime);
 
     case 4: /* current time of day in Alto format */
-#ifdef DOS
-      return (time(0) + UNIX_ALTO_TIME_DIFF);
-#else
       gettimeofday(&timev, NULL);
       return (timev.tv_sec + UNIX_ALTO_TIME_DIFF);
-#endif
 
     case 5: /* current time of day in Interlisp format */
-#ifdef DOS
-      return (time(0) + LISP_UNIX_TIME_DIFF);
-#else
       gettimeofday(&timev, NULL);
       return (timev.tv_sec + LISP_UNIX_TIME_DIFF);
-#endif
 
     case 6:
       return (98); /* this is wrong, only works in PST */
@@ -295,26 +255,7 @@ static int gettime(int casep)
 
 void subr_settime(LispPTR args[])
 {
-#ifdef DOS
-  struct dostime_t dostime;
-  struct dosdate_t dosday;
-  struct tm uxtime;
-
-  uxtime = *localtime((time_t *)(*((int *)NativeAligned4FromLAddr(args[0])) - UNIX_ALTO_TIME_DIFF));
-  dostime.hsecond = 0;
-  dostime.second = uxtime.tm_sec;
-  dostime.minute = uxtime.tm_min;
-  dostime.hour = uxtime.tm_hour;
-  _dos_settime(&dostime);
-
-  dosday.day = uxtime.tm_mday;
-  dosday.month = uxtime.tm_mon;
-  dosday.year = uxtime.tm_year;
-  dosday.dayofweek = uxtime.tm_wday;
-  _dos_setdate(&dosday);
-#elif defined(MAIKO_OS_HAIKU)
-  (void)args[0];
-#elif defined(MAIKO_OS_EMSCRIPTEN)
+#if defined(MAIKO_OS_EMSCRIPTEN)
   (void)args[0];
 #else
   struct timeval timev;
@@ -358,19 +299,11 @@ void subr_copytimestats(LispPTR args[])
 LispPTR N_OP_rclk(LispPTR tos)
 {
   unsigned int usec;
-#ifdef DOS
-  struct dostime_t dtm;
-#endif /* DOS */
 
-#ifdef DOS
-  _dos_gettime(&dtm);
-  usec = (time(0) * 1000000) + (10000 * dtm.hsecond);
-#else
   struct timeval timev;
 
   gettimeofday(&timev, NULL);
   usec = (timev.tv_sec * 1000000UL) + timev.tv_usec;
-#endif /* DOS */
   *((unsigned int *)(NativeAligned4FromLAddr(tos))) = usec;
   return (tos);
 } /* end N_OP_rclk */
@@ -390,13 +323,9 @@ LispPTR N_OP_rclk(LispPTR tos)
 /************************************************************************/
 
 void update_timer(void) {
-#ifdef DOS
-  MiscStats->secondstmp = MiscStats->secondsclock = time(0) + UNIX_ALTO_TIME_DIFF;
-#else
   struct timeval timev;
   gettimeofday(&timev, NIL);
   MiscStats->secondstmp = MiscStats->secondsclock = (timev.tv_sec + UNIX_ALTO_TIME_DIFF);
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -467,24 +396,6 @@ static void int_timer_service(int sig)
 
 static void int_timer_init(void)
 {
-#ifdef DOS
-  /******************************************************************************
-  *  All code and data touched during the processing of an interrupt should
-  *  locked prior to receiving any interrupts.  This prevents the Timer
-  *  function from being swapped out during an interrupt.
-  ******************************************************************************/
-  _dpmi_lockregion((void *)Irq_Stk_End, sizeof(Irq_Stk_End));
-  _dpmi_lockregion((void *)Irq_Stk_Check, sizeof(Irq_Stk_Check));
-  _dpmi_lockregion((void *)tick_count, sizeof(tick_count));
-  _dpmi_lockregion((void *)&DOStimer, 4096);
-  _dpmi_lockregion((void *)prev_int_1c, sizeof(prev_int_1c));
-
-  /* Set up the DOS time handler. */
-  prev_int_1c = _dos_getvect(0x1c); /* get addr of current 1c hndlr, */
-                                    /* if any*/
-  _dos_setvect(0x1c, DOStimer);     /* hook our int handler to timer int */
-
-#else
   struct itimerval timert;
   struct sigaction timer_action;
 
@@ -502,7 +413,6 @@ static void int_timer_init(void)
   setitimer(ITIMER_VIRTUAL, &timert, NULL);
 
   DBPRINT(("Timer interval set to %ld usec\n", (long)timert.it_value.tv_usec));
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -523,9 +433,7 @@ static void int_timer_init(void)
 void int_io_open(int fd)
 {
   DBPRINT(("int_io_open %d\n", fd));
-#ifdef DOS
-/* would turn on DOS kbd signal handler here */
-#elif defined(O_ASYNC)
+#if defined(O_ASYNC)
   if (fcntl(fd, F_SETOWN, getpid()) == -1) perror("fcntl F_SETOWN error");
   if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_ASYNC) == -1) perror("fcntl F_SETFL on error");
 #elif defined(FASYNC) && defined(FNDELAY)
@@ -539,9 +447,7 @@ void int_io_open(int fd)
 void int_io_close(int fd)
 {
   DBPRINT(("int_io_close %d\n", fd));
-#ifdef DOS
-/* Turn off signaller here */
-#elif defined(O_ASYNC)
+#if defined(O_ASYNC)
   if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) & ~O_ASYNC) == -1) perror("fcntl_F_SETFL off error");
 #elif defined(FASYNC) && defined(FNDELAY)
   if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) & ~(FNDELAY | FASYNC)) == -1) perror("fcntl F_SETFL off error");
@@ -576,19 +482,16 @@ static void int_io_service(int sig)
 /************************************************************************/
 
 static void int_io_init(void) {
-#if !defined(DOS) || !defined(MAIKO_OS_HAIKU)
   struct sigaction io_action;
   io_action.sa_handler = int_io_service;
   sigemptyset(&io_action.sa_mask);
   io_action.sa_flags = 0;
 
-#ifndef MAIKO_OS_HAIKU
   if (sigaction(SIGIO, &io_action, NULL) == -1) {
     perror("sigaction: SIGIO");
   } else {
     DBPRINT(("I/O interrupts enabled\n"));
   }
-#endif
 
 #if defined(USE_DLPI)
   DBPRINT(("INIT ETHER:  Doing I_SETSIG.\n"));
@@ -600,7 +503,6 @@ static void int_io_init(void) {
       return;
     }
 #endif /* USE_DLPI */
-#endif /* DOS MAIKO_OS_HAIKU */
 }
 
 /************************************************************************/
@@ -616,22 +518,15 @@ static void int_io_init(void) {
 
 void int_block(void) {
 /* temporarily turn off interrupts */
-#ifdef DOS
-  _dos_setvect(0x1c, prev_int_1c);
-#else /* DOS */
   sigset_t signals;
   sigemptyset(&signals);
   sigaddset(&signals, SIGVTALRM);
-#ifndef MAIKO_OS_HAIKU
-  sigaddset(&signals, SIGIO);
-#endif
   sigaddset(&signals, SIGALRM);
   sigaddset(&signals, SIGXFSZ);
 #ifdef FLTINT
   sigaddset(&signals, SIGFPE);
 #endif
   sigprocmask(SIG_BLOCK, &signals, NULL);
-#endif /* DOS */
 }
 
 /************************************************************************/
@@ -646,22 +541,16 @@ void int_block(void) {
 /************************************************************************/
 
 void int_unblock(void) {
-#ifdef DOS
-  _dos_setvect(0x1c, DOStimer);
-#else /* DOS */
   sigset_t signals;
   sigemptyset(&signals);
   sigaddset(&signals, SIGVTALRM);
-#ifndef MAIKO_OS_HAIKU
   sigaddset(&signals, SIGIO);
-#endif
   sigaddset(&signals, SIGALRM);
   sigaddset(&signals, SIGXFSZ);
 #ifdef FLTINT
   sigaddset(&signals, SIGFPE);
 #endif
   sigprocmask(SIG_UNBLOCK, &signals, NULL);
-#endif /* DOS */
 }
 
 #ifdef FLTINT
@@ -820,7 +709,6 @@ and do a 'v' before trying anything else.";
 /*                                                                      */
 /************************************************************************/
 static void int_panic_init(void) {
-#ifndef DOS
   struct sigaction panic_action, ignore_action;
 
   panic_action.sa_sigaction = panicuraid;
@@ -844,7 +732,6 @@ static void int_panic_init(void) {
 
   /* Ignore SIGPIPE */
   sigaction(SIGPIPE, &ignore_action, NULL);
-#endif
 
   DBPRINT(("Panic interrupts enabled\n"));
 }
@@ -870,41 +757,3 @@ void int_init(void) {
   int_unblock(); /* Turn on interrupts */
 }
 
-#ifdef DOS
-/******************************************************************************
-*  DOStimer()
-*
-*  The interrupt 0x1c handler.  This routine must be declared using the
-*  '#pragma interrupt()' statement to ensure that all registers are preserved.
-*  It is also needed to ensure the proper functioning of '_chain_intr()'.
-*
-*  The timer interrupt (normally) occurs 18.2 times per second.  This routine
-*  waits one extra tick every 91 ticks (18.2*5).
-*
-*  Before this interrupt was installed, 'prev_int_1c' was set to the current
-*  0x1c interrupt. 'DOStimer()' chains to this interrupt using '_chain_intr()',
-*  rather than returning back to the caller.
-*
-*  Note that as little as possible should be done within a timer interrupt,
-*  since further clock ticks are disabled until the interrupt returns.
-******************************************************************************/
-void DOStimer(void) {
-  /* if (--tick_count == 0) { */
-  Irq_Stk_Check = 0;
-  Irq_Stk_End = 0;
-  /*   _dos_setvect(0x1c, prev_int_1c);
-   } else if (tick_count <= 0) { */
-  /* I'm dead, uninstall me */
-  /*   _dos_setvect(0x1c, prev_int_1c);
-     tick_count = 0;
-   } */
-  _chain_intr(prev_int_1c); /* call previous int 1c handlr, if any*/
-  /* (pts to 'ret' if no prev installed)*/
-}
-
-void alarm(unsigned long sec)
-{
-  /* tick_count = sec * 18;
-  _dos_setvect(0x1c, DOStimer); */
-}
-#endif /* DOS */
