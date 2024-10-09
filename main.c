@@ -300,7 +300,7 @@ int main(int argc, char *argv[])
   long tmpint;
   int width = 1024, height = 768;
   int pixelscale = 1;
-  char *windowtitle = "Medley";
+  const char *windowtitle = "Medley";
 
 #ifdef MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE
   if (dld_find_executable(argv[0]) == 0) {
@@ -574,9 +574,14 @@ int main(int argc, char *argv[])
   //    5. Value as determined by X resource manager, if any
   //    6. Value of $HOME/lisp.virtualmem (or lisp.vm for DOS)
   //
-  if (sysout_name_cl[0] != '\0') { strncpy(sysout_name, sysout_name_cl, MAXPATHLEN); }
-  else if (sysout_name_first_arg[0] != '\0') { strncpy(sysout_name, sysout_name_first_arg, MAXPATHLEN); }
-  else if ((envname = getenv("LDESRCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
+  int derive_medley_path = 0;
+  if (sysout_name_cl[0] != '\0') {
+      strncpy(sysout_name, sysout_name_cl, MAXPATHLEN);
+      derive_medley_path = 1;
+  } else if (sysout_name_first_arg[0] != '\0') {
+      strncpy(sysout_name, sysout_name_first_arg, MAXPATHLEN);
+      derive_medley_path = 1;
+  } else if ((envname = getenv("LDESRCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
   else if ((envname = getenv("LDESOURCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
   else if (sysout_name_xrm[0] != '\0') { strncpy(sysout_name, sysout_name_xrm, MAXPATHLEN); }
   else {
@@ -592,6 +597,24 @@ int main(int argc, char *argv[])
     exit(1);
   }
   /* OK, sysout name is now in sysout_name */
+
+  if( derive_medley_path )
+  {
+       char* found = strstr(sysout_name,"/loadups/");
+       if( found )
+       {
+           *found = 0;
+           setenv("MEDLEYDIR", sysout_name, 1);
+           *found = '/';
+           setenv("LDESOURCESYSOUT", sysout_name, 1);
+           setenv("LDEDESTSYSOUT", "${HOME}/lisp.virtualmem", 1);
+           setenv("INMEDLEY", "1", 1);
+           strcpy(sysout_name_cl,found);
+           strcpy(found,"/greetfiles/MEDLEYDIR-INIT");
+           setenv("LDEINIT", sysout_name, 1);
+           strcpy(found, sysout_name_cl);
+       }
+  }
 
 
   //

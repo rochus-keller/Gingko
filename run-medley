@@ -166,9 +166,6 @@ if [ -z "$geometry" ] ; then
     screensize="-sc 1200x768"
 fi
 
-if [ -z "${LDEKBDTYPE}" ]; then
-    export LDEKBDTYPE="X"
-fi
 
 echo "running: $prog $display $noscroll $geometry $screensize -title \"$title\" $mem $pass $LDESRCESYSOUT"
 echo "greet: $LDEINIT"
