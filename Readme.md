@@ -21,6 +21,11 @@ To avoid confusions with the original project, this version of the VM is called 
 - Removed a lot of unused code and defines (DOS, Haiku, Sun OS4/5 and X no longer supported)
 - The VM can now be simply built using the cc *.c command (see below)
 
+#### Status on 2024-10-09
+
+- Refactored SDL keyboard handling so that the VM properly works with any keyboard present on the host machine (subject to further testing)
+- Adapted the run-medley shell script so that it directly works with the gingko executable; just put both in the same directory, set the MEDLEYDIR environment variable to the path where the medley directory is located (`export MEDLEYDIR=<path-to>medley`), and then run `./run-medley`. When run with this method, also the Dinfo command works (if directly run with `./gingko ...` as described above, not everything is found, but still enough to directly run gingko with GDB to debug the VM).
+
 #### Precompiled versions
 
 Not available at this time.
