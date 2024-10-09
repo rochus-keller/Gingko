@@ -877,7 +877,7 @@ char *alloc_hideDISP(int size)
 static int re_init_display(int, int);
 
 int device_after_raid(void) {
-  extern DLword *EmMouseX68K, *EmMouseY68K, *EmKbdAd068K, *EmRealUtilin68K;
+  extern DLword *EmKbdAd068K, *EmRealUtilin68K;
   extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K;
   FD_ZERO(&LispReadFds);
   if (re_init_display(DISPLAY_OFFSET, 65536 * 16 * 2) == -1) return (-1);

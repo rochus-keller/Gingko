@@ -92,7 +92,6 @@
 
 extern DLword *EmMouseX68K, *EmMouseY68K, *EmKbdAd068K, *EmRealUtilin68K, *EmUtilin68K;
 extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K;
-extern uint8_t *SUNLispKeyMap;
 extern int RS232C_Fd, RS232C_remain_data;
 extern fd_set LispIOFds;
 fd_set LispReadFds;

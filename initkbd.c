@@ -208,126 +208,15 @@ void set_kbd_iopointers(void) {
 /*  ----------------------------------------------------------------*/
 
 
-#define MIN_KEYTYPE 3
-#define KB_AS3000J (7 + MIN_KEYTYPE)
-#define KB_RS6000 (8 + MIN_KEYTYPE) /* TODO: Can we remove this? */
-#define KB_DEC3100 (9 + MIN_KEYTYPE) /* TODO: Can we remove this? */
-#define KB_HP9000 (10 + MIN_KEYTYPE)  /* TODO: Can we remove this? */
-#define KB_X (11 + MIN_KEYTYPE)
-#define KB_DOS (12 + MIN_KEYTYPE)
-#define KB_SDL (13 + MIN_KEYTYPE)
-
-/* KB_SUN4 not defined in older OS versions */
-#ifndef KB_SUN4
-#define KB_SUN4 4
-#endif
-
-#ifndef KB_SUN2
-/* These KB types nog defined outside Sun world,so define them here */
-#define KB_SUN2 2
-#define KB_SUN3 3
-#endif /* KB_SUN2 */
-
-/* For the JLE keyboard */
-#define KB_JLE 5
-
-/************************************************************************/
-/*									*/
-/*			  k e y b o a r d t y p e			*/
-/*									*/
-/*	Determine what kind of keyboard we're dealing with, by		*/
-/*	checking the LDEKBDTYPE shell variable.  It it's not set,	*/
-/*	either default it (for Sun, IBM), or complain and exit.		*/
-/*	Valid LDEKBDTYPE values:					*/
-/*		type3	Sun type-3 keyboard				*/
-/*		type4	Sun type-4 keyboard				*/
-/*		rs6000	IBM RS/6000					*/
-/*		x	generic X keyboard map				*/
-/*									*/
-/*									*/
-/*									*/
-/*									*/
-/*									*/
-/*									*/
-/************************************************************************/
-
 void keyboardtype(int fd)
 {
-  int type;
-  int i;
-  char *key;
 
   /* clear the keyboard field in devconfig */
   InterfacePage->devconfig &= 0xfff8;
 
-  /************************************************************
-   Due to the problems of SunOS 4.0 & 4.0.1
-   calling ioctl never return the correct keyboard type.
-   So,these 2 lines are commented out ...(Take)->AR11100
-  *************************************************************/
+  // KB_SDL
+  // NOP
+  // InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
 
-  /* Get keytype from LDEKBDTYPE  */
-  if ((key = getenv("LDEKBDTYPE")) == 0) {
-#ifdef SDL
-    type = KB_SDL;
-#endif /* SDL */
-  } /* if end */
-  else {
-    if (strcmp("as3000j", key) == 0)
-      type = KB_AS3000J;
-    else if (strcmp("type4", key) == 0)
-      type = KB_SUN4;
-    else if (strcmp("type2", key) == 0)
-      type = KB_SUN2;
-    else if (strcmp("jle", key) == 0)
-      type = KB_JLE;
-    else if (strcmp("X", key) == 0 || strcmp("x", key) == 0)
-      type = KB_X;
-    else if (strcmp("sdl", key) == 0)
-      type = KB_SDL;
-    else
-      type = KB_SUN3; /* default */
-  }
-
-  switch (type) {
-    case KB_SUN2: /* type2, we still use keymap for type3 */
-      SUNLispKeyMap = SUNLispKeyMap_for3;
-      /* MIN_KEYTYPE is 3,so we can't set devconfig correctly */
-      /* Therefore type2 may treat as type3 */
-      InterfacePage->devconfig |= 0;
-      break;
-    case KB_SUN3: /* type3 */
-      SUNLispKeyMap = SUNLispKeyMap_for3;
-      InterfacePage->devconfig |= type - MIN_KEYTYPE;
-      break;
-    case KB_SUN4: /* type4 */
-      SUNLispKeyMap = SUNLispKeyMap_for4;
-      InterfacePage->devconfig |= type - MIN_KEYTYPE;
-      break;
-    case KB_JLE: /* JLE */
-      /*printf("jle\n"); */
-      SUNLispKeyMap = SUNLispKeyMap_jle;
-      InterfacePage->devconfig |= type - MIN_KEYTYPE;
-      /* InterfacePage->devconfig |= 4-MIN_KEYTYPE; */
-      break;
-    case KB_AS3000J: /* for AS, use type4 map */
-      SUNLispKeyMap = SUNLispKeyMap_for4;
-      InterfacePage->devconfig |= type - MIN_KEYTYPE; /* 7 */
-      break;
-#ifdef SDL
-  case KB_SDL:
-    InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
-    break;
-#endif /* SDL */
-    default: {
-      char errmsg[200];
-      sprintf(errmsg, "Unsupported keyboard type: %d", type);
-      printf("%s\n", errmsg);
-      printf("Configuring keyboard for type-3\n");
-      SUNLispKeyMap = SUNLispKeyMap_for3;
-      InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE;
-      break;
-    }
-  }
 
 } /* end keyboardtype*/

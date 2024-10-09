@@ -1,3 +1,7 @@
+/*
+ * 2024 modified by me@rochus-keller.ch for keyboard layout independence
+ * */
+
 #include "version.h"
 #include <assert.h>
 #include <limits.h>
@@ -52,120 +56,157 @@ extern int error(const char *s);
 
 extern int KBDEventFlg;
 /* clang-format off */
-int keymap[] = {
-  0, SDLK_5,                                     /* (5 %% FIVE) */
-  1, SDLK_4,                                     /* (4 $ FOUR) */
-  2, SDLK_6,                                     /* (6 ~ SIX) */
-  3, SDLK_e,                                     /* (e E) */
-  4, SDLK_7,                                     /* (7 & SEVEN) */
-  5, SDLK_d,                                     /* (d D) */
-  6, SDLK_u,                                     /* (u U) */
-  7, SDLK_v,                                     /* (v V) */
-  8, SDLK_RIGHTPAREN, 8, SDLK_0,                 /* (0 %) ZERO) */
-  9, SDLK_k,                                     /* (k K) */
-  10, SDLK_MINUS,                                /* (- %^X) */
-  11, SDLK_p,                                    /* (p P) */
-  12, SDLK_SLASH,                                /* (/ ?) */
-  13, SDLK_KP_PERIOD,                            /* (\ %| FONT LOOKS) */
-  14, SDLK_SCROLLLOCK,                           /* (LF SAME) */
-  15, SDLK_BACKSPACE,                            /* (BS <-) */
-  16, SDLK_3,                                    /* (3 %# THREE) */
-  17, SDLK_2,                                    /* (2 @ TWO) */
-  18, SDLK_w,                                    /* (w W) */
-  19, SDLK_q,                                    /* (q Q) */
-  20, SDLK_s,                                    /* (s S) */
-  21, SDLK_a,                                    /* (a A) */
-  22, SDLK_LEFTPAREN,  22, SDLK_9,               /* (9 %( NINE) */
-  23, SDLK_i,                                    /* (i I) */
-  24, SDLK_x,                                    /* (x X) */
-  25, SDLK_o,                                    /* (o O) */
-  26, SDLK_l,                                    /* (l L) */
-  27, SDLK_COMMA,                                /* (%, <) */
-  28, SDLK_QUOTE,                                /* (%' %") */
-  29, SDLK_RIGHTBRACKET,                         /* (%] }) */
-  // 30,                                         /* (BLANK-MIDDLE OPEN DBK-HELP) */
-  31, SDLK_LALT, /* Meta, Sun-4 usual key */     /* (BLANK-TOP KEYBOARD DBK-META) */
-  32, SDLK_1,                                    /* (1 ! ONE) */
-  33, SDLK_ESCAPE,                               /* (ESC ESCAPE ->) */
-  34, SDLK_TAB,                                  /* (TAB =>) */
-  35, SDLK_f,                                    /* (f F) */
-  36, SDLK_LCTRL,                                /* (CTRL PROP'S EDIT) */
-  37, SDLK_c,                                    /* (c C) */
-  38, SDLK_j,                                    /* (j J) */
-  39, SDLK_b,                                    /* (b B) */
-  40, SDLK_z,                                    /* (z Z) */
-  41, SDLK_LSHIFT,                               /* (LSHIFT) */
-  42, SDLK_PERIOD,                               /* (%. >) */
-  43, SDLK_SEMICOLON,  43, SDLK_COLON,           /* (; %:) */
-  44, SDLK_RETURN,                               /* (CR <-%|) */
-  45, SDLK_BACKQUOTE,                            /* (_ ^) */
-  // 46,                                         /* (DEL DELETE) */
-  47, SDLK_RCTRL,                                /* (SKIP NEXT) */
-  48, SDLK_r,                                    /* (r R) */
-  49, SDLK_t,                                    /* (t T) */
-  50, SDLK_g,                                    /* (g G) */
-  51, SDLK_y,                                    /* (y Y) */
-  52, SDLK_h,                                    /* (h H) */
-  53, SDLK_8,                                    /* (8 * EIGHT) */
-  54, SDLK_n,                                    /* (n N) */
-  55, SDLK_m,                                    /* (m M) */
-  56, SDLK_CAPSLOCK,                             /* (LOCK) */
-  57, SDLK_SPACE,                                /* (SPACE) */
-  58, SDLK_LEFTBRACKET,                          /* (%[ {) */
-  59, SDLK_EQUALS,                               /* (= +) */
-  60, SDLK_RSHIFT,                               /* (RSHIFT) */
-  61, SDLK_F11,  61, SDLK_PAUSE,                 /* (BLANK-BOTTOM STOP) */
-  62, SDLK_HOME,                                 /* (MOVE) */
-  63, SDLK_PAGEUP,                               /* (UNDO) */
-  64, SDLK_KP_EQUALS,                            /* (UTIL0 SUN-KEYPAD=) */
-  65, SDLK_KP_DIVIDE,                            /* (UTIL1 SUN-KEYPAD/) */
-  66, SDLK_F7,                                   /* (UTIL2 SUPER/SUB) */
-  67, SDLK_F4,                                   /* (UTIL3 CASE) */
-  68, SDLK_F5,                                   /* (UTIL4 STRIKEOUT) */
-  69, SDLK_KP_2,                                 /* (UTIL5 KEYPAD2) */
-  70, SDLK_KP_3,                                 /* (UTIL6 KEYPAD3 PGDN) */
-  // 71, XK_Linefeed,                            /* (UTIL7 SUN-LF) */
-  // 72,                                         /* (PAD1 LEFTKEY CAPSLOCK KEYPAD+) */
-  // 73, XK_Numlock,                             /* (PAD2 LEFTMIDDLEKEY NUMLOCK KEYPAD-) */
-  // 74,                                         /* (PAD3 MIDDLEKEY SCROLLLOCK KEYPAD*) */
-  // 75,                                         /* (PAD4 RIGHTMIDDLEKEY BREAK KEYPAD/ SUN-PAUSE) */
-  76, SDLK_KP_ENTER,                             /* (PAD5 RIGHTKEY DOIT PRTSC) */
-  // 77,                                         /* (LEFT RED MOUSERED) */
-  // 78,                                         /* (RIGHT BLUE MOUSEBLUE) */
-  // 79,                                         /* (MIDDLE YELLOW MOUSEYELLOW) */
-  80, SDLK_F9,                                   /* (MARGINS) */
-  81, SDLK_KP_7,                                 /* (K41 KEYPAD7 HOME) */
-  82, SDLK_KP_8,                                 /* (K42 KEYPAD8) */
-  83, SDLK_KP_9,                                 /* (K43 KEYPAD9 PGUP) */
-  84, SDLK_KP_4,                                 /* (K44 KEYPAD4) */
-  85, SDLK_KP_5,                                 /* (K45 KEYPAD5) */
-  86, SDLK_LALT, /* (sun left-diamond key) */    /* (K46 SUN-LEFT-SPACE) */
-  87, SDLK_KP_6,                                 /* (K47 KEYPAD6) */
-  // 88,                                         /* (K48 RIGHT-COMMAND SUN-RIGHT-SPACE) */
-  89, SDLK_INSERT,                               /* (COPY) */
-  90, SDLK_END,                                  /* (FIND) */
-  91, SDLK_F12,                                  /* (AGAIN) */
-  92, SDLK_PRINTSCREEN, // is this XK_Print??    /* (HELP) */
-  93, SDLK_MODE, // is this XK_Mode_switch       /* (DEF'N EXPAND) */
-  94, SDLK_KP_1,                                 /* (K4E KEYPAD1 END) */
-  95, SDLK_KP_MULTIPLY,                          /* (ALWAYS-ON-1) */
-  96, SDLK_KP_MINUS,                             /* (ALWAYS-ON-2) */
-  97, SDLK_HELP,                                 /* (CENTER) */
-  98, SDLK_KP_0,                                 /* (K52 KEYPAD0 INS) */
-  99, SDLK_F2,                                   /* (BOLD) */
-  100, SDLK_F3,                                  /* (ITALICS) */
-  101, SDLK_F6,                                  /* (UNDERLINE) */
-  102, SDLK_KP_PLUS,                             /* (SUPERSCRIPT) */
-  //  103,                                       /* (SUBSCRIPT) */
-  104, SDLK_F8,                                  /* (LARGER SMALLER) */
-  105, SDLK_BACKSLASH,                           /* (K59 KEYPAD%| KEYPAD.) */
-  106, SDLK_F10,                                 /* (K5A KEYPAD\ KEYPAD, SUN-F10) */
-  107, SDLK_F11,                                 /* (K5B SUN-F11) */
-  108, SDLK_F12,                                 /* (K5C SUN-F12) */
-  // 109,                                        /* (DEFAULTS SUN-PROP) */
-  // 110,                                        /* (K5E SUN-PRTSC) */
-  // 111,                                        /* (K5F SUN-OPEN) */
-  -1, -1
+
+static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
+{
+    {13, SDL_SCANCODE_DELETE},
+    {14, SDL_SCANCODE_SCROLLLOCK},
+    {15, SDL_SCANCODE_BACKSPACE},
+    {31, SDL_SCANCODE_LALT},
+    {33, SDL_SCANCODE_ESCAPE},
+    {34, SDL_SCANCODE_TAB},
+    {36, SDL_SCANCODE_LCTRL},
+    {41, SDL_SCANCODE_LSHIFT},
+    {44, SDL_SCANCODE_RETURN},
+    {46, SDL_SCANCODE_F20},
+    {47, SDL_SCANCODE_RCTRL},
+    {56, SDL_SCANCODE_CAPSLOCK},
+    {57, SDL_SCANCODE_SPACE},
+    {60, SDL_SCANCODE_RSHIFT},
+    {61, SDL_SCANCODE_PAUSE},
+    {62, SDL_SCANCODE_F18},
+    {62, SDL_SCANCODE_HOME},
+    {63, SDL_SCANCODE_PAGEUP},
+    {66, SDL_SCANCODE_F7},
+    {67, SDL_SCANCODE_F4},
+    {68, SDL_SCANCODE_F5},
+    {69, SDL_SCANCODE_DOWN},
+    {73, SDL_SCANCODE_NUMLOCKCLEAR},
+    {80, SDL_SCANCODE_F9},
+    {82, SDL_SCANCODE_UP},
+    {84, SDL_SCANCODE_LEFT},
+    {86, SDL_SCANCODE_LGUI},
+    {87, SDL_SCANCODE_RIGHT},
+    {88, SDL_SCANCODE_RGUI},
+    {89, SDL_SCANCODE_INSERT},
+    {90, SDL_SCANCODE_END},
+    {92, SDL_SCANCODE_PRINTSCREEN},
+    // {93, SDL_SCANCODE_RALT},
+    {99, SDL_SCANCODE_F2},
+    {100, SDL_SCANCODE_F3},
+    {101, SDL_SCANCODE_F6},
+    {104, SDL_SCANCODE_F8},
+    {106, SDL_SCANCODE_F10},
+    {107, SDL_SCANCODE_F11},
+    {108, SDL_SCANCODE_F12},
+    {109, SDL_SCANCODE_F13},
+    {110, SDL_SCANCODE_F22},
+    {111, SDL_SCANCODE_F17},
+    {0,0}
+};
+
+static uint8_t lshift = 0;
+static uint8_t rshift = 0;
+static SDL_Keycode lastKey = SDLK_UNKNOWN;
+
+static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
+{
+    {'5', 0, 0},
+    {'%', 0, 1},
+    {'4', 1, 0},
+    {'$', 1, 1},
+    {'6', 2, 0},
+    {'~', 2, 1},
+    {'e', 3, 0},
+    {'E', 3, 1},
+    {'7', 4, 0},
+    {'&', 4, 1},
+    {'d', 5, 0},
+    {'D', 5, 1},
+    {'u', 6, 0},
+    {'U', 6, 1},
+    {'v', 7, 0},
+    {'V', 7, 1},
+    {'0', 8, 0},
+    {')', 8, 1},
+    {'k', 9, 0},
+    {'K', 9, 1},
+    {'-', 10, 0},
+    {'_', 10, 1},
+    {'p', 11, 0},
+    {'P', 11, 1},
+    {'/', 12, 0},
+    {'?', 12, 1},
+    {'\\', 13, 0},
+    {'|', 13, 1},
+    {'3', 16, 0},
+    {'#', 16, 1},
+    {'2', 17, 0},
+    {'@', 17, 1},
+    {'w', 18, 0},
+    {'W', 18, 1},
+    {'q', 19, 0},
+    {'Q', 19, 1},
+    {'s', 20, 0},
+    {'S', 20, 1},
+    {'a', 21, 0},
+    {'A', 21, 1},
+    {'9', 22, 0},
+    {'(', 22, 1},
+    {'i', 23, 0},
+    {'I', 23, 1},
+    {'x', 24, 0},
+    {'X', 24, 1},
+    {'o', 25, 0},
+    {'O', 25, 1},
+    {'l', 26, 0},
+    {'L', 26, 1},
+    {',', 27, 0},
+    {'<', 27, 1},
+    {'\'', 28, 0},
+    {'"', 28, 1},
+    {']', 29, 0},
+    {'}', 29, 1},
+    {'1', 32, 0},
+    {'!', 32, 1},
+    {'f', 35, 0},
+    {'F', 35, 1},
+    {'c', 37, 0},
+    {'C', 37, 1},
+    {'j', 38, 0},
+    {'J', 38, 1},
+    {'b', 39, 0},
+    {'B', 39, 1},
+    {'z', 40, 0},
+    {'Z', 40, 1},
+    {'.', 42, 0},
+    {'>', 42, 1},
+    {';', 43, 0},
+    {':', 43, 1},
+    {'`', 45, 0},
+    {'^', 45, 1},
+    {'r', 48, 0},
+    {'R', 48, 1},
+    {'t', 49, 0},
+    {'T', 49, 1},
+    {'g', 50, 0},
+    {'G', 50, 1},
+    {'y', 51, 0},
+    {'Y', 51, 1},
+    {'h', 52, 0},
+    {'H', 52, 1},
+    {'8', 53, 0},
+    {'*', 53, 1},
+    {'n', 54, 0},
+    {'N', 54, 1},
+    {'m', 55, 0},
+    {'M', 55, 1},
+    {'[', 58, 0},
+    {'{', 58, 1},
+    {'=', 59, 0},
+    {'+', 59, 1},
+    // space scancode
+    {0,0,0}
 };
 
 const struct ColorNameToRGB {
@@ -1279,33 +1320,51 @@ void sdl_bitblt_to_window_surface(int _x, int _y, int _w, int _h) {
   }
 }
 #endif
-static int map_key(SDL_Keycode k) {
-  for (int i = 0; keymap[i] != -1; i += 2) {
-    if (keymap[i + 1] == k) return keymap[i];
+static int map_key(SDL_Scancode k) {
+  for (int i = 0; sdlScanCodeToLisp[i].scancode != 0; i++ ) {
+    if (sdlScanCodeToLisp[i].scancode == k)
+        return sdlScanCodeToLisp[i].lispcode;
   }
   return -1;
 }
-#define KEYCODE_OFFSET 0
-static void handle_keydown(SDL_Keycode k, unsigned short mod) {
+
+static void sendLispCode(int code, int up)
+{
+    kb_trans(code, up);
+    DoRing();
+    if ((KBDEventFlg += 1) > 0) Irq_Stk_End = Irq_Stk_Check = 0;
+}
+
+static void handle_keydown(SDL_Scancode k) {
   int lk = map_key(k);
   if (lk == -1) {
-    printf("No mapping for key %s\n", SDL_GetKeyName(k));
+#if 0
+    printf("No mapping for key %s\n", SDL_GetScancodeName(k));
+    fflush(stdout);
+#endif
   } else {
     // printf("dn %s -> lisp keycode %d (0x%x)\n", SDL_GetKeyName(k), lk, mod);
-    kb_trans(lk - KEYCODE_OFFSET, FALSE);
-    DoRing();
-    if ((KBDEventFlg += 1) > 0) Irq_Stk_End = Irq_Stk_Check = 0;
+    if( k == SDL_SCANCODE_LSHIFT )
+        lshift = 1;
+    else if( k == SDL_SCANCODE_RSHIFT )
+        rshift = 1;
+    sendLispCode(lk, FALSE);
   }
 }
-static void handle_keyup(SDL_Keycode k, unsigned short mod) {
+static void handle_keyup(SDL_Scancode k) {
   int lk = map_key(k);
   if (lk == -1) {
-    printf("No mapping for key %s\n", SDL_GetKeyName(k));
+#if 0
+      printf("No mapping for key %s\n", SDL_GetScancodeName(k));
+      fflush(stdout);
+#endif
   } else {
     // printf("up %s -> lisp keycode %d (0x%x)\n", SDL_GetKeyName(k), lk, mod);
-    kb_trans(lk - KEYCODE_OFFSET, TRUE);
-    DoRing();
-    if ((KBDEventFlg += 1) > 0) Irq_Stk_End = Irq_Stk_Check = 0;
+      if( k == SDL_SCANCODE_LSHIFT )
+          lshift = 0;
+      else if( k == SDL_SCANCODE_RSHIFT )
+          rshift = 0;
+      sendLispCode(lk, TRUE);
   }
 }
 extern DLword *EmCursorX68K, *EmCursorY68K;
@@ -1438,6 +1497,37 @@ void process_SDLevents() {
         sdl_window_focusp = 0;
         break;
 #endif
+      case SDL_TEXTINPUT: {
+        const char ch = (uint8_t)event.text.text[0];
+        if( ch == ' ' )
+            break; // handled by scan code
+        uint8_t code = 0;
+        uint8_t shift = 0;
+        for(int i = 0; charToLisp[i].ch; i++ )
+        {
+            if( charToLisp[i].ch == ch )
+            {
+                code = charToLisp[i].code;
+                shift = charToLisp[i].shift && lshift == 0 && rshift == 0;
+                break;
+            }
+        }
+        if( code )
+        {
+            if( shift )
+                handle_keydown(SDL_SCANCODE_LSHIFT);
+            sendLispCode(code,FALSE);
+            sendLispCode(code,TRUE);
+            if( shift )
+                handle_keyup(SDL_SCANCODE_LSHIFT);
+        }else
+        {
+            printf("No mapping for key '%s'\n", SDL_GetKeyName(lastKey));
+            fflush(stdout);
+        }
+        break;
+        }
+
 #if SDL_MAJOR_VERSION == 2
       case SDL_KEYDOWN:
 #else
@@ -1448,12 +1538,14 @@ void process_SDLevents() {
                event.key.timestamp, event.key.type, event.key.state, event.key.repeat,
                event.key.keysym.scancode, event.key.keysym.sym,
                SDL_GetKeyName(event.key.keysym.sym), event.key.keysym.mod);
+        fflush(stdout);
 #endif
         if (event.key.repeat) {
           /* Lisp needs to see the UP transition before the DOWN transition */
-          handle_keyup(event.key.keysym.sym, event.key.keysym.mod);
+          handle_keyup(event.key.keysym.scancode);
         }
-        handle_keydown(event.key.keysym.sym, event.key.keysym.mod);
+        lastKey = event.key.keysym.sym;
+        handle_keydown(event.key.keysym.scancode);
         break;
 #if SDL_MAJOR_VERSION == 2
       case SDL_KEYUP:
@@ -1465,8 +1557,9 @@ void process_SDLevents() {
                event.key.timestamp, event.key.type, event.key.state, event.key.repeat,
                event.key.keysym.scancode, event.key.keysym.sym,
                SDL_GetKeyName(event.key.keysym.sym), event.key.keysym.mod);
+        fflush(stdout);
 #endif
-        handle_keyup(event.key.keysym.sym, event.key.keysym.mod);
+        handle_keyup(event.key.keysym.scancode);
         break;
 #if SDL_MAJOR_VERSION == 2
       case SDL_MOUSEMOTION: {
