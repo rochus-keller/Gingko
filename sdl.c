@@ -1501,8 +1501,8 @@ void process_SDLevents() {
         const char ch = (uint8_t)event.text.text[0];
         if( ch == ' ' )
             break; // handled by scan code
-        uint8_t code = 0;
-        uint8_t shift = 0;
+        int code = -1;
+        int shift = 0;
         for(int i = 0; charToLisp[i].ch; i++ )
         {
             if( charToLisp[i].ch == ch )
@@ -1512,7 +1512,7 @@ void process_SDLevents() {
                 break;
             }
         }
-        if( code )
+        if( code != -1 )
         {
             if( shift )
                 handle_keydown(SDL_SCANCODE_LSHIFT);
