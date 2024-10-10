@@ -91,7 +91,7 @@ static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
     {89, SDL_SCANCODE_INSERT},
     {90, SDL_SCANCODE_END},
     {92, SDL_SCANCODE_PRINTSCREEN},
-    // {93, SDL_SCANCODE_RALT},
+    // {93, SDL_SCANCODE_RALT}, // this interferes with some Medley feature, so we don't send it
     {99, SDL_SCANCODE_F2},
     {100, SDL_SCANCODE_F3},
     {101, SDL_SCANCODE_F6},
@@ -116,7 +116,7 @@ static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
     {'4', 1, 0},
     {'$', 1, 1},
     {'6', 2, 0},
-    {'~', 2, 1},
+    {'^', 2, 1}, // orig {'~', 2, 1},
     {'e', 3, 0},
     {'E', 3, 1},
     {'7', 4, 0},
@@ -132,13 +132,13 @@ static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
     {'k', 9, 0},
     {'K', 9, 1},
     {'-', 10, 0},
-    {'_', 10, 1},
+    {'_', 10, 1}, // TODO: prints left arrow instead of underscore
     {'p', 11, 0},
     {'P', 11, 1},
     {'/', 12, 0},
     {'?', 12, 1},
-    {'\\', 13, 0},
-    {'|', 13, 1},
+    {'\\', 105, 0}, // orig {'\\', 13, 0},
+    {'|', 105, 1},   // orig {'|', 13, 1},
     {'3', 16, 0},
     {'#', 16, 1},
     {'2', 17, 0},
@@ -184,7 +184,7 @@ static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
     {';', 43, 0},
     {':', 43, 1},
     {'`', 45, 0},
-    {'^', 45, 1},
+    {'~', 45, 1}, // orig {'^', 45, 1},
     {'r', 48, 0},
     {'R', 48, 1},
     {'t', 49, 0},
@@ -205,12 +205,12 @@ static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
     {'{', 58, 1},
     {'=', 59, 0},
     {'+', 59, 1},
-    // space scancode
+    // space: scancode
     {0,0,0}
 };
 
 const struct ColorNameToRGB {
-  char * name; uint8_t red; uint8_t green; uint8_t blue;
+  const char * name; uint8_t red; uint8_t green; uint8_t blue;
 } colornames[] = {
 {"alice blue",  240, 248, 255},
 {"AliceBlue",  240, 248, 255},
@@ -1508,18 +1508,38 @@ void process_SDLevents() {
             if( charToLisp[i].ch == ch )
             {
                 code = charToLisp[i].code;
-                shift = charToLisp[i].shift && lshift == 0 && rshift == 0;
+                shift = charToLisp[i].shift;
                 break;
             }
         }
         if( code != -1 )
         {
+            const uint8_t old_lshift = lshift;
+            const uint8_t old_rshift = rshift;
             if( shift )
-                handle_keydown(SDL_SCANCODE_LSHIFT);
+            {
+                if( !old_lshift && !old_rshift )
+                    handle_keydown(SDL_SCANCODE_LSHIFT);
+            }else
+            {
+                if( old_lshift )
+                    handle_keyup(SDL_SCANCODE_LSHIFT);
+                if( old_rshift )
+                    handle_keyup(SDL_SCANCODE_RSHIFT);
+            }
             sendLispCode(code,FALSE);
             sendLispCode(code,TRUE);
             if( shift )
-                handle_keyup(SDL_SCANCODE_LSHIFT);
+            {
+                if( !old_lshift && !old_rshift )
+                    handle_keyup(SDL_SCANCODE_LSHIFT);
+            }else
+            {
+                if( old_lshift )
+                    handle_keydown(SDL_SCANCODE_LSHIFT);
+                if( old_rshift )
+                    handle_keydown(SDL_SCANCODE_RSHIFT);
+            }
         }else
         {
             printf("No mapping for key '%s'\n", SDL_GetKeyName(lastKey));

@@ -76,6 +76,7 @@ uint8_t *SUNLispKeyMap;
 
 /* keymap for type3 */
 static uint8_t SUNLispKeyMap_for3[128] = {
+    /*        0     1    2    3    4    5    6   7    */
     /*   0 */ 255,  61, 255,  91, 255,  97,  99, 255,
     /*   8 */ 100, 255,  67, 255,  68, 255, 101, 255,
     /*  16 */  66, 104,  80,  47, 255,  73,  74,  75,
@@ -97,6 +98,8 @@ static uint8_t SUNLispKeyMap_for3[128] = {
 /* for type4 */
 
 static uint8_t SUNLispKeyMap_for4[128] = {
+    // NOTE: these are the Make Codes (press) of the Sun keyboard
+    /*        0     1    2    3    4    5    6   7    */
     /*   0 */ 255,  61, 255,  91, 255,  97,  99, 106,
     /*   8 */ 100, 107,  67, 108,  68,  47, 101,  30,
     /*  16 */  66, 104,  80,  31, 255,  75, 110,  74,
@@ -115,42 +118,13 @@ static uint8_t SUNLispKeyMap_for4[128] = {
     /* 120 */  86,  57,  88, 255, 103, 102, 255, 255
 };
 
-/* for jle */
-
-static uint8_t SUNLispKeyMap_jle[128] = {
-    /*   0 */ 255,  61, 255,  91, 255,  97,  99, 106,
-    /*   8 */ 100, 107,  67, 108,  68,  47, 101,  71,
-    /*  16 */  66, 104,  80,  31, 255,  75, 110,  74,
-    /*  24 */ 255, 109,  63, 255, 255,  33,  32,  17,
-    /*  32 */  16,   1,   0,   2,   4,  53,  22,   8,
-    /*  40 */  59,  45,  30,  15, 255,  64,  65,  95,
-    /*  48 */ 255,  14,  13,  89, 255,  34,  19,  18,
-    /*  56 */   3,  48,  49,  51,   6,  23,  25,  11,
-    /*  64 */  58,  29,  13,  93,  81,  82,  83,  96,
-    /*  72 */ 111,  62, 255, 255,  36,  21,  20,   5,
-    /*  80 */  35,  50,  52,  38,   9,  26,  43,  28,
-    /*  88 */ 105,  44,  76,  84,  85,  87,  98,  90,
-    /*  96 */ 255,  46,  73,  41,  40,  24,  37,   7,
-    /* 104 */  39,  54,  55,  27,  42,  12,  60,  10,
-    /* 112 */  94,  69,  70,  72, 103, 109,  92,  56,
-    /* 120 */  86,  57,  88, 255, 255, 102, 255, 255
-};
-/* [40]   10 -> 59  */
-/* [41]   59 -> 45  */
-/* [42]   45 -> 30  */
-/* [111]  71 -> 10  */
-/* [115] 255 -> 72  Kakutei */
-/* [116] 255 -> 103 Henkan */
-/* [117] 255 -> 109 Nihongo On-Off */
-
 static uint8_t *XGenericKeyMap; /* filled in with malloc if needed */
 
 /* For the IBM-101 kbd FF marks exceptions */
 
 #ifdef NEVER
 uint8_t DOSLispKeyMap_101[0x80] = {
-    /*         0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-
+    /*     0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
     /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
     /* 1*/ 19,   18,   3,    48,   49,   51,   6,    23,   25,   11,   58,   29,   44,   36,   21,   20,
     /* 2*/ 5,    35,   50,   52,   38,   9,    26,   43,   28,   45,   41,   105,  40,   24,   37,   7,
@@ -160,6 +134,20 @@ uint8_t DOSLispKeyMap_101[0x80] = {
     /* 6*/ 89,   62,   63,   46,   90,   91,   130,  129,  131,  132,  92,   61,   0xff, 0xff, 0xff, 0xff,
     /* 7*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 #endif /* NEVER */
+
+#ifdef DOS
+/* For the IBM-101 kbd FF marks exceptions */
+static u_char DOSLispKeyMap_101[0x80] = {
+    /*     0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
+    /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
+    /* 1*/ 19,   18,   3,    48,   49,   51,   6,    23,   25,   11,   58,   29,   44,   36,   21,   20,
+    /* 2*/ 5,    35,   50,   52,   38,   9,    26,   43,   28,   45,   41,   105,  40,   24,   37,   7,
+    /* 3*/ 39,   54,   55,   27,   42,   12,   60,   95,   31,   57,   56,   97,   99,   100,  67,   68,
+    /* 4*/ 101,  66,   104,  80,   106,  73,   74,   62,   130,  63,   96,   129,  85,   132,  102,  90,
+    /* 5*/ 131,  91,   89,   46,   0xff, 0xff, 0xff, 107,  108,  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+    /* 6*/ 89,   62,   63,   46,   90,   91,   130,  129,  131,  132,  92,   61,   0xff, 0xff, 0xff, 0xff,
+    /* 7*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+#endif
 
 void init_keyboard(int flg) /* if 0 init else re-init */
 {
@@ -207,6 +195,8 @@ void set_kbd_iopointers(void) {
 
 /*  ----------------------------------------------------------------*/
 
+#define MIN_KEYTYPE 3
+#define KB_SUN3 3
 
 void keyboardtype(int fd)
 {
@@ -216,7 +206,7 @@ void keyboardtype(int fd)
 
   // KB_SDL
   // NOP
-  // InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* 10 */
+  InterfacePage->devconfig |= KB_SUN3 - MIN_KEYTYPE; /* does actually nothing */
 
 
 } /* end keyboardtype*/
