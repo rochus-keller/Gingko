@@ -69,7 +69,8 @@ static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
     {36, SDL_SCANCODE_LCTRL},
     {41, SDL_SCANCODE_LSHIFT},
     {44, SDL_SCANCODE_RETURN},
-    {76, SDL_SCANCODE_KP_ENTER},
+    {44, SDL_SCANCODE_KP_ENTER},
+    // {76, SDL_SCANCODE_KP_ENTER}, // TODO: doesn't seem to work
     {46, SDL_SCANCODE_F20},
     {47, SDL_SCANCODE_RCTRL},
     {56, SDL_SCANCODE_CAPSLOCK},
@@ -1396,7 +1397,7 @@ static void handle_keyup(SDL_Scancode k) {
   int lk = map_key(k);
   if (lk == -1) {
       if( (lctrl || rctrl) && k >= SDL_SCANCODE_A && k <= SDL_SCANCODE_Z )
-          sendLispCode(shortcutScanCodeToLisp[k], FALSE);
+          sendLispCode(shortcutScanCodeToLisp[k], TRUE);
 #if 0
       printf("No mapping for key %s\n", SDL_GetScancodeName(k));
       fflush(stdout);
