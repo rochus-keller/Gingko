@@ -59,6 +59,7 @@ extern int KBDEventFlg;
 
 static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
 {
+    // these are all keys usually not used for a printable character
     {13, SDL_SCANCODE_DELETE},
     {14, SDL_SCANCODE_SCROLLLOCK},
     {15, SDL_SCANCODE_BACKSPACE},
@@ -68,6 +69,7 @@ static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
     {36, SDL_SCANCODE_LCTRL},
     {41, SDL_SCANCODE_LSHIFT},
     {44, SDL_SCANCODE_RETURN},
+    {76, SDL_SCANCODE_KP_ENTER},
     {46, SDL_SCANCODE_F20},
     {47, SDL_SCANCODE_RCTRL},
     {56, SDL_SCANCODE_CAPSLOCK},
@@ -105,8 +107,41 @@ static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
     {0,0}
 };
 
+static int shortcutScanCodeToLisp[] =
+{
+    0, 0, 0, 0,
+    21, // SDL_SCANCODE_A = 4
+    39, // SDL_SCANCODE_B
+    37, // SDL_SCANCODE_C
+    5, // SDL_SCANCODE_D
+    3, // SDL_SCANCODE_E
+    35, // SDL_SCANCODE_F
+    50, // SDL_SCANCODE_G
+    52, // SDL_SCANCODE_H
+    23, // SDL_SCANCODE_I
+    38, // SDL_SCANCODE_J
+    9, // SDL_SCANCODE_K
+    26, // SDL_SCANCODE_L
+    55, // SDL_SCANCODE_M
+    54, // SDL_SCANCODE_N
+    25, // SDL_SCANCODE_O
+    11, // SDL_SCANCODE_P
+    19, // SDL_SCANCODE_Q
+    48, // SDL_SCANCODE_R
+    20, // SDL_SCANCODE_S
+    49, // SDL_SCANCODE_T
+    6, // SDL_SCANCODE_U
+    7, // SDL_SCANCODE_V
+    18, // SDL_SCANCODE_W
+    24, // SDL_SCANCODE_X
+    51, // SDL_SCANCODE_Y
+    40, // SDL_SCANCODE_Z = 29
+};
+
 static uint8_t lshift = 0;
 static uint8_t rshift = 0;
+static uint8_t lctrl = 0;
+static uint8_t rctrl = 0;
 static SDL_Keycode lastKey = SDLK_UNKNOWN;
 
 static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
@@ -1338,6 +1373,8 @@ static void sendLispCode(int code, int up)
 static void handle_keydown(SDL_Scancode k) {
   int lk = map_key(k);
   if (lk == -1) {
+    if( (lctrl || rctrl) && k >= SDL_SCANCODE_A && k <= SDL_SCANCODE_Z )
+        sendLispCode(shortcutScanCodeToLisp[k], FALSE);
 #if 0
     printf("No mapping for key %s\n", SDL_GetScancodeName(k));
     fflush(stdout);
@@ -1348,12 +1385,18 @@ static void handle_keydown(SDL_Scancode k) {
         lshift = 1;
     else if( k == SDL_SCANCODE_RSHIFT )
         rshift = 1;
+    else if( k == SDL_SCANCODE_LCTRL )
+        lctrl = 1;
+    else if( k == SDL_SCANCODE_RCTRL )
+        rctrl = 1;
     sendLispCode(lk, FALSE);
   }
 }
 static void handle_keyup(SDL_Scancode k) {
   int lk = map_key(k);
   if (lk == -1) {
+      if( (lctrl || rctrl) && k >= SDL_SCANCODE_A && k <= SDL_SCANCODE_Z )
+          sendLispCode(shortcutScanCodeToLisp[k], FALSE);
 #if 0
       printf("No mapping for key %s\n", SDL_GetScancodeName(k));
       fflush(stdout);
@@ -1364,6 +1407,10 @@ static void handle_keyup(SDL_Scancode k) {
           lshift = 0;
       else if( k == SDL_SCANCODE_RSHIFT )
           rshift = 0;
+      else if( k == SDL_SCANCODE_LCTRL )
+          lctrl = 0;
+      else if( k == SDL_SCANCODE_RCTRL )
+          rctrl = 0;
       sendLispCode(lk, TRUE);
   }
 }
@@ -1501,6 +1548,8 @@ void process_SDLevents() {
         const char ch = (uint8_t)event.text.text[0];
         if( ch == ' ' )
             break; // handled by scan code
+        if( lctrl || rctrl )
+            break; // just pro forma, since SDL_TEXTINPUT is apparently not sent anyway if CTRL pressed
         int code = -1;
         int shift = 0;
         for(int i = 0; charToLisp[i].ch; i++ )
@@ -1761,5 +1810,6 @@ int init_SDL(char *windowtitle, int w, int h, int s) {
 #endif
 #endif
   printf("SDL initialised\n");
+  fflush(stdout);
   return 0;
 }

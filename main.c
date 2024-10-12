@@ -14,6 +14,7 @@
  *	This file includes main()
  */
 
+#define __USE_BSD 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -235,7 +236,7 @@ unsigned sysout_size = 0;    /* ditto */
 int flushing = FALSE; /* see dbprint.h if set, all debug/trace printing will call fflush(stdout) after each printf */
 
 #ifdef SDL
-extern int init_SDL(char*, int, int, int);
+extern int init_SDL(const char*, int, int, int);
 #endif
 extern const time_t MDate;
 extern int nokbdflag;
@@ -293,7 +294,7 @@ extern char backgroundColorName[64];
 
 int main(int argc, char *argv[])
 {
-  int i;
+  int i = 0;
   char *envname;
   extern int TIMER_INTERVAL;
   extern fd_set LispReadFds;
@@ -600,11 +601,17 @@ int main(int argc, char *argv[])
 
   if( derive_medley_path )
   {
+       for( size_t i = 0; i < strlen(sysout_name); i++ )
+       {
+           if( sysout_name[i] == '\\' )
+               sysout_name[i] = '/';
+       }
        char* found = strstr(sysout_name,"/loadups/");
        if( found )
        {
            *found = 0;
            setenv("MEDLEYDIR", sysout_name, 1);
+           printf("Gingko set MEDLEYDIR to '%s'\n", sysout_name);
            *found = '/';
            setenv("LDESOURCESYSOUT", sysout_name, 1);
            setenv("LDEDESTSYSOUT", "${HOME}/lisp.virtualmem", 1);
@@ -612,6 +619,8 @@ int main(int argc, char *argv[])
            strcpy(sysout_name_cl,found);
            strcpy(found,"/greetfiles/MEDLEYDIR-INIT");
            setenv("LDEINIT", sysout_name, 1);
+           printf("Gingko set LDEINIT to '%s'\n", sysout_name);
+           fflush(stdout);
            strcpy(found, sysout_name_cl);
        }
   }
