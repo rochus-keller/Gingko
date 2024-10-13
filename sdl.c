@@ -69,8 +69,7 @@ static struct { int lispcode; int scancode; } sdlScanCodeToLisp[] =
     {36, SDL_SCANCODE_LCTRL},
     {41, SDL_SCANCODE_LSHIFT},
     {44, SDL_SCANCODE_RETURN},
-    {44, SDL_SCANCODE_KP_ENTER},
-    // {76, SDL_SCANCODE_KP_ENTER}, // TODO: doesn't seem to work
+    {76, SDL_SCANCODE_KP_ENTER},
     {46, SDL_SCANCODE_F20},
     {47, SDL_SCANCODE_RCTRL},
     {56, SDL_SCANCODE_CAPSLOCK},
@@ -168,7 +167,7 @@ static struct { char ch; uint8_t code; uint8_t shift; } charToLisp[] =
     {'k', 9, 0},
     {'K', 9, 1},
     {'-', 10, 0},
-    {'_', 10, 1}, // TODO: prints left arrow instead of underscore
+    {'_', 10, 1}, // prints left arrow instead of underscore, which is expected
     {'p', 11, 0},
     {'P', 11, 1},
     {'/', 12, 0},

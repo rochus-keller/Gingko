@@ -6,6 +6,14 @@ based plattform abstraction layer (as e.g. done for [Oberon System 3](https://gi
 
 To avoid confusions with the original project, this version of the VM is called "Gingko" (in reference to [Ginkgo](https://en.wikipedia.org/wiki/Ginkgo)) instead of "Maiko"[^1].
 
+#### How to use
+
+- Download and unpack any of the official Medley deployments, e.g. [this one](https://github.com/Interlisp/medley/releases/download/medley-240926-e1989850/medley-full-linux-x86_64-240926-e1989850_240513-4becc6ad.tgz); the specific CPU is not relevant in this context.
+- Download the code of this repository to a local folder and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko` in this folder
+- Run `./gingko -sysout <path-to-sysout>`, or even simpler `./gingko <path-to-sysout>`; the sysout are located in the medley/loadups folder of the downloaded Medley deployment
+
+So far this guide applies to Unix systems including MacOS and Cygwin.
+
 #### Status on 2024-10-04
 
 - Downloaded original source code from https://github.com/Interlisp/maiko, commit 91e0cea by 2024-09-17.
@@ -26,6 +34,12 @@ To avoid confusions with the original project, this version of the VM is called 
 - Refactored SDL keyboard handling so that the VM properly works with any keyboard present on the host machine (subject to further testing)
 - Adapted the run-medley shell script so that it directly works with the gingko executable; just put both in the same directory, set the MEDLEYDIR environment variable to the path where the medley directory is located (`export MEDLEYDIR=<path-to>medley`), and then run `./run-medley`. When run with this method, also the Dinfo command works (if directly run with `./gingko ...` as described above, not everything is found, but still enough to directly run gingko with GDB to debug the VM).
 - Alternatively and much simpler, if the path provided for the -sysout option points into the medley directory (i.e. includes the /loadups/ subdirectory), no shell script or export is required; just run `./gingko -sysout <path-to-sysout>`, or even simpler `./gingko <path-to-sysout>`.
+
+#### Status on 2024-10-13
+
+- Gingko was meanwhile validated by an experienced Medley user (see [this thread](https://github.com/Interlisp/medley/issues/1780#issuecomment-2408907215)) and seems to work sufficiently well as a tool to ease exploration of Medley (though some features I consider less important are not supported).
+- The feedback from pamoroso and nbriggs has been considered and implemented.
+- Gingko therefore supports international keyboards and is easier to build and install than Maiko.
 
 #### Precompiled versions
 
