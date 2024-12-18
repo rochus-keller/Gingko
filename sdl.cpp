@@ -1201,7 +1201,7 @@ static SDL_Cursor *sdl_getOrAllocateCursor(DLword cursor[16], int hot_x, int hot
     for (int i = 0; i < 32; i++) sdl_cursor_data[i] = GETBYTE(((Uint8 *)cursor) + i);
     c = SDL_CreateCursor(sdl_cursor_data, sdl_cursor_data, 16, 16, hot_x, hot_y);
   } else {
-    Uint8 *sdl_cursor_data = calloc(sdl_pixelscale * sdl_pixelscale, 32);
+    Uint8 *sdl_cursor_data = (Uint8*)calloc(sdl_pixelscale * sdl_pixelscale, 32);
     /* fill in the cursor data expanded */
     for (int i = 0; i < 32; i += 2) {
       int v = GETBYTE(((Uint8 *)cursor) + i) << 8 | GETBYTE(((Uint8 *)cursor) + i + 1);
@@ -1719,7 +1719,7 @@ void process_SDLevents() {
   }
 }
 
-int init_SDL(char *windowtitle, int w, int h, int s) {
+int init_SDL(const char *windowtitle, int w, int h, int s) {
   sdl_pixelscale = s;
   // width must be multiple of 32
   w = (w + 31) / 32 * 32;
@@ -1771,10 +1771,12 @@ int init_SDL(char *windowtitle, int w, int h, int s) {
   printf("Creating texture...\n");
   sdl_texture = SDL_CreateTexture(sdl_renderer, sdl_pixelformat->format,
                                   SDL_TEXTUREACCESS_STREAMING, width, height);
+  char tmp[10] = "black";
   sdl_foreground_color = sdl_MapColorName(sdl_pixelformat,
-                                          foregroundColorName[0] ? foregroundColorName : "black");
+                                          foregroundColorName[0] ? foregroundColorName : tmp);
+  strcpy(tmp,"white");
   sdl_background_color = sdl_MapColorName(sdl_pixelformat,
-                                          backgroundColorName[0] ? backgroundColorName : "white");
+                                          backgroundColorName[0] ? backgroundColorName : tmp);
   sdl_foreground = sdl_foreground_color;
   sdl_background = sdl_background_color;
 #if SDL_MAJOR_VERSION == 2

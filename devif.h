@@ -86,7 +86,7 @@ typedef struct
 /* Definition of the mouse. Note that the mouse is also       */
 /* dependent on the IOPage                                    */
 /**************************************************************/
-typedef struct
+typedef struct Button
   {
     unsigned TwoButtonP: 1;
    				 /* Interface towards Lisp */
@@ -105,7 +105,6 @@ typedef struct
     void (* NextHandler)(void);	/* Pointer to the next timer (used with 2button) */
   } Button;
 
-
 typedef struct {
   MRegion   Last;	/* Last position the mouse was in. */
   Mposition New;	/* The place to move the mouse when we have time */
@@ -123,7 +122,7 @@ typedef struct
     DevRec device;
     void   (* Handler)(void);	/* Event handler for the mouse. */
     MCursor Cursor;
-    Button Button;
+    struct Button Button;
     LispPTR *timestamp;
     unsigned int keyeventsize;	/* The sizeof() one kbd event */
     unsigned int maxkeyevent;	/* Offset to the end of the ringbuffer. */

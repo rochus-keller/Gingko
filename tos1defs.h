@@ -69,9 +69,9 @@
 /* OPCODE interface routines */
 
 #define StackPtrSave \
-  do { CurrentStackPTR = (void *)(CSTKPTR - 1); /* CSTKPTR in cells */ } while (0)
+  do { CurrentStackPTR = (DLword *)(CSTKPTR - 1); /* CSTKPTR in cells */ } while (0)
 #define StackPtrRestore \
-  do { CSTKPTRL = (void *)(CurrentStackPTR + 2); /* CurrentStackPTR in DLwords */ } while (0)
+  do { CSTKPTRL = (LispPTR *)(CurrentStackPTR + 2); /* CurrentStackPTR in DLwords */ } while (0)
 
 #define EXT                  \
   do {                       \

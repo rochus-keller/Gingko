@@ -170,7 +170,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 
   /* allocate Virtual Memory Space */
 
-  lispworld_scratch = mmap(0, sys_size * MBYTE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  lispworld_scratch = (char*)mmap(0, sys_size * MBYTE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (lispworld_scratch == MAP_FAILED) {
     (void)fprintf(stderr, "sysout_loader: can't allocate Lisp %dMBytes VM \n", sys_size);
     exit(-1);
@@ -237,7 +237,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 
 #ifdef BIGVM
   /* fptovp is now in cells, not words */
-  fptovp = malloc(sysout_size * 2 + 4);
+  fptovp = (unsigned int*)malloc(sysout_size * 2 + 4);
   if (read(sysout, fptovp, sysout_size * 2) == -1) {
     perror("sysout_loader: can't read FPTOVP");
     free(fptovp);

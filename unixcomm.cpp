@@ -781,7 +781,7 @@ LispPTR Unix_handlecomm(LispPTR *args) {
          socket into it */
       /* need to type-check the string here */
       LispStringToCString(args[1], shcom, 2048);
-      UJ[sockFD].pathname = malloc(strlen(shcom) + 1);
+      UJ[sockFD].pathname = (char*)malloc(strlen(shcom) + 1);
       strcpy(UJ[sockFD].pathname, shcom);
       /* Then bind it to the pathname, and get it	listening properly */
 

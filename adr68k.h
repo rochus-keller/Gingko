@@ -51,12 +51,12 @@ static inline LispPTR *NativeAligned4FromLAddr(LispPTR LAddr)
   if (LAddr & 1) {
     printf("Misaligned pointer in NativeAligned4FromLAddr 0x%x\n", LAddr);
   }
-  return (void *)(Lisp_world + LAddr);
+  return (LispPTR *)(Lisp_world + LAddr);
 }
 
 static inline LispPTR *NativeAligned4FromLPage(LispPTR LPage)
 {
-  return (void *)(Lisp_world + (LPage << 8));
+  return (LispPTR *)(Lisp_world + (LPage << 8));
 }
 
 static inline DLword StackOffsetFromNative(void *SAddr)
@@ -79,7 +79,7 @@ static inline LispPTR *NativeAligned4FromStackOffset(DLword StackOffset)
   if (StackOffset & 1) {
     printf("Misaligned StackOffset in NativeAligned4FromStackOffset 0x%hx\n", StackOffset);
   }
-  return (void *)(Stackspace + StackOffset);
+  return (LispPTR *)(Stackspace + StackOffset);
 }
 
 static inline LispPTR LPageFromNative(void *NAddr)
