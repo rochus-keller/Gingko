@@ -18,6 +18,7 @@
 #if SDL == 2
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_surface.h>
 #elif SDL == 3
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_keycode.h>
@@ -1788,10 +1789,12 @@ int init_SDL(const char *windowtitle, int w, int h, int s) {
   printf("Creating window surface and buffer surface\n");
   sdl_windowsurface = SDL_GetWindowSurface(sdl_window);
   sdl_pixelformat = sdl_windowsurface->format;
+  char tmp[10] = "black";
   sdl_foreground_color = sdl_MapColorName(sdl_pixelformat,
-                                          foregroundColorName[0] ? foregroundColorName : "black");
+                                          foregroundColorName[0] ? foregroundColorName : tmp);
+  strcpy(tmp,"white");
   sdl_background_color = sdl_MapColorName(sdl_pixelformat,
-                                          backgroundColorName[0] ? backgroundColorName : "white");
+                                          backgroundColorName[0] ? backgroundColorName : tmp);
   sdl_foreground = sdl_foreground_color;
   sdl_background = sdl_background_color;
 #if SDL_MAJOR_VERSION == 2

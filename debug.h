@@ -201,25 +201,6 @@ typedef struct  package{
 	LispPTR	EXTERNAL_SYMBOLS ;
 	LispPTR	SHADOWING_SYMBOLS ;
 } PACKAGE;
-
-#ifdef NEVER
-typedef struct  {
-	unsigned nil1 : 8 ;
-	unsigned BASE : 24 ;
-	unsigned READ_ONLY_P : 1 ;
-	unsigned nil2 : 1 ;
-	unsigned BIT_P : 1 ;
-	unsigned STRING_P : 1 ;
-	unsigned nil3 : 1 ;
-	unsigned DISPLACED_P : 1 ;
-	unsigned FILL_POINTER_P : 1 ;
-	unsigned EXTENDABLE_P : 1 ;
-	unsigned TYPE_NUMBER : 8 ;
-	DLword OFFSET;
-	DLword FILL_POINTER;
-	DLword TOTAL_SIZE;
-} ONED_ARRAY;
-#endif /* NEVER */
 #else
 
 	/****************************************************************/
@@ -414,24 +395,6 @@ typedef struct  package{
 	LispPTR	EXTERNAL_SYMBOLS ;
 	LispPTR	SHADOWING_SYMBOLS ;
 } PACKAGE;
-#ifdef NEVER
-typedef struct  {
-	unsigned BASE : 24 ;
-	unsigned nil1 : 8 ;
-	DLword OFFSET;
-	unsigned TYPE_NUMBER : 8 ;
-	unsigned EXTENDABLE_P : 1 ;
-	unsigned FILL_POINTER_P : 1 ;
-	unsigned DISPLACED_P : 1 ;
-	unsigned nil3 : 1 ;
-	unsigned STRING_P : 1 ;
-	unsigned BIT_P : 1 ;
-	unsigned nil2 : 1 ;
-	unsigned READ_ONLY_P : 1 ;
-	DLword TOTAL_SIZE;
-	DLword FILL_POINTER;
-} ONED_ARRAY;
-#endif /* NEVER */
 
 #endif /* BYTESWAP */
 

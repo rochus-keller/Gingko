@@ -32,7 +32,6 @@
 #endif
 #include "cell.h"          // for GetVALCELL68k
 #include "dbprint.h"       // for DBPRINT
-#include "etherdefs.h"     // for init_ifpage_ether
 #include "gcarraydefs.h"   // for get_package_atom
 #include "gcdata.h"        // for ADDREF, GCLOOKUP
 #include "gchtfinddefs.h"  // for htfind, rec_htfind
@@ -46,10 +45,6 @@
 #include "miscstat.h"      // for MISCSTATS
 #include "mkcelldefs.h"    // for N_OP_createcell
 #include "testtooldefs.h"  // for MakeAtom68k, MAKEATOM
-
-#if defined(MAIKO_ENABLE_ETHERNET) || defined(MAIKO_ENABLE_NETHUB)
-#include "etherdefs.h"
-#endif
 
 /********** definitions for bitblt. add by osamu **********/
 DLword TEXTURE_atom;
@@ -109,8 +104,9 @@ LispPTR *fixp_value(LispPTR *ptr) {
 
 #define PAGES_IN_MBYTE 2048
 
+static const time_t MDate = 1727952008;
+
 void init_ifpage(unsigned sysout_size) {
-  extern const time_t MDate;
   extern int DisplayType;
   extern int Storage_expanded;
   unsigned new_lastvmem;
@@ -118,9 +114,6 @@ void init_ifpage(unsigned sysout_size) {
     Initialize IFPAGE
    */
   InterfacePage->machinetype = MACHINETYPE_MAIKO;
-#if defined(MAIKO_ENABLE_ETHERNET) || defined(MAIKO_ENABLE_NETHUB)
-  init_ifpage_ether(); /* store ethernet ID in IF page */
-#endif /* MAIKO_ENABLE_ETHERNET or MAIKO_ENABLE_NETHUB */
   /*InterfacePage->dl24bitaddressable = (sysout_size == 32? 0xffff : 0);*/
   InterfacePage->dl24bitaddressable = (sysout_size == 8 ? 0 : 0xffff);
   new_lastvmem = (sysout_size * PAGES_IN_MBYTE) - 1;

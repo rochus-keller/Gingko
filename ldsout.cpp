@@ -251,7 +251,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 
 #else
 
-  fptovp = malloc(sysout_size + 2);
+  fptovp = (DLword*)malloc(sysout_size + 2);
   if (read(sysout, fptovp, sysout_size) == -1) {
     perror("sysout_loader: can't read FPTOVP");
     free(fptovp);

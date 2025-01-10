@@ -145,30 +145,6 @@ LispPTR LCinit(void) {
   return NIL_PTR; /* in case called from lisp */
 }
 
-/* Type check fn */
-/* We only check for instance and class, neither of which has supertypes,
-   so the loop is unnecessary.  */
-/* * * NOT USED * * */
-#ifdef NEVER
-int LCTypeOf(LispPTR thing, LispPTR typename)
-{
-  struct dtd *dtd68k;
-#ifdef BIGVM
-  for (dtd68k = (struct dtd *)GetDTD(GetTypeNumber(thing)); typename != (dtd68k->dtd_name);
-       dtd68k = (struct dtd *)GetDTD(dtd68k->dtd_supertype)) {
-    if (dtd68k->dtd_supertype == 0) return 0;
-  }
-#else
-  for (dtd68k = (struct dtd *)GetDTD(GetTypeNumber(thing));
-       typename != dtd68k->dtd_namelo + (dtgd68k->dtd_namehi << 16);
-       dtd68k = (struct dtd *)GetDTD(dtd68k->dtd_supertype)) {
-    if (dtd68k->dtd_supertype == 0) return 0;
-  }
-#endif /* BIGVM */
-  return 1;
-}
-#endif /* NEVER */
-
 /* Method lookup using global cache */
 
 LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector) {
