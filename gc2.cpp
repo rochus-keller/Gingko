@@ -24,7 +24,6 @@
 
 #include <stdio.h>         // for printf
 #include "address.h"       // for LOLOC
-#include "emlglob.h"
 #include "gc2defs.h"       // for OP_gcscan1, OP_gcscan2
 #include "gcscandefs.h"    // for gcscan1, gcscan2
 #include "lispemul.h"      // for state, TopOfStack, NIL, PC, SEGMASK

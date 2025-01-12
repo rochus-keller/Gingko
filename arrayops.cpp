@@ -8,7 +8,6 @@
 #include "version.h"
 #include "adr68k.h"       // for NativeAligned4FromLAddr
 #include "arrayopsdefs.h" // for N_OP_misc3, N_OP_misc4, N_OP_aref1, N_OP_aset1, N_OP_aref2, N_OP_aset2
-#include "emlglob.h"
 #include "lispemul.h"     // for state, LispPTR, ERROR_EXIT
 #include "lspglob.h"
 #include "lsptypes.h"

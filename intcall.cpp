@@ -12,7 +12,6 @@
 
 #include "adr68k.h"       // for StackOffsetFromNative, NativeAligned4FromLAddr
 #include "cell.h"         // for definition_cell, GetDEFCELL68k
-#include "emlglob.h"
 #include "intcalldefs.h"  // for cause_interruptcall
 #include "llstkdefs.h"    // for do_stackoverflow
 #include "lspglob.h"

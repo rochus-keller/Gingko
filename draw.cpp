@@ -23,7 +23,6 @@
 #include "bitblt.h"       // for MOUSEXR, MOUSEYH
 #include "display.h"      // for DISPLAYBUFFER, DisplayRegion68k, in_display...
 #include "drawdefs.h"     // for N_OP_drawline
-#include "emlglob.h"
 #include "initdspdefs.h"  // for flush_display_region
 #include "lispemul.h"     // for DLword, BITSPER_DLWORD, SEGMASK, state, ERR...
 #include "lispmap.h"      // for S_NEGATIVE, S_POSITIVE

@@ -23,7 +23,6 @@
 #include "address.h"
 #include "adr68k.h"
 #include "lspglob.h"
-#include "emlglob.h"
 #include "display.h"
 #include "devconf.h"
 

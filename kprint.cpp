@@ -14,7 +14,6 @@
 #include "address.h"       // for LOLOC
 #include "adr68k.h"        // for NativeAligned2FromLAddr, NativeAligned4FromLAddr
 #include "car-cdrdefs.h"   // for cdr, car
-#include "emlglob.h"
 #include "kprintdefs.h"    // for prindatum, print, print_NEWstring, print_fixp
 #include "lispemul.h"      // for LispPTR, DLbyte, DLword, POINTERMASK, NIL
 #include "lispmap.h"       // for S_POSITIVE

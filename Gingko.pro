@@ -129,7 +129,6 @@ HEADERS += \
     dspdata.h \
     dspifdefs.h \
     dspsubrsdefs.h \
-    emlglob.h \
     eqfdefs.h \
     findkeydefs.h \
     fpdefs.h \
@@ -227,7 +226,6 @@ HEADERS += \
     vmemsave.h \
     vmemsavedefs.h \
     xcdefs.h \
-    xrdoptdefs.h \
     z2defs.h
 
 

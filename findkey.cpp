@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include "lispemul.h"
 #include "lispmap.h"
-#include "emlglob.h"
 #include "stack.h"
 #include "lspglob.h"
 #include "adr68k.h"

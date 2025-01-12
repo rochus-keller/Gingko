@@ -37,7 +37,6 @@
 #include "address.h"      // for VAG2
 #include "adr68k.h"       // for NativeAligned4FromLAddr, NativeAligned2FromStackOffset
 #include "commondefs.h"   // for error
-#include "emlglob.h"
 #include "gcdata.h"       // for GCENTRY, REC_GCLOOKUP, STKREF, hashentry
 #include "gchtfinddefs.h" // for htfind, rec_htfind
 #include "gcmain3defs.h"  // for gcmapscan, gcmapunscan, gcscanstack

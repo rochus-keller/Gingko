@@ -12,7 +12,6 @@
 #include "adr68k.h"        // for NativeAligned4FromLAddr, NativeAligned2FromLAddr, LAddrFromNative
 #include "byteswapdefs.h"  // for swapx
 #include "commondefs.h"    // for error
-#include "emlglob.h"
 #include "fvardefs.h"      // for N_OP_fvar_, N_OP_fvarn, N_OP_stkscan, nati...
 #include "gcdata.h"        // for GCLOOKUP, ADDREF, DELREF
 #include "gchtfinddefs.h"  // for htfind, rec_htfind

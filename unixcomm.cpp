@@ -43,7 +43,6 @@ Unix Interface Communications
 #include "adr68k.h"
 #include "lsptypes.h"
 #include "lispmap.h"
-#include "emlglob.h"
 #include "lspglob.h"
 #include "cell.h"
 #include "stack.h"

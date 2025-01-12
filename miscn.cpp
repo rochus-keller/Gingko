@@ -18,7 +18,6 @@
 
 #include "arith.h"         // for N_GETNUMBER
 #include "commondefs.h"    // for error
-#include "emlglob.h"
 #include "lispemul.h"      // for LispPTR, state, CurrentStackPTR, TopOfStack
 #include "loopsopsdefs.h"  // for LCFetchMethod, LCFetchMethodOrHelp, LCFind...
 #include "lspglob.h"

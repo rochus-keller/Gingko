@@ -36,7 +36,6 @@
 #include "cell.h"          // for freecons, conspage, FREECONS, CDR_INDIRECT
 #include "commondefs.h"    // for error
 #include "conspagedefs.h"  // for next_conspage
-#include "emlglob.h"
 #include "gcdata.h"        // for GCLOOKUP, ADDREF, DELREF
 #include "gchtfinddefs.h"  // for htfind, rec_htfind
 #include "lispemul.h"      // for ConsCell, LispPTR, DLword, NIL_PTR, state

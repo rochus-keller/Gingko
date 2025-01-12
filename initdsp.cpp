@@ -24,7 +24,6 @@
 #include "devconf.h"      // for SUN2BW
 #include "devif.h"        // for (anonymous), MRegion, DevRec, DspInterface
 #include "display.h"      // for DLWORD_PERLINE, DISPLAYBUFFER
-#include "emlglob.h"
 #include "ifpage.h"       // for IFPAGE
 #include "initdspdefs.h"  // for clear_display, display_before_exit, flush_d...
 #include "lispemul.h"     // for DLword, BITSPER_DLWORD, T

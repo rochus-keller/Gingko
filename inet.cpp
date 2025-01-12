@@ -38,7 +38,6 @@
 #include "lispmap.h"
 #include "lsptypes.h"
 #include "arith.h"
-#include "emlglob.h"
 #include "lspglob.h"
 #include "adr68k.h"
 #include "dbprint.h"

@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include "lispemul.h"
 #include "lspglob.h"
-#include "emlglob.h"
 #include "testtooldefs.h"
 #include "bindsdefs.h"
 

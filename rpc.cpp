@@ -35,7 +35,6 @@
 #include "lispmap.h"
 #include "lsptypes.h"
 #include "lspglob.h"
-#include "emlglob.h"
 #include "adr68k.h"
 #include "arith.h"
 #include "locfile.h"

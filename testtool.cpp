@@ -53,7 +53,6 @@
 #include "commondefs.h"    // for error
 #include "dbgtooldefs.h"   // for get_fn_fvar_name
 #include "debug.h"         // for PACKAGE
-#include "emlglob.h"
 #include "gcarraydefs.h"   // for aref1
 #include "kprintdefs.h"    // for print, prindatum
 #include "lispemul.h"      // for DLword, LispPTR, DLbyte, state, T, ConsCell

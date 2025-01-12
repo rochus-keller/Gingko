@@ -28,7 +28,6 @@
 #include <unistd.h>
 #endif /* DOS */
 
-#include "emlglob.h"
 #include "adr68k.h"
 #include "stack.h"
 #include "return.h"
@@ -53,7 +52,6 @@
 #include "timerdefs.h"
 #include "unixcommdefs.h"
 #include "xcdefs.h"
-#include "xrdoptdefs.h"
 
 DLword *Lisp_world; /* lispworld */
 

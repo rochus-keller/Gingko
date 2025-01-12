@@ -10,7 +10,6 @@
 #include "version.h"
 
 #include <stdio.h>         // for printf
-#include "emlglob.h"
 #include "gcdata.h"        // for GCLOOKUPV
 #include "gchtfinddefs.h"  // for htfind, rec_htfind
 #include "gcdefs.h"        // for OP_gcref

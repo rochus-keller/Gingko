@@ -26,7 +26,6 @@
 #include "car-cdrdefs.h"   // for car, cdr
 #include "cell.h"          // for cadr_cell, S_N_CHECKANDCADR
 #include "conspagedefs.h"  // for cons
-#include "emlglob.h"
 #include "lispemul.h"      // for state, LispPTR, NIL_PTR, ERROR_EXIT, Irq_S...
 #include "lispmap.h"       // for ATOM_OFFSET, S_CHARACTER, S_NEGATIVE, S_PO...
 #include "lspglob.h"

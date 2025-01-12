@@ -31,7 +31,6 @@
 #include <sys/time.h>
 
 #include "lispemul.h"
-#include "emlglob.h"
 #include "address.h"
 #include "adr68k.h"
 #include "stack.h"
