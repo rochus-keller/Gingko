@@ -50,7 +50,8 @@
   /* The current values */
 
 #define RELEASE 351
-#define SDL 2
+//#define SDL 2
+#define QTGUI
 #define _POSIX_C_SOURCE 199309L
 
 #define LVERSION 21000

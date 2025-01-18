@@ -29,6 +29,9 @@
 #include "lispemul.h"     // for DLword, BITSPER_DLWORD, T
 #include "lspglob.h"
 #include "lsptypes.h"
+#ifdef QTGUI
+#include "qtgui.h"
+#endif
 
 /* from /usr/include/sun/fbio.h some machines don't have following def. */
 #ifndef FBTYPE_SUNROP_COLOR
@@ -150,7 +153,7 @@ void init_display2(DLword *display_addr, unsigned display_max)
 
   DBPRINT(("FBIOGTYPE w x h = %d x %d\n", displaywidth, displayheight));
 
-#ifdef SDL
+#if defined SDL || defined QTGUI
   DisplayType = SUN2BW;
 #endif /* SDL */
   init_cursor();
@@ -219,6 +222,9 @@ void flush_display_buffer(void) {
 #ifdef SDL
   sdl_notify_damage(0, 0, sdl_displaywidth, sdl_displayheight);
 #endif
+#ifdef QTGUI
+  qt_notify_damage(0, 0, -1, -1);
+#endif
 }
 
 /************************************************************************/
@@ -239,6 +245,9 @@ void flush_display_region(int x, int y, int w, int h)
   //  printf("flush_display_region %d %d %d %d\n", x, y, w, h);
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
+#endif
+#ifdef QTGUI
+  qt_notify_damage(x, y, w, h);
 #endif
 }
 #ifdef BYTESWAP
@@ -281,6 +290,9 @@ void flush_display_lineregion(UNSIGNED x, DLword *ybase, int w, int h)
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
 #endif
+#ifdef QTGUI
+  qt_notify_damage(x, y, w, h);
+#endif
 }
 
 /************************************************************************/
@@ -309,5 +321,8 @@ void flush_display_ptrregion(DLword *ybase, UNSIGNED bitoffset, int w, int h)
   //  printf("flush_display_ptrregion %d %d %d %d\n", x, y, w, h);
 #ifdef SDL
   sdl_notify_damage(x, y, w, h);
+#endif
+#ifdef QTGUI
+  qt_notify_damage(x, y, w, h);
 #endif
 }

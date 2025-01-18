@@ -39,7 +39,7 @@ extern DLword *DISP_MAX_Address;
 #define Expand4Bit(BITS)	\
 		((BITS) | ((BITS) << 4) | ((BITS) << 8) | ((BITS) << 12))
 
-#ifdef SDL
+#if defined SDL || defined QTGUI
 #define DISPLAYBUFFER
 #endif /* SDL */
 
@@ -64,5 +64,12 @@ extern DLword *DisplayRegion68k;
     (((DisplayRegion68k <= (baseaddr)) &&               \
       ((baseaddr) <= DISP_MAX_Address)) ? T : NIL )
 #endif
+
+extern void display_notify_lisp();
+extern void display_notify_mouse_pos(int x, int y);
+extern void display_set_keyboard_event_flag();
+extern void display_left_mouse_button(bool on);
+extern void display_mid_mouse_button(bool on);
+extern void display_right_mouse_button(bool on);
 
 #endif

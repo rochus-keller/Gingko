@@ -223,10 +223,14 @@ int flushing = FALSE; /* see dbprint.h if set, all debug/trace printing will cal
 #ifdef SDL
 extern int init_SDL(const char*, int, int, int);
 #endif
+#ifdef QTGUI
+extern int qt_init(const char *windowtitle, int w, int h, int s);
+#endif
+
 static const time_t MDate = 1727952008;
 extern int nokbdflag;
 extern int nomouseflag;
-#ifdef SDL
+#if defined SDL || defined QTGUI
 const char *helpstring =
     "\n\
  either setenv LDESRCESYSOUT or do:\n\
@@ -241,7 +245,7 @@ const char *helpstring =
  -title <title>           The window title\n";
 #endif
 
-#if defined(SDL)
+#if defined(SDL) || defined(QTGUI)
 char foregroundColorName[64] = {0};
 extern char foregroundColorName[64];
 char backgroundColorName[64] = {0};
@@ -509,6 +513,9 @@ int main(int argc, char *argv[])
 #if defined(SDL)
   init_SDL(windowtitle, width, height, pixelscale);
 #endif /* SDL */
+#ifdef QTGUI
+  qt_init(windowtitle, width, height, pixelscale);
+#endif
   /* Load sysout to VM space and returns real sysout_size(not 0) */
   sysout_size = sysout_loader(sysout_name, sysout_size);
 

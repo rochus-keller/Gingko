@@ -1,5 +1,4 @@
-QT       -= core
-QT       -= gui
+QT       = core gui
 
 TARGET = gingko
 CONFIG   += console
@@ -94,7 +93,9 @@ SOURCES += \
     gcr.cpp \
     gcoflow.cpp \
     sdl.cpp \
-    usrsubr.cpp
+    usrsubr.cpp \
+    qtgui.cpp \
+    display.cpp
 
 HEADERS += \
     address.h \
@@ -226,7 +227,8 @@ HEADERS += \
     vmemsave.h \
     vmemsavedefs.h \
     xcdefs.h \
-    z2defs.h
+    z2defs.h \
+    qtgui.h
 
 
 

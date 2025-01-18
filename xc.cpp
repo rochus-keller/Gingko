@@ -97,6 +97,9 @@
 #ifdef SDL
 extern void process_SDLevents();
 #endif
+#ifdef QTGUI
+extern void qt_process_events();
+#endif
 
 typedef struct conspage ConsPage;
 typedef ByteCode *InstPtr;
@@ -789,6 +792,9 @@ check_interrupt:
      */
 #ifdef SDL
     process_SDLevents();
+#endif
+#ifdef QTGUI
+    qt_process_events();
 #endif
     if (IO_Signalled) {
       IO_Signalled = FALSE;

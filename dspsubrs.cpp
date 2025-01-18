@@ -21,6 +21,9 @@
 #if defined(SDL)
 #include "sdldefs.h"
 #endif
+#ifdef QTGUI
+#include "qtgui.h"
+#endif
 
 extern int DebugDSP;
 extern int displaywidth, displayheight;
@@ -56,17 +59,18 @@ void DSP_showdisplay(LispPTR *args)
 
 LispPTR DSP_VideoColor(LispPTR *args) /* args[0] :	black flag	*/
 {
-  int invert;
+  int invert = args[0] & 0xFFFF;
 #if defined(SDL)
-  invert = args[0] & 0xFFFF;
   sdl_set_invert(invert);
+#endif
+#ifdef QTGUI
+  qt_set_invert(invert);
+#endif
   if (invert)
     return ATOM_T;
   else
     return NIL;
-#else
-  return NIL;
-#endif
+
 }
 
 extern struct cursor CurrentCursor;
@@ -90,6 +94,9 @@ void DSP_Cursor(LispPTR *args, int argnum)
 #if defined(SDL)
   sdl_setCursor((int)(args[0] & 0xFFFF), (int)(args[1] & 0xFFFF));
 #endif /* SDL */
+#ifdef QTGUI
+  qt_setCursor((int)(args[0] & 0xFFFF), (int)(args[1] & 0xFFFF));
+#endif
 }
 
 /****************************************************
@@ -103,11 +110,14 @@ void DSP_Cursor(LispPTR *args, int argnum)
   */
 void DSP_SetMousePos(LispPTR *args)
 {
+    int x = (int)(GetSmalldata(args[0]));
+    int y = (int)(GetSmalldata(args[1]));
 #ifdef SDL
-  int x = (int)(GetSmalldata(args[0]));
-  int y = (int)(GetSmalldata(args[1]));
   sdl_setMousePosition(x, y);
 #endif /* SDL */
+#ifdef QTGUI
+  qt_setMousePosition(x,y);
+#endif
 }
 
 /****************************************************
@@ -167,4 +177,7 @@ void flip_cursor(void) {
 #if defined(SDL)
   sdl_setCursor(0, 0); // TODO: keep track of the current hot_x and hot_y
 #endif /* SDL */
+#ifdef QTGUI
+  qt_setCursor(0,0);
+#endif
 }
