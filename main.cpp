@@ -357,7 +357,7 @@ int main(int argc, char *argv[])
     else if (!strcmp(argv[i], "-INIT")) { /*** init sysout, no packaged */
       for_makeinit = 1;
     }
-#ifdef SDL
+#if defined SDL || defined QTGUI
     else if ((strcmp(argv[i], "-sc") == 0) || (strcmp(argv[i], "-SC") == 0)) {
       if (argc > ++i) {
         int read = sscanf(argv[i], "%dx%d", &width, &height);

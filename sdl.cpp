@@ -244,12 +244,7 @@ int sdl_windowwidth = 0;
 int sdl_windowheight = 0;
 // each pixel is shown as this many pixels
 int sdl_pixelscale = 0;
-extern DLword *EmKbdAd068K, *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K,
-    *EmRealUtilin68K;
 extern DLword *EmCursorBitMap68K;
-extern DLword *CTopKeyevent;
-extern int URaid_req;
-extern LispPTR *KEYBUFFERING68k;
 extern char foregroundColorName[64];
 extern char backgroundColorName[64];
 
@@ -447,7 +442,6 @@ static void sendLispCode(int code, int up)
 {
     kb_trans(code, up);
     display_notify_lisp();
-    display_set_keyboard_event_flag();
 }
 
 static void handle_keydown(SDL_Scancode k) {
@@ -501,7 +495,7 @@ static void sdl_update_viewport(int width, int height) {
   SDL_RenderSetViewport(sdl_renderer, &r);
   printf("new viewport: %d / %d\n", w, h);
 }
-static int last_keystate[512] = {0};
+
 void sdl_set_invert(int flag) {
   if (flag) {
     sdl_foreground = sdl_background_color;
@@ -520,7 +514,7 @@ void sdl_update_display() {
   SDL_RenderCopy(sdl_renderer, sdl_texture, NULL, NULL);
   SDL_RenderPresent(sdl_renderer);
 }
-int process_events_time = 0;
+
 void process_SDLevents() {
   SDL_Event event;
   while (SDL_PollEvent(&event)) {
@@ -619,7 +613,6 @@ void process_SDLevents() {
         y /= sdl_pixelscale;
         display_notify_mouse_pos(x,y);
         display_notify_lisp();
-        display_set_keyboard_event_flag();
         break;
       }
       case SDL_MOUSEBUTTONDOWN: {
@@ -629,7 +622,6 @@ void process_SDLevents() {
           case SDL_BUTTON_RIGHT: display_right_mouse_button(true); break;
         }
         display_notify_lisp();
-        display_set_keyboard_event_flag();
         break;
       }
       case SDL_MOUSEBUTTONUP: {
@@ -639,7 +631,6 @@ void process_SDLevents() {
           case SDL_BUTTON_RIGHT: display_right_mouse_button(false); break;
         }
         display_notify_lisp();
-        display_set_keyboard_event_flag();
         break;
       }
     default: /* printf("other event type: %d\n", event.type); */ break;

@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include "sdldefs.h"
 #include "byteswapdefs.h"
@@ -49,7 +50,6 @@ void display_notify_lisp() {
   DLword w, r;
   KBEVENT *kbevent;
 
-do_ring:
   /* DEL is not generally present on a Mac X keyboard, Ctrl-shift-ESC would be 18496 */
   if (((*EmKbdAd268K) & 2113) == 0) { /*Ctrl-shift-NEXT*/
     error("******  EMERGENCY Interrupt ******");
@@ -69,7 +69,11 @@ do_ring:
   w = RING_WRITE(CTopKeyevent);
 
   if (r == w) /* event queue FULL */
+  {
+      printf("event queue FULL\n");
+      fflush(stdout);
     goto KBnext;
+  }
 
   kbevent = (KBEVENT *)(CTopKeyevent + w);
   /*    RCLK(kbevent->time); */
@@ -90,6 +94,8 @@ do_ring:
 
 KBnext:
   if (*KEYBUFFERING68k == NIL) *KEYBUFFERING68k = ATOM_T;
+
+  if ((KBDEventFlg += 1) > 0) Irq_Stk_End = Irq_Stk_Check = 0;
 }
 
 void display_notify_mouse_pos(int x, int y)
@@ -97,11 +103,6 @@ void display_notify_mouse_pos(int x, int y)
     *CLastUserActionCell68k = MiscStats->secondstmp;
     *EmCursorX68K = (*((DLword *)EmMouseX68K)) = (short)(x & 0xFFFF);
     *EmCursorY68K = (*((DLword *)EmMouseY68K)) = (short)(y & 0xFFFF);
-}
-
-void display_set_keyboard_event_flag()
-{
-    if ((KBDEventFlg += 1) > 0) Irq_Stk_End = Irq_Stk_Check = 0;
 }
 
 void display_left_mouse_button(bool on)
@@ -117,4 +118,11 @@ void display_mid_mouse_button(bool on)
 void display_right_mouse_button(bool on)
 {
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_RIGHT, !on);
+}
+
+void display_mouse_state(bool left, bool mid, bool right)
+{
+    PUTBASEBIT68K(EmRealUtilin68K, MOUSE_LEFT, !left);
+    PUTBASEBIT68K(EmRealUtilin68K, MOUSE_MIDDLE, !mid);
+    PUTBASEBIT68K(EmRealUtilin68K, MOUSE_RIGHT, !right);
 }
