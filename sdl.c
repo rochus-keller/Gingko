@@ -617,18 +617,18 @@ void process_SDLevents() {
       }
       case SDL_MOUSEBUTTONDOWN: {
         switch (event.button.button) {
-          case SDL_BUTTON_LEFT: display_left_mouse_button(true); break;
-          case SDL_BUTTON_MIDDLE: display_mid_mouse_button(true); break;
-          case SDL_BUTTON_RIGHT: display_right_mouse_button(true); break;
+          case SDL_BUTTON_LEFT: display_left_mouse_button(TRUE); break;
+          case SDL_BUTTON_MIDDLE: display_mid_mouse_button(TRUE); break;
+          case SDL_BUTTON_RIGHT: display_right_mouse_button(TRUE); break;
         }
         display_notify_lisp();
         break;
       }
       case SDL_MOUSEBUTTONUP: {
         switch (event.button.button) {
-          case SDL_BUTTON_LEFT: display_left_mouse_button(false); break;
-          case SDL_BUTTON_MIDDLE: display_mid_mouse_button(false); break;
-          case SDL_BUTTON_RIGHT: display_right_mouse_button(false); break;
+          case SDL_BUTTON_LEFT: display_left_mouse_button(FALSE); break;
+          case SDL_BUTTON_MIDDLE: display_mid_mouse_button(FALSE); break;
+          case SDL_BUTTON_RIGHT: display_right_mouse_button(FALSE); break;
         }
         display_notify_lisp();
         break;

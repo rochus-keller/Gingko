@@ -105,22 +105,22 @@ void display_notify_mouse_pos(int x, int y)
     *EmCursorY68K = (*((DLword *)EmMouseY68K)) = (short)(y & 0xFFFF);
 }
 
-void display_left_mouse_button(bool on)
+void display_left_mouse_button(int on)
 {
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_LEFT, !on);
 }
 
-void display_mid_mouse_button(bool on)
+void display_mid_mouse_button(int on)
 {
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_MIDDLE, !on);
 }
 
-void display_right_mouse_button(bool on)
+void display_right_mouse_button(int on)
 {
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_RIGHT, !on);
 }
 
-void display_mouse_state(bool left, bool mid, bool right)
+void display_mouse_state(int left, int mid, int right)
 {
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_LEFT, !left);
     PUTBASEBIT68K(EmRealUtilin68K, MOUSE_MIDDLE, !mid);

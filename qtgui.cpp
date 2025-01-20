@@ -17,7 +17,6 @@
 * http://www.gnu.org/copyleft/gpl.html.
 */
 
-#include "qtgui.h"
 #include <QBackingStore>
 #include <QResizeEvent>
 #include <QPainter>
@@ -28,6 +27,8 @@
 #include <QtDebug>
 #include <QElapsedTimer>
 
+extern "C" {
+#include "qtgui.h"
 typedef unsigned short DLword;
 extern DLword *DisplayRegion68k;
 extern DLword *EmCursorBitMap68K;
@@ -42,6 +43,7 @@ extern void display_mouse_state(bool left, bool mid, bool right);
 extern void kb_trans(uint16_t keycode, uint16_t upflg);
 #define GETBASEWORD(base, offset) GETWORDBASEWORD((base),(offset))
 #define GETWORDBASEWORD(base, offset) (* (DLword *) (2^(uintptr_t)((base)+(offset))))
+}
 
 static bool shift = false, ctrl = false;
 
@@ -524,6 +526,7 @@ void GingkoWindow::render(QPainter *painter)
     painter->drawImage(0,0,img);
 }
 
+extern "C" {
 void qt_notify_damage(int x, int y, int w, int h)
 {
     wnd->damage(x,y,w,h);
@@ -574,4 +577,5 @@ int qt_init(const char* windowtitle, int w, int h, int s)
     printf("Qt initialised\n");
     fflush(stdout);
     return 0;
+}
 }

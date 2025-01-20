@@ -67,9 +67,9 @@ extern DLword *DisplayRegion68k;
 
 extern void display_notify_lisp();
 extern void display_notify_mouse_pos(int x, int y);
-extern void display_mouse_state(bool left, bool mid, bool right);
-extern void display_left_mouse_button(bool on);
-extern void display_mid_mouse_button(bool on);
-extern void display_right_mouse_button(bool on);
+extern void display_mouse_state(int left, int mid, int right);
+extern void display_left_mouse_button(int on);
+extern void display_mid_mouse_button(int on);
+extern void display_right_mouse_button(int on);
 
 #endif
