@@ -8,6 +8,8 @@ TEMPLATE = app
 
 LIBS += -lSDL2
 
+QMAKE_CXXFLAGS += -fno-strict-aliasing
+
 SOURCES += \
     arithops.cpp \
     arrayops.cpp \
