@@ -2,7 +2,7 @@ let config : Config {
     if (target_os == `linux) || (target_os == `macos) {
         .lib_names += [ "m" "stdc++" ]
         .ldflags += "-shared-libgcc"
-        .cflags += "-Wno-implicit-function-declaration"
+        .cflags += ["-Wno-implicit-function-declaration" "-fno-strict-aliasing"]
         .defines += "_DARWIN_C_SOURCE"
         .include_dirs += //opt/homebrew/Cellar/sdl2/2.30.11/include
         .lib_dirs += //opt/homebrew/Cellar/sdl2/2.30.11/lib

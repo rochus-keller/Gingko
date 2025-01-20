@@ -9,7 +9,7 @@ To avoid confusions with the original project, this version of the VM is called 
 #### How to use
 
 - Download and unpack any of the official Medley deployments, e.g. [this one](https://github.com/Interlisp/medley/releases/download/medley-240926-e1989850/medley-full-linux-x86_64-240926-e1989850_240513-4becc6ad.tgz); the specific CPU is not relevant in this context.
-- Download the code of this repository to a local folder and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko` in this folder
+- Download the code of this repository to a local folder and run `gcc *.c -std=c99 -fno-strict-aliasing -lSDL2 -lm -o gingko` in this folder
 - Run `./gingko -sysout <path-to-sysout>`, or even simpler `./gingko <path-to-sysout>`; the sysout are located in the medley/loadups folder of the downloaded Medley deployment
 
 So far this guide applies to Unix systems including Cygwin. For Mac M1 use the precompiled binary below.
@@ -47,6 +47,7 @@ Native Windows support is work in progress.
 
 - Removed ether, nethub, dld ffi, never, rs232, jlisp, tty, and ufn
 - Additional simplifications and refactorings (removed e.g. sdl3 support and fg/bg option)
+- Found that random crashes happen if not compiled with -fno-strict-aliasing
 - Added BUSY file for Mac M1 build
 
 #### Precompiled versions
@@ -61,7 +62,7 @@ Just download and unzip to run it. You need a pre-installed SDL2 library on your
 
 Download this repository, and then either ...
 
-1. open a terminal in the Gingko directory and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko`
+1. open a terminal in the Gingko directory and run `gcc *.c -std=c99 -fno-strict-aliasing -lSDL2 -lm -o gingko`
 2. or open the file Gingko.pro in Qt Creator and run the build,
 3. or open the file BUSY using [LeanCreator](https://github.com/rochus-keller/leancreator/) and run the build.
 
