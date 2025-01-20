@@ -7,7 +7,9 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-QMAKE_CFLAGS += -std=c99
+QMAKE_CFLAGS += -std=c99 -fno-strict-aliasing
+# NOTE: if we leave away -fno-strict-aliasing, the VM crashes randomly
+# NOTE: the original build also has -g3 and -std=gnu99, but this has no influence on stability
 
 LIBS += -lSDL2
 
