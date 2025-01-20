@@ -12,7 +12,9 @@ To avoid confusions with the original project, this version of the VM is called 
 - Download the code of this repository to a local folder and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko` in this folder
 - Run `./gingko -sysout <path-to-sysout>`, or even simpler `./gingko <path-to-sysout>`; the sysout are located in the medley/loadups folder of the downloaded Medley deployment
 
-So far this guide applies to Unix systems including MacOS and Cygwin.
+So far this guide applies to Unix systems including Cygwin. For Mac M1 use the precompiled binary below.
+
+Native Windows support is work in progress.
 
 #### Status on 2024-10-04
 
@@ -41,18 +43,29 @@ So far this guide applies to Unix systems including MacOS and Cygwin.
 - The feedback from pamoroso and nbriggs has been considered and implemented.
 - Gingko therefore supports international keyboards and is easier to build and install than Maiko.
 
+#### Status on 2025-01-20
+
+- Removed ether, nethub, dld ffi, never, rs232, jlisp, tty, and ufn
+- Additional simplifications and refactorings (removed e.g. sdl3 support and fg/bg option)
+- Added BUSY file for Mac M1 build
+
 #### Precompiled versions
 
-Not available at this time.
+The following precompiled versions are available at this time:
+
+- [Mac M1](http://software.rochus-keller.ch/gingko_mac_m1.zip)
+
+Just download and unzip to run it. You need a pre-installed SDL2 library on your system (on Mac you can install it using e.g. `brew install SDL2`).
 
 #### How to build
 
 Download this repository, and then either ...
 
-- open a terminal in the Gingko directory and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko`
-- or open the file Gingko.pro in Qt Creator and run the build. 
+1. open a terminal in the Gingko directory and run `gcc *.c -std=c99 -lSDL2 -lm -o gingko`
+2. or open the file Gingko.pro in Qt Creator and run the build,
+3. or open the file BUSY using [LeanCreator](https://github.com/rochus-keller/leancreator/) and run the build.
 
-This has been tested on Linux so far.
+Methods 1 and 2 have been tested on Linux so far. Method 3 has been tested on Mac M1.
 
 #### Additional Credits
 
