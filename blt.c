@@ -29,7 +29,6 @@
 #include "lsptypes.h"
 #include "lispmap.h"
 #include "stack.h"
-#include "emlglob.h"
 #include "lspglob.h"
 #include "cell.h"
 

@@ -12,7 +12,6 @@
 #include "adr68k.h"       // for NativeAligned4FromLAddr
 #include "car-cdrdefs.h"  // for car, cdr
 #include "cell.h"         // for cadr_cell, CDR_NIL, CDR_INDIRECT, S_N_CHECK...
-#include "emlglob.h"
 #include "lispemul.h"     // for state, ConsCell, LispPTR, NIL_PTR, DLword
 #include "lispmap.h"      // for S_POSITIVE
 #include "lspglob.h"      // for Stackspace

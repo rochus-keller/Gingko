@@ -21,7 +21,6 @@
 */
 /******************************************************************/
 
-#include "emlglob.h"
 #include "lispemul.h"    // for LispPTR, state, DLword, PVar, CurrentStackPTR
 #include "lspglob.h"
 #include "unwinddefs.h"  // for N_OP_unwind

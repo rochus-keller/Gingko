@@ -14,7 +14,6 @@
 #include "address.h"       // for LOLOC
 #include "adr68k.h"        // for NativeAligned2FromLAddr, NativeAligned4FromLAddr
 #include "car-cdrdefs.h"   // for cdr, car
-#include "emlglob.h"
 #include "kprintdefs.h"    // for prindatum, print, print_NEWstring, print_fixp
 #include "lispemul.h"      // for LispPTR, DLbyte, DLword, POINTERMASK, NIL
 #include "lispmap.h"       // for S_POSITIVE
@@ -38,7 +37,7 @@ void prindatum(LispPTR x) {
   NEWSTRINGP *newstring;
   struct dtd *dtd_base;
   int typen;
-  LispPTR typename;
+  LispPTR typename_;
 
   if (Printdepth >= PrintMaxLevel) {
     if (Printdepth == PrintMaxLevel) {
@@ -105,11 +104,11 @@ void prindatum(LispPTR x) {
       break;
     default: dtd_base = (struct dtd *)GetDTD(typen); printf("{");
 #ifdef BIGVM
-      if ((typename = dtd_base->dtd_name) != 0)
+      if ((typename_ = dtd_base->dtd_name) != 0)
 #else
-      if ((typename = dtd_base->dtd_namelo + (dtd_base->dtd_namehi << 16)) != 0)
+      if ((typename_ = dtd_base->dtd_namelo + (dtd_base->dtd_namehi << 16)) != 0)
 #endif
-        print_atomname(typename);
+        print_atomname(typename_);
       else
         printf("unknown");
       printf("}0x");

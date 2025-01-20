@@ -24,7 +24,6 @@
 #endif
 #include "car-cdrdefs.h"   // for car
 #include "conspagedefs.h"  // for cons
-#include "emlglob.h"
 #include "lspglob.h"       // for Stackspace
 #include "lsptypes.h"      // for ByteCode, LispPTR, state, DLword, FN_OPCOD...
 #include "mvsdefs.h"       // for make_value_list, simulate_unbind, values

@@ -24,7 +24,6 @@
 
 #include "car-cdrdefs.h"   // for N_OP_rplacd
 #include "conspagedefs.h"  // for cons
-#include "emlglob.h"
 #include "lispemul.h"      // for LispPTR, state, ERROR_EXIT, NIL_PTR
 #include "lspglob.h"
 #include "lsptypes.h"      // for Listp

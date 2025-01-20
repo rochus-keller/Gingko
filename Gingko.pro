@@ -57,7 +57,6 @@ SOURCES += \
     unixcomm.c \
     uraid.c \
     rpc.c \
-    ufn.c \
     z2.c \
     eqf.c \
     fp.c \
@@ -66,7 +65,6 @@ SOURCES += \
     ubf3.c \
     uutils.c \
     perrno.c \
-    foreign.c \
     lisp2c.c \
     osmsg.c \
     dbgtool.c \
@@ -87,10 +85,6 @@ SOURCES += \
     dir.c \
     keyevent.c \
     kbdsubrs.c \
-    ether_common.c \
-    ether_sunos.c \
-    ether_nethub.c \
-    tty.c \
     initkbd.c \
     gcscan.c \
     gcarray.c \
@@ -103,7 +97,7 @@ SOURCES += \
     gcoflow.c \
     sdl.c \
     usrsubr.c \
-    vdate.c
+    display.c
 
 HEADERS += \
     address.h \
@@ -140,8 +134,6 @@ HEADERS += \
     dspsubrsdefs.h \
     emlglob.h \
     eqfdefs.h \
-    ether.h \
-    etherdefs.h \
     findkeydefs.h \
     fpdefs.h \
     fvardefs.h \
@@ -222,7 +214,6 @@ HEADERS += \
     tos1defs.h \
     tosfns.h \
     tosret.h \
-    tty.h \
     ttydefs.h \
     typeofdefs.h \
     ubf1defs.h \

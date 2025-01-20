@@ -122,19 +122,6 @@ static uint8_t *XGenericKeyMap; /* filled in with malloc if needed */
 
 /* For the IBM-101 kbd FF marks exceptions */
 
-#ifdef NEVER
-uint8_t DOSLispKeyMap_101[0x80] = {
-    /*     0     1     2     3     4     5     6     7     8     9     a     b     c     d     e     f */
-    /* 0*/ 0xff, 33,   32,   17,   16,   1,    0,    2,    4,    53,   22,   8,    10,   59,   15,   34,
-    /* 1*/ 19,   18,   3,    48,   49,   51,   6,    23,   25,   11,   58,   29,   44,   36,   21,   20,
-    /* 2*/ 5,    35,   50,   52,   38,   9,    26,   43,   28,   45,   41,   105,  40,   24,   37,   7,
-    /* 3*/ 39,   54,   55,   27,   42,   12,   60,   95,   31,   57,   56,   97,   99,   100,  67,   68,
-    /* 4*/ 101,  66,   104,  80,   106,  73,   74,   81,   82,   83,   96,   84,   85,   87,   102,  94,
-    /* 5*/ 69,   70,   98,   13,   0xff, 0xff, 0xff, 107,  108,  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-    /* 6*/ 89,   62,   63,   46,   90,   91,   130,  129,  131,  132,  92,   61,   0xff, 0xff, 0xff, 0xff,
-    /* 7*/ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-#endif /* NEVER */
-
 #ifdef DOS
 /* For the IBM-101 kbd FF marks exceptions */
 static u_char DOSLispKeyMap_101[0x80] = {

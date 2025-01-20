@@ -28,13 +28,6 @@
 #include <unistd.h>
 #endif /* DOS */
 
-#ifdef MAIKO_ENABLE_ETHERNET
-#if defined(USE_NIT)
-#include <net/nit.h> /* needed for Ethernet stuff below */
-#endif               /* USE_DLPI */
-#endif               /* MAIKO_ENABLE_ETHERNET */
-
-#include "emlglob.h"
 #include "adr68k.h"
 #include "stack.h"
 #include "return.h"
@@ -50,7 +43,6 @@
 #include "commondefs.h"
 #include "dirdefs.h"
 #include "dspifdefs.h"
-#include "etherdefs.h"
 #include "initdspdefs.h"
 #include "initkbddefs.h"
 #include "initsoutdefs.h"
@@ -60,7 +52,6 @@
 #include "timerdefs.h"
 #include "unixcommdefs.h"
 #include "xcdefs.h"
-#include "xrdoptdefs.h"
 
 DLword *Lisp_world; /* lispworld */
 
@@ -204,12 +195,6 @@ LispPTR *GuardStackAddr_word;
 LispPTR *LastStackAddr_word;
 LispPTR *NeedHardreturnCleanup_word;
 
-/*** Ethernet stuff (JRB) **/
-#ifdef MAIKO_ENABLE_ETHERNET
-extern int ether_fd;
-extern uint8_t ether_host[6];
-#endif /* MAIKO_ENABLE_ETHERNET */
-
 extern struct sockaddr_nit snit;
 
 #ifdef INIT
@@ -238,10 +223,11 @@ int flushing = FALSE; /* see dbprint.h if set, all debug/trace printing will cal
 #ifdef SDL
 extern int init_SDL(const char*, int, int, int);
 #endif
-extern const time_t MDate;
+
+static const time_t MDate = 1727952008;
 extern int nokbdflag;
 extern int nomouseflag;
-#ifdef SDL
+#if defined SDL
 const char *helpstring =
     "\n\
  either setenv LDESRCESYSOUT or do:\n\
@@ -249,42 +235,11 @@ const char *helpstring =
  -info                    Print general info about the system\n\
  -help                    Print this message\n\
  -pixelscale <n>          The amount of pixels to show for one Medley screen pixel.\n\
- -fg/-foreground <color>  Screen foreground color, default Black.  X color name or #RRBBGG hex\n\
- -bg/-background <color>  Screen background color, default White.  X color name or #RRBBGG hex\n\
  -sc[reen] <w>x<h>]       The Medley screen geometry\n\
  -t <title>               The window title\n\
  -title <title>           The window title\n";
-#else
-const char *helpstring =
-    "\n\
- either setenv LDESRCESYSOUT or do:\n\
- lde[ether] [sysout-name] [<options>]\n\
- -info        Print general info about the system\n\
- -help        Print this message\n";
 #endif
 
-#if defined(MAIKO_ENABLE_NETHUB)
-const char *nethubHelpstring =
- "\
- -nh-host dodo-host        Hostname for Dodo Nethub (no networking if missing)\n\
- -nh-port port-number      Port for Dodo Nethub (optional, default: 3333)\n\
- -nh-mac XX-XX-XX-XX-XX-XX Machine-ID for Maiko-VM (optional, default: CA-FF-EE-12-34-56) \n\
- -nh-loglevel level        Loglevel for Dodo networking (0..2, optional, default: 0)\n\
- ";
-#else
-const char *nethubHelpstring = "";
-#endif
-
-#if defined(MAIKO_EMULATE_TIMER_INTERRUPTS) || defined(MAIKO_EMULATE_ASYNC_INTERRUPTS)
-extern int insnsCountdownForTimerAsyncEmulation;
-#endif
-
-#if defined(SDL)
-char foregroundColorName[64] = {0};
-extern char foregroundColorName[64];
-char backgroundColorName[64] = {0};
-extern char backgroundColorName[64];
-#endif
 /************************************************************************/
 /*									*/
 /*		     M A I N   E N T R Y   P O I N T			*/
@@ -302,14 +257,6 @@ int main(int argc, char *argv[])
   int width = 1024, height = 768;
   int pixelscale = 1;
   const char *windowtitle = "Medley";
-
-#ifdef MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE
-  if (dld_find_executable(argv[0]) == 0) {
-    perror("Name of executable not found.");
-  } else if (dld_init(dld_find_executable(argv[0])) != 0) {
-    dld_perror("Can't init DLD.");
-  }
-#endif /* MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE */
 
 #ifdef PROFILE
   moncontrol(0); /* initially stop sampling */
@@ -340,7 +287,7 @@ int main(int argc, char *argv[])
   }
 
   if (argv[i] && ((strcmp(argv[i], "-help") == 0) || (strcmp(argv[i], "-HELP") == 0))) {
-    (void)fprintf(stderr, "%s%s", helpstring, nethubHelpstring);
+    (void)fprintf(stderr, "%s", helpstring);
     exit(0);
   }
 
@@ -399,7 +346,7 @@ int main(int argc, char *argv[])
     else if (!strcmp(argv[i], "-INIT")) { /*** init sysout, no packaged */
       for_makeinit = 1;
     }
-#ifdef SDL
+#if defined SDL
     else if ((strcmp(argv[i], "-sc") == 0) || (strcmp(argv[i], "-SC") == 0)) {
       if (argc > ++i) {
         int read = sscanf(argv[i], "%dx%d", &width, &height);
@@ -430,122 +377,8 @@ int main(int argc, char *argv[])
         (void)fprintf(stderr, "Missing argument after -title\n");
         exit(1);
       }
-    } else if (strcmp(argv[i], "-fg") == 0 || strcmp(argv[i], "-foreground") == 0) {
-      if (argc > ++i) {
-        strncpy(foregroundColorName, argv[i], sizeof(foregroundColorName) - 1);
-      } else {
-        (void)fprintf(stderr, "Missing argument after -fg/-foreground\n");
-        exit(1);
-      }
-    } else if (strcmp(argv[i], "-bg") == 0 || strcmp(argv[i], "-background") == 0) {
-      if (argc > ++i) {
-        strncpy(backgroundColorName, argv[i], sizeof(backgroundColorName) - 1);
-      } else {
-        (void)fprintf(stderr, "Missing argument after -bg/-background\n");
-        exit(1);
-      }
     }
 #endif /* SDL */
-    /* Can only do this under SUNOs, for now */
-    else if (!strcmp(argv[i], "-E")) { /**** ethernet info	****/
-#ifdef MAIKO_ENABLE_ETHERNET
-      int b0, b1, b2, b3, b4, b5;
-#if defined(USE_DLPI)
-      if (argc > ++i &&
-          sscanf(argv[i], "%d:%x:%x:%x:%x:%x:%x", &ether_fd, &b0, &b1, &b2, &b3, &b4, &b5) == 7)
-#else
-      if (argc > ++i &&
-          sscanf(argv[i], "%d:%x:%x:%x:%x:%x:%x:%s", &ether_fd, &b0, &b1, &b2, &b3, &b4, &b5,
-                 snit.snit_ifname) == 8)
-#endif /* USE_DLPI */
-      {
-        ether_host[0] = b0;
-        ether_host[1] = b1;
-        ether_host[2] = b2;
-        ether_host[3] = b3;
-        ether_host[4] = b4;
-        ether_host[5] = b5;
-      } else {
-        (void)fprintf(stderr, "Missing or bogus -E argument\n");
-        ether_fd = -1;
-        exit(1);
-      }
-#endif /* MAIKO_ENABLE_ETHERNET */
-
-    }
-
-#ifdef MAIKO_ENABLE_NETHUB
-    else if (!strcmp(argv[i], "-nh-host")) {
-      if (argc > ++i) {
-        setNethubHost(argv[i]);
-      } else {
-        (void)fprintf(stderr, "Missing argument after -nh-host\n");
-        exit(1);
-      }
-    }
-    else if (!strcmp(argv[i], "-nh-port")) {
-      if (argc > ++i) {
-        errno = 0;
-        tmpint = strtol(argv[i], (char **)NULL, 10);
-        if (errno == 0 && tmpint > 0) {
-          setNethubPort(tmpint);
-        } else {
-          (void)fprintf(stderr, "Bad value for -nh-port\n");
-          exit(1);
-        }
-      } else {
-        (void)fprintf(stderr, "Missing argument after -nh-port\n");
-        exit(1);
-      }
-    }
-    else if (!strcmp(argv[i], "-nh-mac")) {
-      if (argc > ++i) {
-        int b0, b1, b2, b3, b4, b5;
-        if (sscanf(argv[i], "%x-%x-%x-%x-%x-%x",  &b0, &b1, &b2, &b3, &b4, &b5) == 6) {
-          setNethubMac(b0, b1, b2, b3, b4, b5);
-        } else {
-          (void)fprintf(stderr, "Invalid argument for -nh-mac\n");
-          exit(1);
-        }
-      } else {
-        (void)fprintf(stderr, "Missing argument after -nh-mac\n");
-        exit(1);
-      }
-    }
-    else if (!strcmp(argv[i], "-nh-loglevel")) {
-      if (argc > ++i) {
-        errno = 0;
-        tmpint = strtol(argv[i], (char **)NULL, 10);
-        if (errno == 0 && tmpint >= 0) {
-          setNethubLogLevel(tmpint);
-        } else {
-          (void)fprintf(stderr, "Bad value for -nh-loglevel\n");
-          exit(1);
-        }
-      } else {
-        (void)fprintf(stderr, "Missing argument after -nh-loglevel\n");
-        exit(1);
-      }
-    }
-#endif /* MAIKO_ENABLE_NETHUB */
-
-#if defined(MAIKO_EMULATE_TIMER_INTERRUPTS) || defined(MAIKO_EMULATE_ASYNC_INTERRUPTS)
-    else if (!strcmp(argv[i], "-intr-emu-insns")) {
-      if (argc > ++i) {
-        errno = 0;
-        tmpint = strtol(argv[i], (char **)NULL, 10);
-        if (errno == 0 && tmpint > 1000) {
-          insnsCountdownForTimerAsyncEmulation = tmpint;
-        } else {
-          (void)fprintf(stderr, "Bad value for -intr-emu-insns (integer > 1000)\n");
-          exit(1);
-        }
-      } else {
-        (void)fprintf(stderr, "Missing argument after -intr-emu-insns\n");
-        exit(1);
-      }
-    }
-#endif
 
     /* diagnostic flag for big vmem write() calls */
     else if (!strcmp(argv[i], "-xpages")) {
@@ -594,7 +427,7 @@ int main(int argc, char *argv[])
   if ((sysout_name[0] == '\0') || (access(sysout_name, R_OK))) {
     perror("Couldn't find a sysout to run");
     fprintf(stderr, "Looking for: %s\n", sysout_name);
-    (void)fprintf(stderr, "%s%s", helpstring, nethubHelpstring);
+    (void)fprintf(stderr, "%s", helpstring);
     exit(1);
   }
   /* OK, sysout name is now in sysout_name */
@@ -644,14 +477,6 @@ int main(int argc, char *argv[])
 
   FD_ZERO(&LispReadFds);
 
-#ifdef MAIKO_ENABLE_ETHERNET
-  init_ether(); /* modified by kiuchi Nov. 4 */
-#endif          /* MAIKO_ENABLE_ETHERNET */
-
-#ifdef MAIKO_ENABLE_NETHUB
-  connectToHub();
-#endif
-
   /* Fork Unix was called in kickstarter; if we forked, look up the */
   /* pipe handles to the subprocess and set them up.		      */
 
@@ -680,9 +505,6 @@ int main(int argc, char *argv[])
     (void)fprintf(stderr, "Cannot allocate internal data.\n");
     exit(1);
   }
-#ifdef RS232
-  rs232c_init();
-#endif
 
   /* Get OS message to ~/lisp.log and print the message to prompt window */
   if (!for_makeinit) {
@@ -776,11 +598,6 @@ void print_info_lines(void) {
 #ifdef NOVERSION
   printf("Does not enforce SYSOUT version matching.\n");
 #endif /* NOVERSION */
-#ifdef MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE
-  printf("Has foreign-function-call interface.\n");
-#else
-  printf("Has no foreign-function-call interface.\n");
-#endif /* MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE */
 #ifdef NOEUROKBD
   printf("No support for European keyboards.\n");
 #else

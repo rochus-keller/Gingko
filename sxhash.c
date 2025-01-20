@@ -15,7 +15,6 @@
 #include "car-cdrdefs.h"  // for car, cdr
 #include "cell.h"         // for PLCell, PNCell, GetPnameCell, GetPropCell
 #include "commondefs.h"   // for error
-#include "emlglob.h"
 #include "lispemul.h"     // for LispPTR, DLword, POINTERMASK, SEGMASK
 #include "lispmap.h"      // for S_POSITIVE, S_NEGATIVE
 #include "lspglob.h"

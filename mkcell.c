@@ -30,7 +30,6 @@
 #include "adr68k.h"        // for NativeAligned2FromLAddr
 #include "allocmdsdefs.h"  // for alloc_mdspage, initmdspage
 #include "commondefs.h"    // for error
-#include "emlglob.h"
 #include "gcdata.h"        // for DELREF, GCLOOKUP
 #include "gchtfinddefs.h"  // for htfind, rec_htfind
 #include "lispemul.h"      // for LispPTR, DLword, NIL, POINTERMASK, state

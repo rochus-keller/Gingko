@@ -24,7 +24,6 @@
 #include "devconf.h"      // for SUN2BW
 #include "devif.h"        // for (anonymous), MRegion, DevRec, DspInterface
 #include "display.h"      // for DLWORD_PERLINE, DISPLAYBUFFER
-#include "emlglob.h"
 #include "ifpage.h"       // for IFPAGE
 #include "initdspdefs.h"  // for clear_display, display_before_exit, flush_d...
 #include "lispemul.h"     // for DLword, BITSPER_DLWORD, T
@@ -40,7 +39,7 @@
 
 int FrameBufferFd = -1;
 
-extern int sdl_displaywidth, sdl_displayheight, sdl_pixelscale;
+extern int sdl_displaywidth, sdl_displayheight;
 extern unsigned displaywidth, displayheight, DisplayRasterWidth, DisplayType, DisplayByteSize;
 unsigned displaywidth, displayheight, DisplayRasterWidth, DisplayType, DisplayByteSize;
 DLword *DisplayRegion68k; /* 68k addr of #{}22,0 */
@@ -151,7 +150,7 @@ void init_display2(DLword *display_addr, unsigned display_max)
 
   DBPRINT(("FBIOGTYPE w x h = %d x %d\n", displaywidth, displayheight));
 
-#ifdef SDL
+#if defined SDL
   DisplayType = SUN2BW;
 #endif /* SDL */
   init_cursor();

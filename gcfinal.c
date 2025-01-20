@@ -57,17 +57,6 @@
 #include "lsptypes.h"     // for WORDPTR
 #include "stack.h"        // for STACKP, FX
 
-#ifdef NEVER
-#define GetSegnuminColl(entry1) ((entry1 & 0x01fe) >> 1) /* segnum field */
-#define GetLinkptr(entry) (entry & 0x0fffe)
-#define GetCountinColl(entry1) ((entry1 & 0x0fc00) >> 10)
-#define Oddp(num) (((num % 2) != 0) ? 1 : 0)
-#define Evenp(num) (((num % 2) != 0) ? 0 : 1)
-#define STK_HI 1 /* This value also */
-#define PADDING 4
-#define Boundp(frame_field) ((frame_field == 0) ? 1 : 0)
-#endif /* NEVER */
-
 #define min(a, b) (((a) > (b)) ? (b) : (a))
 #define Trailer(ldatum, datum68) ((ldatum) + 2 * ((datum68)->arlen - ARRAYBLOCKTRAILERCELLS))
 #define BucketIndex(n) min(integerlength(n), MAXBUCKETINDEX)

@@ -69,10 +69,6 @@
 #include "uraidextdefs.h"        // for URMAXCOMM, URMAXFXNUM, URSCAN_ALINK
 #include "vmemsavedefs.h"        // for vmem_save
 
-#ifdef MAIKO_ENABLE_ETHERNET
-#include "etherdefs.h"
-#endif
-
 
 #ifdef COLOR
 extern int MonoOrColor;
@@ -798,13 +794,6 @@ int device_before_raid(void) {
 
   int_block();
 
-#ifdef MAIKO_ENABLE_ETHERNET
-#ifdef ETHERINT
-  if (ether_fd > 0) /* check ether is used or not */
-    int_io_close(ether_fd);
-#endif
-#endif /* MAIKO_ENABLE_ETHERNET */
-
 #ifdef RS232INT
   int_io_close(RS232C_Fd);
 #endif
@@ -888,25 +877,8 @@ int device_after_raid(void) {
   truecolor_after_raid();
 #endif /* TRUECOLOR */
 
-#ifdef MAIKO_ENABLE_ETHERNET
-  init_ether();
-#if defined(USE_DLPI)
-  if (ether_fd > 0)
-    if (ioctl(ether_fd, I_SETSIG, S_INPUT) != 0) {
-      perror("after-uraid: I_SETSIG for ether failed:\n");
-      close(ether_fd);
-      ether_fd = -1;
-      return (-1);
-    }
-#endif /* USE_DLPI */
-#endif /* MAIKO_ENABLE_ETHERNET */
-
   int_init();
 
-
-#ifdef MAIKO_ENABLE_ETHERNET
-  if (ether_fd > 0) FD_SET(ether_fd, &LispReadFds);
-#endif /* MAIKO_ENABLE_ETHERNET */
 
   int_unblock();
   *EmKbdAd068K = *EmRealUtilin68K = *EmKbdAd168K = *EmKbdAd268K = *EmKbdAd368K = *EmKbdAd468K =

@@ -31,7 +31,6 @@
 #include "lspglob.h"
 #include "lispmap.h"
 #include "lsptypes.h"
-#include "emlglob.h"
 #include "adr68k.h"
 #include "address.h"
 #include "arith.h"
@@ -446,7 +445,7 @@ do_it_now:
     }
 #endif
 
-#ifdef SDL
+#if defined SDL
   if (in_display_segment(dstbase)) flush_display_region(dx, dty, w, h);
 #endif /* SDL */
 
@@ -787,7 +786,7 @@ do_it_now:
     }
 #endif
 
-#ifdef SDL
+#if defined SDL
   if (in_display_segment(dstbase)) flush_display_region(dlx, dty, width, height);
 #endif /* SDL */
 
@@ -1026,7 +1025,7 @@ do_it_now:
     }
 #endif
 
-#ifdef SDL
+#if defined SDL
   if (in_display_segment(dstbase)) flush_display_region(left, dty, width, height);
 #endif /* SDL */
 
@@ -1147,7 +1146,7 @@ void bltchar(LispPTR *args)
     if (in_display_segment(dstbase)) { flush_display_lineregion(dx, dstbase, w, h); }
 #endif
 
-#ifdef SDL
+#if defined SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
 #endif /* SDL */
 
@@ -1360,7 +1359,7 @@ void newbltchar(LispPTR *args) {
     }
 #endif
 
-#ifdef SDL
+#if defined SDL
   if (in_display_segment(dstbase)) flush_display_lineregion(dx, dstbase, w, h);
 #endif /* SDL */
 

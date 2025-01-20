@@ -20,7 +20,6 @@
 
 #include "car-cdrdefs.h"   // for car, cdr
 #include "cell.h"          // for cadr_cell
-#include "emlglob.h"
 #include "lispemul.h"      // for state, LispPTR, ERROR_EXIT, NIL_PTR, Scrat...
 #include "lspglob.h"
 #include "lsptypes.h"      // for Listp, GetTypeNumber, TYPE_LISTP

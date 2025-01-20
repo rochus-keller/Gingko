@@ -43,7 +43,6 @@ extern int ether_fd;
 #endif
 
 #include "lispemul.h"
-#include "emlglob.h"
 #include "lspglob.h"
 #include "adr68k.h"
 #include "lsptypes.h"

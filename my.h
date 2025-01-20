@@ -126,10 +126,10 @@ do {									\
         *(((LispPTR *)NativeAligned4FromLAddr(base)) + index) = data;	\
         return(data);							\
       case 20: { /* signed : 16 bits */					\
-        DLword new = data & 0xFFFF;					\
+        DLword new_ = data & 0xFFFF;					\
         if ((((data & SEGMASK) == S_POSITIVE) && ((data & 0x8000) == 0)) ||\
 	    (((data & SEGMASK) == S_NEGATIVE) && (data & 0x8000)))	\
-        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = new;		\
+        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = new_;		\
         else ERROR_EXIT(tos);						\
         return(data);							\
         }								\
@@ -141,9 +141,9 @@ do {									\
         return(data);							\
       }									\
       case 22: { /* signed : 32 bits */					\
-	int new;							\
-        N_GETNUMBER(data, new, doufn);					\
-        *(((int *)NativeAligned4FromLAddr(base)) + index) = new;	\
+    int new_;							\
+        N_GETNUMBER(data, new_, doufn);					\
+        *(((int *)NativeAligned4FromLAddr(base)) + index) = new_;	\
         return(data);							\
       }									\
       case 0: { /* unsigned : 1 bit per element */			\
@@ -161,17 +161,17 @@ do {									\
         return(data);							\
       }									\
       case 3: { /* unsigned : 8 bits per element */			\
-        int new;							\
-        N_GetPos(data, new, tos);					\
-        if (new > 0xFF) ERROR_EXIT(tos);				\
-        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (uint8_t)new; \
+        int new_;							\
+        N_GetPos(data, new_, tos);					\
+        if (new_ > 0xFF) ERROR_EXIT(tos);				\
+        GETBYTE(((char *)NativeAligned2FromLAddr(base)) + index) = (uint8_t)new_; \
         return(data);							\
       }									\
       case 4: { /* unsigned : 16 bits per element */			\
-        int new;							\
-        N_GetPos(data, new, tos); 					\
-        if (new > 0xFFFF) ERROR_EXIT(tos);				\
-        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = (DLword)new; \
+        int new_;							\
+        N_GetPos(data, new_, tos); 					\
+        if (new_ > 0xFFFF) ERROR_EXIT(tos);				\
+        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = (DLword)new_; \
         return(data);							\
       }									\
       case 54: /* Float : 32 bits */					\
@@ -179,10 +179,10 @@ do {									\
         *(((int *)NativeAligned4FromLAddr(base)) + index) = *((int *)NativeAligned4FromLAddr(data)); \
         return(data);							\
       case 68: {/* Character :  16 bits */				\
-        DLword new;							\
+        DLword new_;							\
         if ((data & SEGMASK) != S_CHARACTER) ERROR_EXIT(tos); 		\
-        new = data & 0xFFFF;						\
-        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = new; \
+        new_ = data & 0xFFFF;						\
+        GETWORD(((DLword *)NativeAligned2FromLAddr(base)) + index) = new_; \
         return(data);							\
       }									\
       case 86: /* XPointer : 32 bits */					\

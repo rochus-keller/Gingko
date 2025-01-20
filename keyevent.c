@@ -44,10 +44,6 @@
 #include "keyeventdefs.h"
 #include "osmsgdefs.h"
 
-#if defined(MAIKO_ENABLE_ETHERNET) || defined(MAIKO_ENABLE_NETHUB)
-#include "etherdefs.h"
-#endif /* MAIKO_ENABLE_ETHERNET or MAIKO_ENABLE_NETHUB */
-
 #include "dbprint.h"
 
 /* for contextsw */
@@ -60,35 +56,6 @@
     *((DLword *)EmMouseX68K) = x; \
     *((DLword *)EmMouseY68K) = y; \
   } while (0)
-#ifdef NEVER
-#ifndef BYTESWAP
-#define PUTBASEBIT68K(base68k, offset, bitvalue)               \
-  do {                                                            \
-    if (bitvalue)                                              \
-      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) |=   \
-          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);    \
-    else                                                       \
-      *((DLword *)(base68k) + (((uint16_t)(offset)) >> 4)) &=   \
-          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD)); \
-  } while (0)
-#else
-
-/* convert to real 68 k address, then do arithmetic, and convert
-   back to i386 address pointer */
-
-#define PUTBASEBIT68K(base68k, offset, bitvalue)                       \
-  do {                                                                    \
-    int real68kbase;                                                   \
-    real68kbase = 2 ^ ((int)(base68k));                                \
-    if (bitvalue)                                                      \
-      GETWORD((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)) |= \
-          1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD);            \
-    else                                                               \
-      GETWORD((DLword *)(real68kbase) + (((uint16_t)(offset)) >> 4)) &= \
-          ~(1 << (15 - ((uint16_t)(offset)) % BITSPER_DLWORD));         \
-  } while (0)
-#endif
-#endif /* NEVER */
 
 extern DLword *EmMouseX68K, *EmMouseY68K, *EmKbdAd068K, *EmRealUtilin68K, *EmUtilin68K;
 extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K;
@@ -99,10 +66,6 @@ extern volatile sig_atomic_t XLocked;
 extern volatile sig_atomic_t XNeedSignal;
 
 extern int LogFileFd;
-
-#if defined(MAIKO_ENABLE_ETHERNET) || defined(MAIKO_ENABLE_NETHUB)
-extern int ether_fd;
-#endif /* MAIKO_ENABLE_ETHERNET or MAIKO_ENABLE_NETHUB */
 
 extern DLword *DisplayRegion68k;
 
@@ -211,22 +174,6 @@ void process_io_events(void)
   memcpy(&rfds, &LispReadFds, sizeof(rfds));
 
   if (select(32, &rfds, NULL, NULL, &SelectTimeout) > 0) {
-
-#ifdef MAIKO_ENABLE_ETHERNET
-    if (ether_fd >= 0 && FD_ISSET(ether_fd, &rfds)) { /* Raw ethernet (NIT) I/O happened, so handle it. */
-      DBPRINT(("Handling enet interrupt.\n\n"));
-      check_ether();
-    }
-#endif /* MAIKO_ENABLE_ETHERNET */
-
-#ifdef MAIKO_ENABLE_NETHUB
-    check_ether();
-#endif /* MAIKO_ENABLE_NETHUB */
-
-#ifdef RS232
-    if (RS232C_Fd >= 0 && (FD_ISSET(RS232C_Fd, &rfds) || (RS232C_remain_data && rs232c_lisp_is_ready())))
-      rs232c_read();
-#endif /* RS232 */
 
 #if defined(MAIKO_HANDLE_CONSOLE_MESSAGES) && defined(LOGINT)
     if (LogFileFd >= 0 && FD_ISSET(LogFileFd, &rfds)) { /* There's info in the log file.  Tell Lisp to print it. */

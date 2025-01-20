@@ -47,11 +47,9 @@
 /* Following MACRO defs. is related with POINTER which is defined as ACCESSFNS in Interlisp(LLNEW)  */
 #ifdef BIGVM
 #define POINTER_PAGE(datum)	(((unsigned int)(datum) & 0x0fffff00) >> 8 )
-#define POINTER_SEGMENT(datum)		HILOC(datum)
 #define POINTER_PAGEBASE(datum)	((datum) & 0x0fffff00)
 #else
 #define POINTER_PAGE(datum)	(((unsigned int)(datum) & 0x0ffff00) >> 8 )
-#define POINTER_SEGMENT(datum)		HILOC(datum)
 #define POINTER_PAGEBASE(datum)	((datum) & 0x0ffff00)
 #endif /* BIGVM */
 #endif /* ADDRESS_H */

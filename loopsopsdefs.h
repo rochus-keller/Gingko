@@ -3,7 +3,7 @@
 #include "lispemul.h" /* for LispPTR */
 LispPTR lcfuncall(unsigned int atom_index, int argnum, int bytenum);
 LispPTR LCinit(void);
-LispPTR LCFetchMethod(LispPTR class, LispPTR selector);
+LispPTR LCFetchMethod(LispPTR class_, LispPTR selector);
 LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector);
 LispPTR LCFindVarIndex(LispPTR iv, LispPTR object);
 LispPTR LCGetIVValue(LispPTR object, LispPTR iv);

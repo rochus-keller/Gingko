@@ -11,7 +11,6 @@
 #include "version.h"
 
 #include "adr68k.h"       // for NativeAligned2FromLAddr, NativeAligned4FromLAddr
-#include "emlglob.h"
 #include "lispemul.h"     // for state, LispPTR, ERROR_EXIT, SEGMASK, POINTE...
 #include "lispmap.h"      // for S_POSITIVE, S_NEGATIVE
 #include "lowlev2defs.h"  // for N_OP_addbase, N_OP_getbasebyte, N_OP_putbas...

@@ -56,7 +56,6 @@
 #include "adr68k.h"        // for NativeAligned4FromLAddr, LAddrFromNative
 #include "commondefs.h"    // for error
 #include "dspsubrsdefs.h"  // for flip_cursor
-#include "emlglob.h"
 #include "gcmain3defs.h"   // for gcmapscan, gcmapunscan, gcscanstack
 #include "gcrdefs.h"       // for disablegc1, dogc01, doreclaim, gcarrangeme...
 #include "lispemul.h"      // for state, NIL, DLword, CurrentStackPTR, ATOM_T

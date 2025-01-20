@@ -31,7 +31,6 @@
 #include <sys/time.h>
 
 #include "lispemul.h"
-#include "emlglob.h"
 #include "address.h"
 #include "adr68k.h"
 #include "stack.h"
@@ -102,13 +101,6 @@ extern void process_SDLevents();
 typedef struct conspage ConsPage;
 typedef ByteCode *InstPtr;
 
-/* This used to be here for including optimized dispatch
- * for SPARC, but it has some other things in it, so we
- * are keeping it around for now until we sort that out. */
-#ifdef SPARCDISP
-#include "inlnSPARC.h"
-#endif /* SPARCDISP */
-
 /* trick now is that pccache points one ahead... */
 #define PCMAC (pccache - 1)
 #define PCMACL pccache
@@ -146,17 +138,6 @@ static const int n_mask_array[16] = {
 };
 
 extern int TIMER_INTERVAL;
-
-#if defined(MAIKO_EMULATE_TIMER_INTERRUPTS) || defined(MAIKO_EMULATE_ASYNC_INTERRUPTS)
-
-#  if !defined(MAIKO_TIMER_ASYNC_EMULATION_INSNS_COUNTDOWN)
-#    define MAIKO_TIMER_ASYNC_EMULATION_INSNS_COUNTDOWN 20000
-#  endif
-
-int insnsCountdownForTimerAsyncEmulation = MAIKO_TIMER_ASYNC_EMULATION_INSNS_COUNTDOWN;
-static int pseudoTimerAsyncCountdown = MAIKO_TIMER_ASYNC_EMULATION_INSNS_COUNTDOWN;
-
-#endif
 
 void dispatch(void) {
   InstPtr pccache;
@@ -215,20 +196,6 @@ nextopcode:
 #endif /* PCTRACE */
 
   /* quick_stack_check();*/ /* JDS 2/12/98 */
-  
-#if defined(MAIKO_EMULATE_TIMER_INTERRUPTS) || defined(MAIKO_EMULATE_ASYNC_INTERRUPTS)
-  if (--pseudoTimerAsyncCountdown <= 0) {
-	  Irq_Stk_Check = 0;
-	  Irq_Stk_End = 0;
-#if defined(MAIKO_EMULATE_ASYNC_INTERRUPTS)
-	  IO_Signalled = TRUE;
-#endif
-#ifdef MAIKO_OS_EMSCRIPTEN
-	  emscripten_sleep(1);
-#endif
-	  pseudoTimerAsyncCountdown = insnsCountdownForTimerAsyncEmulation;
-  }
-#endif
 
   switch (Get_BYTE_PCMAC0) {
     case opc_unused_0: { goto op_ufn; } /* unused */
@@ -874,15 +841,6 @@ check_interrupt:
             *PENDINGINTERRUPT68k = NIL;
             cause_interruptcall(INTERRUPTFRAME_index);
           }
-        } else if (ETHEREventCount > 0) {
-          INTSTAT *intstate = ((INTSTAT *)NativeAligned4FromLAddr(*INTERRUPTSTATE_word));
-          if (!(intstate->ETHERInterrupt) && !(((INTSTAT2 *)intstate)->handledmask & 0x40)) {
-            intstate->ETHERInterrupt = 1;
-            ((INTSTAT2 *)intstate)->handledmask |= ((INTSTAT2 *)intstate)->pendingmask;
-            cause_interruptcall(INTERRUPTFRAME_index);
-            ETHEREventCount--;
-          } else
-            *PENDINGINTERRUPT68k = ATOM_T;
         }
         RET;
         CLR_IRQ;

@@ -10,7 +10,6 @@
 #include "version.h"
 
 #include "arith.h"      // for N_GETNUMBER, N_ARITH_SWITCH
-#include "emlglob.h"
 #include "lispemul.h"   // for state, ERROR_EXIT, LispPTR
 #include "lspglob.h"
 #include "lsptypes.h"

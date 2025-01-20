@@ -32,7 +32,7 @@ LispPTR N_OP_ubfloat1(LispPTR arg, int alpha) {
     case 0: /* box */
     {
       LispPTR *wordp;
-      wordp = createcell68k(TYPE_FLOATP);
+      wordp = (LispPTR *)createcell68k(TYPE_FLOATP);
       *wordp = arg;
       return (LAddrFromNative(wordp));
     }

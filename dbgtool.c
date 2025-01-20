@@ -32,7 +32,6 @@
 #include "adr68k.h"
 #include "lsptypes.h"
 #include "lspglob.h"
-#include "emlglob.h"
 #include "cell.h"
 #include "stack.h"
 

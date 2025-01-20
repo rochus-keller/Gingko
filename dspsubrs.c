@@ -56,17 +56,15 @@ void DSP_showdisplay(LispPTR *args)
 
 LispPTR DSP_VideoColor(LispPTR *args) /* args[0] :	black flag	*/
 {
-  int invert;
+  int invert = args[0] & 0xFFFF;
 #if defined(SDL)
-  invert = args[0] & 0xFFFF;
   sdl_set_invert(invert);
+#endif
   if (invert)
     return ATOM_T;
   else
     return NIL;
-#else
-  return NIL;
-#endif
+
 }
 
 extern struct cursor CurrentCursor;
@@ -103,9 +101,9 @@ void DSP_Cursor(LispPTR *args, int argnum)
   */
 void DSP_SetMousePos(LispPTR *args)
 {
+    int x = (int)(GetSmalldata(args[0]));
+    int y = (int)(GetSmalldata(args[1]));
 #ifdef SDL
-  int x = (int)(GetSmalldata(args[0]));
-  int y = (int)(GetSmalldata(args[1]));
   sdl_setMousePosition(x, y);
 #endif /* SDL */
 }

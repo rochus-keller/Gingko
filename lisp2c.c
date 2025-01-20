@@ -16,7 +16,6 @@
 #include <stdlib.h>      // for abs
 #include "adr68k.h"      // for NativeAligned4FromLAddr, LAddrFromNative
 #include "commondefs.h"  // for error
-#include "emlglob.h"
 #include "lisp2cdefs.h"  // for CIntToLispInt, LispIntToCInt, LispStringSimpleLength
 #include "lispemul.h"    // for LispPTR
 #include "lispmap.h"     // for S_NEGATIVE, S_POSITIVE

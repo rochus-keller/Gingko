@@ -13,7 +13,6 @@
 #include "cell.h"        // for xpointer
 #include "commondefs.h"  // for error
 #include "dbprint.h"     // for DEBUGGER
-#include "emlglob.h"
 #include "gcdata.h"      // for FRPLPTR
 #include "gchtfinddefs.h"  // for htfind, rec_htfind
 #include "gvar2defs.h"   // for N_OP_gvar_, N_OP_rplptr

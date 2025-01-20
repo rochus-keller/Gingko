@@ -40,10 +40,6 @@
 #include "dirdefs.h"       // for COM_finish_finfo, COM_gen_files, COM_next_...
 #include "dskdefs.h"       // for COM_changedir, COM_closefile, COM_getfileinfo
 #include "dspsubrsdefs.h"  // for DSP_Cursor, DSP_ScreenHight, DSP_ScreenWidth
-#include "etherdefs.h"     // for check_ether, check_sum, ether_ctrlr, ether...
-#ifdef MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE
-#include "foreigndefs.h"
-#endif
 #include "gcarraydefs.h"   // for with_symbol
 #include "gcrdefs.h"       // for disablegc1, doreclaim
 #include "inetdefs.h"      // for subr_TCP_ops
@@ -222,47 +218,47 @@ void OP_subrcall(int subr_no, int argnum) {
     /*************/
     case sb_CHECK_SUM:
       POP_SUBR_ARGS;
-      TopOfStack = check_sum(args);
+      TopOfStack = S_POSITIVE; // check_sum(args);
       break;
 
     case sb_ETHER_SUSPEND:
       POP_SUBR_ARGS;
-      TopOfStack = ether_suspend(args);
+      TopOfStack = ATOM_T; // ether_suspend(args);
       break;
 
     case sb_ETHER_RESUME:
       POP_SUBR_ARGS;
-      TopOfStack = ether_resume(args);
+      TopOfStack = ATOM_T; // ether_resume(args);
       break;
 
     case sb_ETHER_AVAILABLE:
       POP_SUBR_ARGS;
-      TopOfStack = ether_ctrlr(args);
+      TopOfStack = NIL; // ether_ctrlr(args);
       break;
 
     case sb_ETHER_RESET:
       POP_SUBR_ARGS;
-      TopOfStack = ether_reset(args);
+      TopOfStack = NIL; // ether_reset(args);
       break;
 
     case sb_ETHER_GET:
       POP_SUBR_ARGS;
-      TopOfStack = ether_get(args);
+      TopOfStack = NIL; // ether_get(args);
       break;
 
     case sb_ETHER_SEND:
       POP_SUBR_ARGS;
-      TopOfStack = ether_send(args);
+      TopOfStack = NIL; // ether_send(args);
       break;
 
     case sb_ETHER_SETFILTER:
       POP_SUBR_ARGS;
-      TopOfStack = ether_setfilter(args);
+      TopOfStack = NIL; // ether_setfilter(args);
       break;
 
     case sb_ETHER_CHECK:
       POP_SUBR_ARGS;
-      TopOfStack = check_ether();
+      TopOfStack = NIL; // check_ether();
       break;
 
     /***************/
@@ -374,14 +370,6 @@ void OP_subrcall(int subr_no, int argnum) {
       TopOfStack = bitshade_bitmap(args);
       break;
 
-/**************/
-/* For RS232C */
-/**************/
-#ifdef RS232
-    case sb_RS232C_CMD: RS232C_cmd(); break;
-    case sb_RS232C_READ_INIT: RS232C_readinit(); break;
-    case sb_RS232C_WRITE: RS232C_write(); break;
-#endif /* RS232 */
 
     /***********/
     /* for K/B */

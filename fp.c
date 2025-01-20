@@ -18,7 +18,6 @@
 /************************************************************************/
 
 #include "adr68k.h"      // for LAddrFromNative
-#include "emlglob.h"
 #include "fpdefs.h"      // for N_OP_fdifference, N_OP_fgreaterp, N_OP_fplus2
 #include "lispemul.h"    // for state, LispPTR, DLword, ERROR_EXIT, ATOM_T
 #include "lspglob.h"

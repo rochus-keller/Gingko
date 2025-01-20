@@ -114,11 +114,11 @@ struct LCClass { /* class datatype */
 };
 
 struct LCInstance { /* instance datatype */
-  LispPTR class, iNames, iDescrs, instMiscField;
+  LispPTR class_, iNames, iDescrs, instMiscField;
 };
 
 static struct LCMethodCacheEntry {
-  LispPTR class, selector, method_fn, junk;
+  LispPTR class_, selector, method_fn, junk;
 } * LCMethodCache;
 
 static struct LCIVCacheEntry {
@@ -145,30 +145,6 @@ LispPTR LCinit(void) {
   return NIL_PTR; /* in case called from lisp */
 }
 
-/* Type check fn */
-/* We only check for instance and class, neither of which has supertypes,
-   so the loop is unnecessary.  */
-/* * * NOT USED * * */
-#ifdef NEVER
-int LCTypeOf(LispPTR thing, LispPTR typename)
-{
-  struct dtd *dtd68k;
-#ifdef BIGVM
-  for (dtd68k = (struct dtd *)GetDTD(GetTypeNumber(thing)); typename != (dtd68k->dtd_name);
-       dtd68k = (struct dtd *)GetDTD(dtd68k->dtd_supertype)) {
-    if (dtd68k->dtd_supertype == 0) return 0;
-  }
-#else
-  for (dtd68k = (struct dtd *)GetDTD(GetTypeNumber(thing));
-       typename != dtd68k->dtd_namelo + (dtgd68k->dtd_namehi << 16);
-       dtd68k = (struct dtd *)GetDTD(dtd68k->dtd_supertype)) {
-    if (dtd68k->dtd_supertype == 0) return 0;
-  }
-#endif /* BIGVM */
-  return 1;
-}
-#endif /* NEVER */
-
 /* Method lookup using global cache */
 
 LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector) {
@@ -181,8 +157,8 @@ LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector) {
   INSTANCE_CLASS_OR_PUNT(object, atom_FetchMethodOrHelp_LCUFN, 2);
 
   objptr = (struct LCInstance *)NativeAligned4FromLAddr(object);
-  ce = &(LCMethodCache[METH_CACHE_INDEX((cur_class = objptr->class), selector)]);
-  if (ce->class == cur_class && ce->selector == selector) return ce->method_fn;
+  ce = &(LCMethodCache[METH_CACHE_INDEX((cur_class = objptr->class_), selector)]);
+  if (ce->class_ == cur_class && ce->selector == selector) return ce->method_fn;
 
   /* not in cache, search class then supers */
   {
@@ -203,7 +179,7 @@ LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector) {
 
       while ((val = selectorptr[i++]) != NIL_PTR) {
         if (val == selector) {
-          ce->class = objptr->class;
+          ce->class_ = objptr->class_;
           ce->selector = selector;
           return (ce->method_fn = ((LispPTR *)NativeAligned4FromLAddr(classptr->methods))[i - 1]);
         }
@@ -222,20 +198,20 @@ LispPTR LCFetchMethodOrHelp(LispPTR object, LispPTR selector) {
   /*  return PUNT;*/
 }
 
-LispPTR LCFetchMethod(LispPTR class, LispPTR selector) {
+LispPTR LCFetchMethod(LispPTR class_, LispPTR selector) {
   struct LCMethodCacheEntry *ce;
 
   LC_INIT;
 
   /* Check cache before doing type check */
-  ce = &(LCMethodCache[METH_CACHE_INDEX(class, selector)]);
-  if (ce->class == class && ce->selector == selector) return ce->method_fn;
+  ce = &(LCMethodCache[METH_CACHE_INDEX(class_, selector)]);
+  if (ce->class_ == class_ && ce->selector == selector) return ce->method_fn;
 
   /* it wasn't there, go search class then supers */
 
-  if (!LC_TYPEP(class, atom_class)) RETCALL(atom_FetchMethod_LCUFN, 2);
+  if (!LC_TYPEP(class_, atom_class)) RETCALL(atom_FetchMethod_LCUFN, 2);
   {
-    LispPTR cur_class = class;
+    LispPTR cur_class = class_;
     LispPTR supers = ((struct LCClass *)NativeAligned4FromLAddr(cur_class))->supers;
 
     for (;;) {
@@ -252,7 +228,7 @@ LispPTR LCFetchMethod(LispPTR class, LispPTR selector) {
 
       while ((val = selectorptr[i++]) != NIL_PTR) {
         if (val == selector) {
-          ce->class = class;
+          ce->class_ = class_;
           ce->selector = selector;
           return (ce->method_fn = ((LispPTR *)NativeAligned4FromLAddr(classptr->methods))[i - 1]);
         }

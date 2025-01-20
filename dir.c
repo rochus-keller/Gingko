@@ -1267,8 +1267,8 @@ static FINFO **prepare_sort_buf(FINFO *fp, size_t n)
 
 static int dsk_filecmp(const void *p1, const void *p2)
 {
-  FINFO * const *fp1 = p1; /* declare fp1 as pointer to constant pointer to structure finfo */
-  FINFO * const *fp2 = p2;
+  FINFO * const *fp1 = (FINFO * const *)p1; /* declare fp1 as pointer to constant pointer to structure finfo */
+  FINFO * const *fp2 = (FINFO * const *)p2;
   int res;
   unsigned v1, v2;
 

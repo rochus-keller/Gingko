@@ -25,7 +25,6 @@
 #include <stdio.h>        // for printf
 #include "adr68k.h"       // for NativeAligned2FromStackOffset, StackOffsetFromNative
 #include "commondefs.h"   // for error
-#include "emlglob.h"
 #include "hardrtndefs.h"  // for incusecount68k, slowreturn
 #include "lispemul.h"     // for state, DLword, CURRENTFX, DLWORDSPER_CELL
 #include "lispmap.h"      // for STK_HI

@@ -19,7 +19,6 @@
 #include <sys/select.h>    // for fd_set
 #include "commondefs.h"    // for error, stab, warn
 #include "dbprint.h"       // for DBPRINT
-#include "emlglob.h"
 #include "kprintdefs.h"    // for print
 #include "lispemul.h"      // for NIL, DLword, LispPTR
 #include "lspglob.h"
