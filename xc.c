@@ -29,6 +29,7 @@
 #include <sys/types.h>
 
 #include <sys/time.h>
+#include <time.h>
 
 #include "lispemul.h"
 #include "address.h"
@@ -141,6 +142,18 @@ static const int n_mask_array[16] = {
 };
 
 extern int TIMER_INTERVAL;
+
+static unsigned int tick()
+{
+    static clock_t start = 0;
+    if( start == 0 )
+        start = clock();
+
+    clock_t t = clock();
+    return ((double)(t - start) * 1000) / CLOCKS_PER_SEC;
+}
+
+static unsigned int last_tick = 0;
 
 void dispatch(void) {
   InstPtr pccache;
@@ -794,7 +807,12 @@ check_interrupt:
     process_SDLevents();
 #endif
 #ifdef QTGUI
-    qt_process_events();
+    const unsigned int now = tick();
+    if( now - last_tick > 3 ) // 100 ~ 1 sec
+    {
+        qt_process_events();
+        last_tick = now;
+    }
 #endif
     if (IO_Signalled) {
       IO_Signalled = FALSE;

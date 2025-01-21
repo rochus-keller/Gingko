@@ -25,7 +25,6 @@
 #include <stdint.h>
 #include <QBitmap>
 #include <QtDebug>
-#include <QElapsedTimer>
 
 extern "C" {
 #include "qtgui.h"
@@ -309,7 +308,6 @@ private:
     QImage img;
     QRgb foreground, background;
     QList<QRect> patches;
-    QElapsedTimer timer;
     bool m_update_pending;
     bool inverted;
 };
@@ -331,7 +329,6 @@ GingkoWindow::GingkoWindow(QWindow *parent)
     foreground = qRgb(0,0,0);
     background = qRgb(255,255,255);
     startTimer(FrameRate);
-    timer.start();
 }
 
 GingkoWindow::~GingkoWindow()
@@ -489,13 +486,7 @@ void GingkoWindow::damage(int x, int y, int w, int h)
 
 void GingkoWindow::processEvents()
 {
-    quint32 last = 0;
-    quint32 now = timer.elapsed();
-    if( now - last > FrameRate / 3 )
-    {
-        last = now;
-        QGuiApplication::processEvents();
-    }
+    QGuiApplication::processEvents();
 }
 
 void GingkoWindow::invert(bool on)
