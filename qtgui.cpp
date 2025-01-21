@@ -17,14 +17,9 @@
 * http://www.gnu.org/copyleft/gpl.html.
 */
 
-#include <QBackingStore>
-#include <QResizeEvent>
-#include <QPainter>
-#include <QGuiApplication>
-#include <QWindow>
+#include "qtgui_imp.h"
+#include <QMutex>
 #include <stdint.h>
-#include <QBitmap>
-#include <QtDebug>
 
 extern "C" {
 #include "qtgui.h"
@@ -276,49 +271,37 @@ static void handle_keyup(int k) {
   }
 }
 
-class GingkoWindow : public QWindow
-{
-public:
-    explicit GingkoWindow(QWindow *parent = 0);
-    ~GingkoWindow();
-
-    virtual void render(QPainter *painter);
-    void damage(int x, int y, int w, int h);
-    void processEvents();
-    void invert(bool);
-
-protected:
-    bool event(QEvent *event);
-
-    void resizeEvent(QResizeEvent *event);
-    void exposeEvent(QExposeEvent *event);
-    void timerEvent(QTimerEvent*);
-    void keyPressEvent(QKeyEvent * ev);
-    void keyReleaseEvent(QKeyEvent * ev);
-    void mouseMoveEvent(QMouseEvent * ev);
-    void mousePressEvent(QMouseEvent * ev);
-    void mouseReleaseEvent(QMouseEvent *ev);
-    void hideEvent(QHideEvent *);
-    void renderLater();
-    void renderNow();
-    void notifyMousePos(const QPoint& );
-
-private:
-    QBackingStore *m_backingStore;
-    QImage img;
-    QRgb foreground, background;
-    QList<QRect> patches;
-    bool m_update_pending;
-    bool inverted;
-};
-
-static QGuiApplication* app = 0;
 static GingkoWindow* wnd = 0;
+static QGuiApplication* app = 0;
+static LispRunner* runner = 0;
 static int argc = 1;
 static char * argv = "Gingko";
 static const DLword bitmask[pixPerWord] = {1 << 15, 1 << 14, 1 << 13, 1 << 12, 1 << 11, 1 << 10,
                                    1 << 9,  1 << 8,  1 << 7,  1 << 6,  1 << 5,  1 << 4,
                                    1 << 3,  1 << 2,  1 << 1,  1 << 0};
+
+struct MouseEvent
+{
+    QPoint pos;
+    bool left, mid, right;
+    MouseEvent(const QPoint& pos, bool left, bool mid, bool right):
+        pos(pos),left(left),mid(mid),right(right) {}
+    bool equals(const MouseEvent& rhs) const
+    {
+        return rhs.pos == pos && rhs.left == left && rhs.mid == mid && rhs.right == right;
+    }
+};
+struct KeyEvent
+{
+    QByteArray text;
+    int code;
+    bool down;
+    KeyEvent(int code, const QByteArray& text, bool down):
+        code(code),text(text),down(down) {}
+};
+static QMutex eventLock;
+static QList<MouseEvent> mouseEvents;
+static QList<KeyEvent> keyEvents;
 
 GingkoWindow::GingkoWindow(QWindow *parent)
     : QWindow(parent)
@@ -379,62 +362,31 @@ void GingkoWindow::timerEvent(QTimerEvent*)
 void GingkoWindow::keyPressEvent(QKeyEvent* ev)
 {
     const QByteArray text = ev->text().simplified().toUtf8();
-    CharToLisp* ctl = 0;
-    if( text.size() == 1 && (ctl = map_char(text[0]) ) )
-    {
-        const bool old_shift = shift;
-        if( shift )
-        {
-            if( !old_shift )
-                handle_keydown(Qt::Key_Shift);
-        }else if( old_shift )
-            handle_keyup(Qt::Key_Shift);
-        sendLispCode(ctl->code,false);
-        sendLispCode(ctl->code,true);
-        if( shift )
-        {
-            if( !old_shift )
-                handle_keyup(Qt::Key_Shift);
-        }else if( old_shift )
-            handle_keydown(Qt::Key_Shift);
-        return;
-    }
-    if( ev->isAutoRepeat() )
-    {
-        /* Lisp needs to see the UP transition before the DOWN transition */
-        handle_keyup(ev->key());
-    }
-    handle_keydown(ev->key());
+    notifyKeyStat(ev->key(), text, true);
 }
 
 void GingkoWindow::keyReleaseEvent(QKeyEvent* ev)
 {
     const QByteArray text = ev->text().simplified().toUtf8();
-    if( text.size() == 1 && map_char(text[0]) )
-        return;
-
-    handle_keyup(ev->key());
+    notifyKeyStat(ev->key(), text, false);
 }
 
 void GingkoWindow::mouseMoveEvent(QMouseEvent* ev)
 {
-    notifyMousePos(ev->pos());
-    display_mouse_state(ev->buttons() & Qt::LeftButton, ev->buttons() & Qt::MidButton, ev->buttons() & Qt::RightButton);
-    display_notify_lisp();
+    emit notifyMouseStat(ev->pos(), ev->buttons() & Qt::LeftButton, ev->buttons() &
+                         Qt::MidButton, ev->buttons() & Qt::RightButton);
 }
 
 void GingkoWindow::mousePressEvent(QMouseEvent* ev)
 {
-    notifyMousePos(ev->pos());
-    display_mouse_state(ev->buttons() & Qt::LeftButton, ev->buttons() & Qt::MidButton, ev->buttons() & Qt::RightButton);
-    display_notify_lisp();
+    emit notifyMouseStat(ev->pos(), ev->buttons() & Qt::LeftButton, ev->buttons() &
+                         Qt::MidButton, ev->buttons() & Qt::RightButton);
 }
 
 void GingkoWindow::mouseReleaseEvent(QMouseEvent* ev)
 {
-    notifyMousePos(ev->pos());
-    display_mouse_state(ev->buttons() & Qt::LeftButton, ev->buttons() & Qt::MidButton, ev->buttons() & Qt::RightButton);
-    display_notify_lisp();
+    emit notifyMouseStat(ev->pos(), ev->buttons() & Qt::LeftButton, ev->buttons() &
+                         Qt::MidButton, ev->buttons() & Qt::RightButton);
 }
 
 void GingkoWindow::hideEvent(QHideEvent*)
@@ -462,37 +414,42 @@ void GingkoWindow::renderNow()
     m_backingStore->flush(rect);
 }
 
-void GingkoWindow::notifyMousePos(const QPoint& p)
+void GingkoWindow::notifyMouseStat(QPoint pos, bool left, bool mid, bool right)
 {
-    int x = p.x();
-    int y = p.y();
-#if 0
-    if( x < 0 )
-        x = 0;
-    else if( x >= width() )
-        x = width() - 1;
-    if( y < 0 )
-        y = 0;
-    else if( y >= height() )
-        y = height() - 1;
-#endif
-    display_notify_mouse_pos(x,y);
+    QMutexLocker lock(&eventLock);
+    MouseEvent e(pos, left, mid, right);
+    if( !mouseEvents.isEmpty() && mouseEvents.front().equals(e) )
+        return;
+    mouseEvents.push_front(e);
 }
 
-void GingkoWindow::damage(int x, int y, int w, int h)
+void GingkoWindow::notifyKeyStat(int code, const QByteArray& text, bool down)
+{
+    QMutexLocker lock(&eventLock);
+    KeyEvent e(code, text, down);
+    keyEvents.push_front(e);
+}
+
+void GingkoWindow::onSetMousePosition(int x, int y)
+{
+    const QPoint p0 = wnd->mapToGlobal(QPoint(x,y));
+    QCursor::setPos(p0);
+}
+
+void GingkoWindow::onSetInvert(bool on)
+{
+    inverted = on;
+    renderNow();
+}
+
+void GingkoWindow::onDamage(int x, int y, int w, int h)
 {
     patches.append(QRect(x,y,w,h));
 }
 
-void GingkoWindow::processEvents()
+void GingkoWindow::onSetCursor(QCursor cur)
 {
-    QGuiApplication::processEvents();
-}
-
-void GingkoWindow::invert(bool on)
-{
-    inverted = on;
-    renderNow();
+    setCursor(cur);
 }
 
 void GingkoWindow::render(QPainter *painter)
@@ -517,10 +474,15 @@ void GingkoWindow::render(QPainter *painter)
     painter->drawImage(0,0,img);
 }
 
+void LispRunner::run()
+{
+    proc();
+}
+
 extern "C" {
 void qt_notify_damage(int x, int y, int w, int h)
 {
-    wnd->damage(x,y,w,h);
+    runner->damage(x,y,w,h);
 }
 
 void qt_setCursor(int hot_x, int hot_y)
@@ -534,23 +496,69 @@ void qt_setCursor(int hot_x, int hot_y)
             cursor.setPixel(b,line, !(pixels & bitmask[b]) );
     }
     QBitmap pix = QPixmap::fromImage( cursor );
-    wnd->setCursor( QCursor( pix, pix, hot_x, hot_y ) );
+    runner->setCursor( QCursor( pix, pix, hot_x, hot_y ) );
 }
 
 void qt_set_invert(int flag)
 {
-    wnd->invert(flag);
+    runner->setInvert(flag);
 }
 
 void qt_setMousePosition(int x, int y)
 {
-    const QPoint p0 = wnd->mapToGlobal(QPoint(x,y));
-    QCursor::setPos(p0);
+    // TODO runner->setMousePosition(x,y);
 }
 
 void qt_process_events()
 {
-    wnd->processEvents();
+    QMutexLocker lock(&eventLock);
+    while( !mouseEvents.isEmpty() )
+    {
+        MouseEvent e = mouseEvents.takeLast();
+        display_notify_mouse_pos(e.pos.x(),e.pos.y());
+        display_mouse_state(e.left, e.mid, e.right);
+        display_notify_lisp();
+    }
+    while( !keyEvents.isEmpty() )
+    {
+        KeyEvent e = keyEvents.takeLast();
+        CharToLisp* ctl = 0;
+        if( e.down )
+        {
+            if( e.text.size() == 1 && (ctl = map_char(e.text[0]) ) )
+            {
+                const bool old_shift = shift;
+                if( shift )
+                {
+                    if( !old_shift )
+                        handle_keydown(Qt::Key_Shift);
+                }else if( old_shift )
+                    handle_keyup(Qt::Key_Shift);
+                sendLispCode(ctl->code,false);
+                sendLispCode(ctl->code,true);
+                if( shift )
+                {
+                    if( !old_shift )
+                        handle_keyup(Qt::Key_Shift);
+                }else if( old_shift )
+                    handle_keydown(Qt::Key_Shift);
+                continue;
+            }
+#if 0
+            if( ev->isAutoRepeat() )
+            {
+                /* Lisp needs to see the UP transition before the DOWN transition */
+                handle_keyup(ev->key());
+            }
+#endif
+            handle_keydown(e.code);
+        }else
+        {
+            if( e.text.size() == 1 && map_char(e.text[0]) )
+                continue;
+            handle_keyup(e.code);
+        }
+    }
 }
 
 int qt_init(const char* windowtitle, int w, int h, int s)
@@ -568,5 +576,24 @@ int qt_init(const char* windowtitle, int w, int h, int s)
     printf("Qt initialised\n");
     fflush(stdout);
     return 0;
+}
+
+void qt_lisp_thread(void (*proc)())
+{
+    Q_ASSERT(proc);
+    runner = new LispRunner(proc);
+
+    QObject::connect(runner,SIGNAL(damage(int,int,int,int)), wnd, SLOT(onDamage(int,int,int,int)));
+    QObject::connect(runner,SIGNAL(setCursor(QCursor)),wnd,SLOT(onSetCursor(QCursor)));
+    QObject::connect(runner,SIGNAL(setInvert(bool)),wnd, SLOT(onSetInvert(bool)));
+    QObject::connect(runner,SIGNAL(setMousePosition(int,int)), wnd, SLOT(onSetMousePosition(int,int)));
+
+    runner->start();
+
+    app->exec();
+
+    delete runner;
+    delete wnd;
+    delete app;
 }
 }

@@ -20,12 +20,12 @@
 * http://www.gnu.org/copyleft/gpl.html.
 */
 
-void qt_notify_damage(int x, int y, int w, int h); // w/h==-1 ... all
-void qt_setCursor(int hot_x, int hot_y);
-void qt_set_invert(int flag);
-void qt_setMousePosition(int x, int y);
-void qt_process_events();
-int qt_init(const char *windowtitle, int w, int h, int s);
-
+extern void qt_notify_damage(int x, int y, int w, int h); // w/h==-1 ... all
+extern void qt_setCursor(int hot_x, int hot_y);
+extern void qt_set_invert(int flag);
+extern void qt_setMousePosition(int x, int y);
+extern int qt_init(const char *windowtitle, int w, int h, int s);
+extern void qt_lisp_thread(void (*proc)());
+extern void qt_process_events();
 
 #endif // QTGUI_H

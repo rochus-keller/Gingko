@@ -38,6 +38,7 @@
 #include "lispmap.h"
 #include "ifpage.h"
 #include "iopage.h"
+#include "display.h"
 
 #include "maindefs.h"
 #include "commondefs.h"
@@ -594,7 +595,11 @@ void start_lisp(void) {
   /*       entering the bytecode dispatch loop; interrupts get     */
   /*       unblocked here 					   */
   int_init();
+#ifdef QTGUI
+  qt_lisp_thread(dispatch);
+#else
   dispatch();
+#endif
 }
 
 void print_info_lines(void) {

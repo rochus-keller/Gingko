@@ -230,7 +230,8 @@ HEADERS += \
     vmemsavedefs.h \
     xcdefs.h \
     z2defs.h \
-    qtgui.h
+    qtgui.h \
+    qtgui_imp.h
 
 
 
