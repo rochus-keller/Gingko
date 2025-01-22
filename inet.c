@@ -15,16 +15,9 @@
 #include <string.h> /* for mem... fns */
 
 #ifndef DOS
-#include <errno.h>
 #include <netdb.h>
-#include <netinet/in.h>
 #include <signal.h>
-#include <sys/file.h>
-#include <sys/ioctl.h>
-#include <sys/select.h> /* for FD_ fns */
-#include <sys/socket.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <unistd.h>
 /* if using inet_ntop you must #include <arpa/inet.h> */
 #endif /* DOS */

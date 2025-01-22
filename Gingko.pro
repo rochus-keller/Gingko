@@ -38,7 +38,6 @@ SOURCES += \
     intcall.c \
     lineblt8.c \
     lsthandl.c \
-    llcolor.c \
     llstk.c \
     loopsops.c \
     lowlev1.c \
@@ -56,9 +55,6 @@ SOURCES += \
     typeof.c \
     unwind.c \
     vars3.c \
-    unixcomm.c \
-    uraid.c \
-    rpc.c \
     z2.c \
     eqf.c \
     fp.c \
@@ -68,7 +64,6 @@ SOURCES += \
     uutils.c \
     perrno.c \
     lisp2c.c \
-    osmsg.c \
     dbgtool.c \
     testtool.c \
     kprint.c \
@@ -86,7 +81,6 @@ SOURCES += \
     ufs.c \
     dir.c \
     keyevent.c \
-    kbdsubrs.c \
     initkbd.c \
     gcscan.c \
     gcarray.c \
@@ -99,7 +93,8 @@ SOURCES += \
     gcoflow.c \
     sdl.c \
     usrsubr.c \
-    display.c
+    display.c \
+    uraid.c
 
 HEADERS += \
     address.h \
@@ -162,7 +157,6 @@ HEADERS += \
     inlineC.h \
     intcalldefs.h \
     iopage.h \
-    kbdsubrsdefs.h \
     keyboard.h \
     keyeventdefs.h \
     kprintdefs.h \
@@ -172,7 +166,6 @@ HEADERS += \
     lispemul.h \
     lispmap.h \
     lispver2.h \
-    llcolordefs.h \
     llstkdefs.h \
     locfile.h \
     loopsopsdefs.h \
@@ -192,14 +185,12 @@ HEADERS += \
     my.h \
     opcodes.h \
     osmsg.h \
-    osmsgdefs.h \
     perrnodefs.h \
     pilotbbt.h \
     platform.h \
     print.h \
     return.h \
     returndefs.h \
-    rpcdefs.h \
     rplconsdefs.h \
     sdldefs.h \
     shiftdefs.h \
@@ -222,7 +213,6 @@ HEADERS += \
     ubf2defs.h \
     ubf3defs.h \
     ufsdefs.h \
-    unixcommdefs.h \
     unwinddefs.h \
     uraiddefs.h \
     uraidextdefs.h \

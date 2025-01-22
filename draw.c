@@ -39,10 +39,6 @@ extern DLword *DisplayRegion68k_end_addr;
 
 extern int ScreenLocked;
 
-#ifdef COLOR
-extern int MonoOrColor;
-#endif /* COLOR */
-
 #ifdef DISPLAYBUFFER
 LispPTR n_new_cursorin_CG6(int dx, int dy, int w, int h)
 {
@@ -113,11 +109,6 @@ int N_OP_drawline(LispPTR ptr, int curbit, int xsize, int width, int ysize, int 
 {
   DLword *dataptr;
   ScreenLocked = T;
-
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
 
   delta &= 0xFFFF;
   op &= 3;
@@ -247,16 +238,8 @@ int N_OP_drawline(LispPTR ptr, int curbit, int xsize, int width, int ysize, int 
         break;
     } /* end switch */
   }   /* end else */
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
   {
     DLword *start_addr;
     start_addr = (DLword *)NativeAligned2FromLAddr(ptr);

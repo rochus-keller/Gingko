@@ -15,12 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-
-#ifndef DOS
-#include <sys/file.h>
-#include <sys/select.h>
-#endif /* DOS */
 
 #include "lispemul.h"
 #include "lispmap.h"
@@ -35,10 +29,7 @@
 #include "initkbddefs.h"
 #include "initdspdefs.h"
 
-extern int LispKbdFd;
 int LispKbdFd = -1;
-
-extern fd_set LispReadFds;
 
 extern DLword *EmMouseX68K;
 extern DLword *EmMouseY68K;
@@ -142,7 +133,7 @@ void init_keyboard(int flg) /* if 0 init else re-init */
   /* if using a raw keyboard, LispKbdFd would be the result of opening /dev/kbd
    * and it would be added to LispReadFds to generate keyboard events
    */
-  if (flg == 0) { keyboardtype(LispKbdFd); }
+  if (flg == 0) { keyboardtype(); }
 
 }
 
@@ -185,7 +176,7 @@ void set_kbd_iopointers(void) {
 #define MIN_KEYTYPE 3
 #define KB_SUN3 3
 
-void keyboardtype(int fd)
+void keyboardtype()
 {
 
   /* clear the keyboard field in devconfig */

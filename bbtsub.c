@@ -70,10 +70,6 @@ extern int  kbd_for_makeinit;
 #include "devif.h"
 extern DspInterface currentdsp;
 
-#ifdef COLOR
-extern int MonoOrColor;
-#endif /* COLOR */
-
 /*******************************************/
 /*  REALCURSOR is defined iff we need to   */
 /*  take care of cursor movement & hiding  */
@@ -434,10 +430,6 @@ do_it_now:
 #endif
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
     /* Copy the changed section of display bank to the frame buffer */
     if (in_display_segment(dstbase)) {
       /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",dx, dty, w,h)); */
@@ -471,8 +463,6 @@ do_it_now:
 /*                                                                      */
 /************************************************************************/
 
-#ifndef COLOR
-
 /********************************************************/
 /*                                                      */
 /*              Monochrome-only version                         */
@@ -494,46 +484,7 @@ LispPTR n_new_cursorin(DLword *baseaddr, int dx, int dy, int w, int h) {
   } else
     return (NIL);
 }
-#else
-/********************************************************/
-/*                                                      */
-/*                 Mono / color version                         */
-/*                                                      */
-/********************************************************/
-extern DLword *DisplayRegion68k, *ColorDisplayRegion68k;
-extern int MonoOrColor;
-
-LispPTR n_new_cursorin(DLword *baseaddr, int dx, int dy, int w, int h) {
-#ifdef INIT
-  init_kbd_startup; /* MUST START KBD FOR INIT BEFORE FIRST BITBLT */
-#endif
-
-  if (MonoOrColor == MONO_SCREEN) { /* in MONO screen */
-    if (in_display_segment(baseaddr)) {
-      if ((dx < MOUSEXR) && (dx + w > MOUSEXL) && (dy < MOUSEYH) && (dy + h > MOUSEYL)) {
-        return (T);
-      } else {
-        return (NIL);
-      }
-    } else
-      return (NIL);
-  }      /* if for MONO end */
-  else { /* in COLOR screen */
-    if ((ColorDisplayRegion68k <= baseaddr) && (baseaddr <= COLOR_MAX_Address)) {
-      dx = dx >> 3;
-      /*printf("new_c in COLOR mx=%d my=%d x=%d y=%d\n"
-      ,*EmMouseX68K,*EmMouseY68K,dx,dy);*/
-      if ((dx < MOUSEXR) && (dx + w > MOUSEXL) && (dy < MOUSEYH) &&
-          (dy + h > MOUSEYL)) { /*  printf("new_c T\n");*/
-        return (T);
-      } else {
-        return (NIL);
-      }
-    } else
-      return (NIL);
-  }
-}
-#endif /* COLOR */
+#
 
 #define BITBLTBITMAP_argnum 14
 #define PUNT_TO_BITBLTBITMAP                                                                  \
@@ -775,10 +726,6 @@ do_it_now:
 #endif
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
     /* Copy the changed section of display bank to the frame buffer */
     if (in_display_segment(dstbase)) {
       /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",dlx, dty, width,height));*/
@@ -1014,10 +961,6 @@ do_it_now:
 #endif
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
     /* Copy the changed section of display bank to the frame buffer */
     if (in_display_segment(dstbase)) {
       /*      DBPRINT(("bltsub: x %d, y %d, w %d, h %d.\n",left, dty, width,height));*/
@@ -1139,10 +1082,6 @@ void bltchar(LispPTR *args)
 #endif
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
     if (in_display_segment(dstbase)) { flush_display_lineregion(dx, dstbase, w, h); }
 #endif
 
@@ -1349,10 +1288,6 @@ void newbltchar(LispPTR *args) {
 #endif
 
 #ifdef DISPLAYBUFFER
-#ifdef COLOR
-  if (MonoOrColor == MONO_SCREEN)
-#endif /* COLOR */
-
     if (in_display_segment(dstbase)) {
       /*      DBPRINT(("newbltchar:  x %d, y 0x%x, w %d, h %d.\n", dx, dstbase, w, h));*/
       flush_display_lineregion(dx, dstbase, w, h);
@@ -1725,7 +1660,6 @@ void tedit_bltchar(LispPTR *args)
 } /* end tedit_bltchar */
 
 #if defined(REALCURSOR)
-#ifndef COLOR
 /* Lisp addr hi-word, lo-word, ... */
 static int old_cursorin(DLword addrhi, DLword addrlo, int x, int w, int h, int y, int backward)
 {
@@ -1747,48 +1681,4 @@ static int old_cursorin(DLword addrhi, DLword addrlo, int x, int w, int h, int y
     return (NIL);
 }
 
-#else
-/* For MONO and COLOR */
-/* Lisp addr hi-word, lo-word, ... */
-static int old_cursorin(DLword addrhi, DLword addrlo, int x, int w, int h, int y, int backward)
-{
-  DLword *base68k;
-  extern int MonoOrColor;
-  extern int displaywidth;
-#ifdef INIT
-  init_kbd_startup;
-#endif
-
-  if (MonoOrColor == MONO_SCREEN) {
-    if (addrhi == DISPLAY_HI)
-      y = addrlo / DisplayRasterWidth;
-    else if (addrhi == DISPLAY_HI + 1)
-      y = (addrlo + DLWORDSPER_SEGMENT) / DisplayRasterWidth;
-    else
-      return (NIL);
-
-    if (backward) y -= h;
-
-    if ((x < MOUSEXR) && (x + w > MOUSEXL) && (y < MOUSEYH) && (y + h > MOUSEYL))
-      return (T);
-    else
-      return (NIL);
-  } /* MONO case end */
-  else {
-    base68k = (DLword *)NativeAligned2FromLAddr(addrhi << 16 | addrlo);
-    if ((ColorDisplayRegion68k <= base68k) && (base68k <= COLOR_MAX_Address)) {
-      y = (base68k - ColorDisplayRegion68k) / displaywidth;
-    } else
-      return (NIL);
-
-    if (backward) y -= h;
-    /*  printf("old_c:x=%d,y=%d,w=%d,h=%d\n",x,y,w,h);*/
-    if ((x < MOUSEXR) && ((x + (w >> 3)) > MOUSEXL) && (y < MOUSEYH) &&
-        (y + h > MOUSEYL)) { /* printf("old_c T\n");*/
-      return (T);
-    } else
-      return (NIL);
-  } /* COLOR case end */
-}
-#endif /* COLOR */
 #endif /* defined(REALCURSOR) */

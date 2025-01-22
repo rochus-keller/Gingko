@@ -57,11 +57,6 @@ extern DLword *EmCursorBitMap68K;
 
 int DebugDSP = T;
 
-#ifdef COLOR
-extern DLword *ColorDisplayRegion68k;
-extern int MonoOrColor;
-#endif /* COLOR */
-
 #ifdef SDL
 extern void sdl_notify_damage(int, int, int, int);
 #endif /* SDL */
@@ -98,34 +93,10 @@ void set_cursor(void) {
 /*									*/
 /************************************************************************/
 
-#ifndef COLOR
 void clear_display(void) {
 
 }
 
-#else /* COLOR */
-
-void clear_display(void) {
-  DLword *word;
-  int w, h;
-  if (MonoOrColor == MONO_SCREEN) {
-#ifndef DISPLAYBUFFER
-    word = DisplayRegion68k;
-    for (h = displayheight; (h--);) {
-      for (w = DisplayRasterWidth; (w--);) { *word++ = 0; }
-    }      /* end for(h) */
-#else  /* DISPLAYBUFFER */
-    pr_rop(ColorDisplayPixrect, 0, 0, displaywidth, displayheight, PIX_CLR, ColorDisplayPixrect, 0,
-           0);
-#endif /* DISPLAYBUFFER */
-  } else { /* MonoOrColo is COLOR_SCREEN */
-    word = ColorDisplayRegion68k;
-    for (h = displayheight; (h--);) {
-      for (w = DisplayRasterWidth * 8; (w--);) { *word++ = 0; }
-    } /* end for(h) */
-  }   /* end if(MonoOrColor) */
-}
-#endif /* COLOR */
 
 /*  ================================================================  */
 /*  Now takes 68k address, function renamed for safety  */
@@ -177,10 +148,6 @@ void init_display2(DLword *display_addr, unsigned display_max)
 /*									*/
 /************************************************************************/
 void display_before_exit(void) {
-
-#ifdef TRUECOLOR
-  truecolor_before_exit();
-#endif /* TRUECOLOR */
 
   clear_display();
 }

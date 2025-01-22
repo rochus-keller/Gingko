@@ -33,10 +33,6 @@ extern int kbd_for_makeinit;
 
 extern int ScreenLocked;
 
-#ifdef COLOR
-extern int MonoOrColor;
-#endif /* COLOR */
-
 /*****************************************************************************/
 /**                                                                         **/
 /**                             N_OP_pilotbitblt                            **/
@@ -108,7 +104,6 @@ LispPTR N_OP_pilotbitblt(LispPTR pilot_bt_tbl, LispPTR tos)
 /*                                                                      */
 /************************************************************************/
 
-#ifndef COLOR
 /* for MONO only */
 int cursorin(DLword addrhi, DLword addrlo, int w, int h, int backward)
 {
@@ -129,51 +124,3 @@ int cursorin(DLword addrhi, DLword addrlo, int w, int h, int backward)
   else
     return (NIL);
 }
-#else
-
-/* for COLOR & MONO */
-int cursorin(DLword addrhi, DLword addrlo, int w, int h, int backward)
-{
-  int x, y;
-  DLword *base68k;
-  extern int MonoOrColor;
-  extern int displaywidth;
-  extern DLword *ColorDisplayRegion68k;
-
-  if (MonoOrColor == MONO_SCREEN) { /* On MONO screen */
-    if (addrhi == DISPLAY_HI) {
-      y = addrlo / DisplayRasterWidth;
-      x = (addrlo - y * DisplayRasterWidth) << 4;
-    } else if (addrhi == DISPLAY_HI + 1) {
-      y = (addrlo + DLWORDSPER_SEGMENT) / DisplayRasterWidth;
-      x = ((addrlo + DLWORDSPER_SEGMENT) - y * DisplayRasterWidth) << 4;
-    } else
-      return (NIL);
-
-    if (backward) y -= h;
-
-    if ((x < MOUSEXR) && (x + w > MOUSEXL) && (y < MOUSEYH) && (y + h > MOUSEYL))
-      return (T);
-    else
-      return (NIL);
-  } else {
-    base68k = (DLword *)NativeAligned2FromLAddr(addrhi << 16 | addrlo);
-    if ((ColorDisplayRegion68k <= base68k) && (base68k <= COLOR_MAX_Address)) {
-      y = (base68k - ColorDisplayRegion68k) / displaywidth;
-      x = (UNSIGNED)(base68k - ColorDisplayRegion68k) - (y * displaywidth);
-      /* printf("cursorin: IN COLOR mx=%d my=%d x=%d y%d w=%d h=%d\n"
-      ,*EmMouseX68K,*EmMouseY68K,x,y,w,h); */
-    } else
-      return (NIL);
-
-    if (backward) y -= h;
-
-    if ((x < MOUSEXR) && ((x + (w >> 3)) > MOUSEXL) && (y < MOUSEYH) &&
-        (y + h > MOUSEYL)) { /* printf("cursorin T\n"); */
-      return (T);
-    } else
-      return (NIL);
-
-  } /* on COLOR screen */
-}
-#endif /* COLOR */

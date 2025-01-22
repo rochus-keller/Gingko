@@ -180,10 +180,6 @@ extern LispPTR BITBLTBITMAP_index;
 extern LispPTR BLTSHADEBITMAP_index;
 extern LispPTR BLTCHAR_index;
 extern LispPTR TEDIT_BLTCHAR_index;
-#ifdef COLOR
-extern LispPTR SLOWBLTCHAR_index;
-extern LispPTR COLORSCREEN_index;
-#endif
 
 /* BITBLT operation atoms */
 extern DLword TEXTURE_atom;

@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/select.h>
 #include <sys/types.h>
 #include <time.h>
 
@@ -50,7 +49,6 @@
 #include "miscstat.h"
 #include "storagedefs.h"
 #include "timerdefs.h"
-#include "unixcommdefs.h"
 #include "xcdefs.h"
 
 DLword *Lisp_world; /* lispworld */
@@ -257,10 +255,6 @@ int main(int argc, char *argv[])
   int width = 1024, height = 768;
   int pixelscale = 1;
   const char *windowtitle = "Medley";
-
-#ifdef PROFILE
-  moncontrol(0); /* initially stop sampling */
-#endif           /* PROFILE */
 
   //
   //
@@ -480,10 +474,7 @@ int main(int argc, char *argv[])
   /* Fork Unix was called in kickstarter; if we forked, look up the */
   /* pipe handles to the subprocess and set them up.		      */
 
-  if (FindUnixPipes()) /* must call the routine to allocate storage, */
-  {                    /* in case we're re-starting a savevm w/open ptys */
-    if (please_fork) (void)fprintf(stderr, "Failed to find UNIXCOMM file handles; no processes\n");
-  }
+  if (please_fork) (void)fprintf(stderr, "Failed to find UNIXCOMM file handles; no processes\n");
 
 #if defined(SDL)
   init_SDL(windowtitle, width, height, pixelscale);
@@ -585,9 +576,6 @@ void print_info_lines(void) {
 #endif /* RELEASE */
   printf("Compiled for %s (%s) (%d bit).\n", MAIKO_OS_NAME, MAIKO_ARCH_NAME, MAIKO_ARCH_WORD_BITS);
   printf("Creation date: %s", ctime(&MDate));
-#ifdef LPSOLVE
-  printf("Contains lp_solve LP solver.\n");
-#endif /* LPSOLVE */
 #ifdef BIGBIGVM
   printf("Supports 256Mb virtual memory.\n");
 #elif defined BIGVM

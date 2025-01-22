@@ -16,7 +16,6 @@
 #include <stdio.h>         // for fflush, fprintf, printf, getchar, stderr
 #include <stdlib.h>        // for exit
 #include <string.h>        // for memset
-#include <sys/select.h>    // for fd_set
 #include "commondefs.h"    // for error, stab, warn
 #include "dbprint.h"       // for DBPRINT
 #include "kprintdefs.h"    // for print
@@ -37,7 +36,6 @@ error
 
 ******************************************************************/
 
-extern fd_set LispReadFds;
 extern int LispKbdFd;
 extern struct screen LispScreen;
 extern int displaywidth, displayheight;

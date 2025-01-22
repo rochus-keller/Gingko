@@ -34,7 +34,6 @@
 #include "ufsdefs.h"        // for unixpathname, lisppathname
 
 #ifndef DOS
-#include <dirent.h>         // for MAXNAMLEN, readdir, closedir, opendir
 #include <pwd.h>            // for getpwuid, passwd
 #include <sys/param.h>      // for MAXPATHLEN
 #include <sys/statvfs.h>    // for statvfs

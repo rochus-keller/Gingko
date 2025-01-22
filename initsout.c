@@ -425,16 +425,9 @@ void init_for_keyhandle(void) {
 /************************************************************************/
 
 void init_for_bltchar(void) {
-#ifdef COLOR
-  LispPTR index;
-#endif
   char *IL;
 
   extern LispPTR *TOPWDS68k;
-#ifdef COLOR
-  extern LispPTR *SCREENBITMAPS68k;
-  extern LispPTR *COLORSCREEN68k; /*  \\COLORSCREEN */
-#endif
   IL = "INTERLISP";
 
   if (!for_makeinit) {
@@ -443,17 +436,6 @@ void init_for_bltchar(void) {
   }
   TOPWDS68k = MakeAtom68k("\\TOPWDS");
 
-#ifdef COLOR
-  if (!for_makeinit) {
-    SLOWBLTCHAR_index = get_package_atom("\\PUNT.SLOWBLTCHAR", 17, "INTERLISP", 9, NIL);
-
-    index = MAKEATOM("\\SCREENBITMAPS");
-    SCREENBITMAPS68k = GetVALCELL68k(index);
-    COLORSCREEN_index = MAKEATOM("\\COLORSCREEN");
-    COLORSCREEN68k = GetVALCELL68k(COLORSCREEN_index);
-  }
-
-#endif /* COLOR */
 }
 
 /************************************************************************/
@@ -465,17 +447,9 @@ void init_for_bltchar(void) {
 /************************************************************************/
 
 void init_for_bitblt(void) {
-#ifdef COLOR
-  extern LispPTR *COLORSCREEN68k;
-#endif /* COLOR */
-
   if (!for_makeinit) {
     BITBLTBITMAP_index = get_package_atom("\\PUNT.BITBLT.BITMAP", 19, "INTERLISP", 9, NIL);
     BLTSHADEBITMAP_index = get_package_atom("\\PUNT.BLTSHADE.BITMAP", 21, "INTERLISP", 9, NIL);
 
-#ifdef COLOR
-    COLORSCREEN_index = MAKEATOM("\\COLORSCREEN");
-    COLORSCREEN68k = GetVALCELL68k(COLORSCREEN_index);
-#endif /* COLOR */
   }
 }

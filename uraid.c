@@ -34,7 +34,6 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
-#include <sys/select.h>
 #endif /* DOS */
 
 #if defined(MAIKO_OS_FREEBSD) || defined(MAIKO_OS_MACOS)
@@ -69,12 +68,6 @@
 #include "uraidextdefs.h"        // for URMAXCOMM, URMAXFXNUM, URSCAN_ALINK
 #include "vmemsavedefs.h"        // for vmem_save
 
-
-#ifdef COLOR
-extern int MonoOrColor;
-extern int Dispcolorsize;
-extern DLword *ColorDisplayRegion68k;
-#endif /* COLOR */
 
 /***********************************************************************/
 /*
@@ -126,10 +119,6 @@ extern int displaywidth, displayheight;
 extern DLword *DisplayRegion68k;
 extern int FrameBufferFd, ether_fd, RS232C_Fd;
 
-#ifdef COLOR
-DLword *HideColorDisp68k;
-extern int Inited_Color;
-#endif /* COLOR */
 
 static const char *URaid_summary =
     "---URAID command summary---\n\
@@ -899,7 +888,6 @@ int device_after_raid(void) {
 
 */
 /***********************************************************************/
-#ifndef COLOR
 
 static int re_init_display(int lisp_display_addr, int display_max)
 {
@@ -907,12 +895,3 @@ static int re_init_display(int lisp_display_addr, int display_max)
   return (0);
 }
 
-#else /* COLOR */
-
-static int re_init_display(int lisp_display_addr, int display_max)
-{
-
-  return (0);
-}
-
-#endif /* COLOR */

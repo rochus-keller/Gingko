@@ -23,7 +23,6 @@
 #ifndef DOS
 #include <sys/file.h>
 #include <sys/ioctl.h>
-#include <sys/select.h>
 #include <sys/time.h>
 #endif /* DOS */
 
@@ -42,7 +41,6 @@
 #include "pilotbbt.h"
 
 #include "keyeventdefs.h"
-#include "osmsgdefs.h"
 
 #include "dbprint.h"
 
@@ -175,16 +173,6 @@ void process_io_events(void)
 
   if (select(32, &rfds, NULL, NULL, &SelectTimeout) > 0) {
 
-#if defined(MAIKO_HANDLE_CONSOLE_MESSAGES) && defined(LOGINT)
-    if (LogFileFd >= 0 && FD_ISSET(LogFileFd, &rfds)) { /* There's info in the log file.  Tell Lisp to print it. */
-      flush_pty();          /* move the msg(s) to the log file */
-
-      ((INTSTAT *)NativeAligned4FromLAddr(*INTERRUPTSTATE_word))->LogFileIO = 1;
-
-      *PENDINGINTERRUPT68k = ATOM_T;
-      Irq_Stk_End = Irq_Stk_Check = 0;
-    }
-#endif
     iflags = 0;
     for (i = 0; i < 32; i++)
         if (FD_ISSET(i, &rfds) & FD_ISSET(i, &LispIOFds)) iflags |= 1 << i;
@@ -268,7 +256,6 @@ int LastCursorY = 0;
 
 void cursor_hidden_bitmap(int, int);
 
-#ifndef COLOR
 /* FOR MONO ONLY */
 void taking_mouse_down(void) {
   DLword *srcbase, *dstbase;
@@ -292,49 +279,9 @@ void taking_mouse_down(void) {
   flush_display_region(dx, (LastCursorY), w, h);
 #endif /* DISPLAYBUFFER */
 }
-#else
-
-/* For COLOR & MONO */
-extern DLword *ColorDisplayRegion68k;
-/* It assumes that MONO screen size and COLOR screen size are identical */
-void taking_mouse_down(void) {
-  DLword *srcbase, *dstbase;
-  static int sx, dx, w, h, srcbpl, dstbpl, backwardflg = 0;
-  static int src_comp = 0, op = 0, gray = 0, num_gray = 0, curr_gray_line = 0;
-
-  if (!DisplayInitialized) return;
-  /* restore saved image */
-  sx = 0;
-
-  if (MonoOrColor == MONO_SCREEN) {
-    dx = LastCursorX; /* old x */
-    srcbase = MonoCursor_savebitmap;
-    dstbase = DisplayRegion68k + ((LastCursorY)*DLWORD_PERLINE); /* old y */
-    w = LastCursorClippingX;                                     /* Old clipping */
-    h = LastCursorClippingY;
-    srcbpl = HARD_CURSORWIDTH;
-    dstbpl = displaywidth;
-  } else {
-    dx = LastCursorX * COLOR_BITSPER_PIXEL; /* old x */
-    srcbase = ColorCursor_savebitmap;
-    dstbase =
-        ColorDisplayRegion68k + ((LastCursorY)*DLWORD_PERLINE * COLOR_BITSPER_PIXEL); /* old y */
-    w = LastCursorClippingX * COLOR_BITSPER_PIXEL; /* Old clipping */
-    h = LastCursorClippingY;
-    srcbpl = HARD_CURSORWIDTH * COLOR_BITSPER_PIXEL;
-    dstbpl = displaywidth * COLOR_BITSPER_PIXEL;
-  }
-  op = 0;
-  new_bitblt_code;
-#ifdef DISPLAYBUFFER
-  if (MonoOrColor == MONO_SCREEN) flush_display_region(dx, LastCursorY, w, h);
-#endif
-}
-#endif /* COLOR */
 
 /* LastCursorClippingX must be set before calling
  To avoid duplicate calculation */
-#ifndef COLOR
 /* FOR MONO ONLY */
 void copy_cursor(int newx, int newy)
 {
@@ -377,92 +324,3 @@ void cursor_hidden_bitmap(int x, int y)
   op = 0; /* replace */
   new_bitblt_code;
 }
-
-#else
-/* For COLOR & MONO */
-#define IMIN(x, y) (((x) > (y)) ? (y) : (x))
-void copy_cursor(int newx, int newy)
-{
-  DLword *srcbase, *dstbase;
-  int offsetx, offsety;
-  static int sx, dx, w, h, srcbpl, dstbpl, backwardflg = 0;
-  static int src_comp = 0, op = 0, gray = 0, num_gray = 0, curr_gray_line = 0;
-  CURSOR *cursor68k;
-  BITMAP *bitmap68k;
-  extern DLword *EmCursorBitMap68K;
-  /* copy cursor image */
-  if (MonoOrColor == MONO_SCREEN) {
-    srcbase = EmCursorBitMap68K;
-    dstbase = DisplayRegion68k + (newy * DLWORD_PERLINE);
-    sx = 0;
-    dx = newx;
-    w = LastCursorClippingX;
-    h = LastCursorClippingY;
-    ;
-    srcbpl = HARD_CURSORWIDTH;
-    dstbpl = displaywidth;
-  } else {
-    cursor68k = (CURSOR *)NativeAligned4FromLAddr(*CURRENTCURSOR68k);
-    bitmap68k = (BITMAP *)NativeAligned4FromLAddr(cursor68k->CUIMAGE);
-    srcbase = (DLword *)NativeAligned2FromLAddr(bitmap68k->bmbase);
-    dstbase = ColorDisplayRegion68k + (newy * DLWORD_PERLINE * COLOR_BITSPER_PIXEL);
-    sx = 0;
-    dx = newx * COLOR_BITSPER_PIXEL;
-    w = IMIN(LastCursorClippingX, LOLOC(bitmap68k->bmwidth)) * COLOR_BITSPER_PIXEL;
-    h = IMIN(LastCursorClippingY, LOLOC(bitmap68k->bmheight));
-    /* srcbpl=HARD_CURSORWIDTH * COLOR_BITSPER_PIXEL;*/
-    srcbpl = bitmap68k->bmwidth * COLOR_BITSPER_PIXEL;
-    dstbpl = displaywidth * COLOR_BITSPER_PIXEL;
-  }
-  op = 2; /* OR-in */
-  new_bitblt_code;
-#ifdef DISPLAYBUFFER
-  if (MonoOrColor == MONO_SCREEN) flush_display_region(dx, newy, w, h);
-#endif
-}
-
-/* I'll make it MACRO */
-void taking_mouse_up(int newx, int newy)
-{
-  if (!DisplayInitialized) return;
-  /* save hidden bitmap */
-  cursor_hidden_bitmap(newx, newy);
-/* Copy Cursor Image */
-#ifndef INIT
-  copy_cursor(newx, newy);
-#endif
-  LastCursorX = newx;
-  LastCursorY = newy;
-}
-
-/* store bitmap image inside rect. which specified by x,y */
-void cursor_hidden_bitmap(int x, int y)
-{
-  DLword *srcbase, *dstbase;
-  static int sx, dx, w, h, srcbpl, dstbpl, backwardflg = 0;
-  static int src_comp = 0, op = 0, gray = 0, num_gray = 0, curr_gray_line = 0;
-  /* save image */
-  if (MonoOrColor == MONO_SCREEN) {
-    srcbase = DisplayRegion68k + (y * DLWORD_PERLINE);
-    dstbase = MonoCursor_savebitmap;
-    sx = x;
-    dx = 0;
-    CursorClippingX(x, w); /* w and LastCursorClippingX rest */
-    CursorClippingY(y, h); /* h and LastCursorClippingY reset */
-    srcbpl = displaywidth;
-    dstbpl = HARD_CURSORWIDTH;
-  } else {
-    srcbase = ColorDisplayRegion68k + (y * DLWORD_PERLINE * COLOR_BITSPER_PIXEL);
-    dstbase = ColorCursor_savebitmap;
-    sx = x * COLOR_BITSPER_PIXEL;
-    dx = 0;
-    CursorClippingX(x, w); /* w and LastCursorClippingX rest */
-    CursorClippingY(y, h); /* h and LastCursorClippingY reset */
-    w = w * COLOR_BITSPER_PIXEL;
-    srcbpl = displaywidth * COLOR_BITSPER_PIXEL;
-    dstbpl = HARD_CURSORWIDTH * COLOR_BITSPER_PIXEL;
-  }
-  op = 0; /* replace */
-  new_bitblt_code;
-}
-#endif /* COLOR */

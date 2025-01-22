@@ -43,19 +43,15 @@
 #include "gcarraydefs.h"   // for with_symbol
 #include "gcrdefs.h"       // for disablegc1, doreclaim
 #include "inetdefs.h"      // for subr_TCP_ops
-#include "kbdsubrsdefs.h"  // for KB_beep, KB_enable, KB_setmp
 #include "lispemul.h"      // for state, LispPTR, NIL_PTR, PopStackTo, TopOf...
 #include "lispmap.h"       // for S_POSITIVE
 #include "lspglob.h"
 #include "lsptypes.h"
-#include "osmsgdefs.h"     // for mess_read, mess_readp
-#include "rpcdefs.h"       // for rpc
 #include "storagedefs.h"   // for newpage
 #include "subrdefs.h"      // for OP_subrcall, atom_to_str
 #include "subrs.h"         // for sb_BITBLTSUB, sb_BITBLT_BITMAP, sb_BLTCHAR
 #include "timerdefs.h"     // for subr_copytimestats, subr_gettime, subr_set...
 #include "ufsdefs.h"       // for UFS_deletefile, UFS_directorynamep, UFS_ge...
-#include "unixcommdefs.h"  // for Unix_handlecomm
 #include "uraidextdefs.h"  // for Uraid_mess
 #include "uutilsdefs.h"    // for suspend_lisp, check_unix_password, unix_fu...
 #include "vmemsavedefs.h"  // for lisp_finish, vmem_save0
@@ -289,53 +285,6 @@ void OP_subrcall(int subr_no, int argnum) {
       TopOfStack = DSP_ScreenHight(args);
       break;
 
-/*************************/
-/* for color experiments */
-/*************************/
-#ifdef COLOR
-    case sb_COLOR_INIT:
-      POP_SUBR_ARGS;
-      TopOfStack = cgfour_init_color_display(args[0]);
-      break;
-
-    case sb_COLOR_SCREENMODE:
-      POP_SUBR_ARGS;
-      TopOfStack = cgfour_change_screen_mode(args[0]);
-      break;
-
-    case sb_COLOR_MAP:
-      POP_SUBR_ARGS;
-      TopOfStack = cgfour_set_colormap(args);
-      break;
-
-    case sb_COLOR_BASE:
-      POP_SUBR_ARGS;
-      /* return DLword offset between LISPBASE and Lisp_world */
-      TopOfStack = S_POSITIVE | (((int)Lisp_world >> 1) & 0xffff);
-      break;
-
-    case sb_C_SlowBltChar:
-      POP_SUBR_ARGS;
-      /* \\SLOWBLTCHAR for 8BITCOLOR */
-      C_slowbltchar(args);
-      break;
-
-    case sb_UNCOLORIZE_BITMAP:
-      POP_SUBR_ARGS;
-      Uncolorize_Bitmap(args);
-      break;
-
-    case sb_COLORIZE_BITMAP:
-      POP_SUBR_ARGS;
-      Colorize_Bitmap(args);
-      break;
-
-    case sb_COLOR_8BPPDRAWLINE:
-      POP_SUBR_ARGS;
-      Draw_8BppColorLine(args);
-      break;
-#endif /* COLOR */
-
     /***************************/
     /***  bitbltsub, bltchar ***/
     /***************************/
@@ -376,17 +325,22 @@ void OP_subrcall(int subr_no, int argnum) {
     /***********/
     case sb_KEYBOARDBEEP:
       POP_SUBR_ARGS;
-      KB_beep(args);
+      // not implemented
       break;
 
     case sb_KEYBOARDMAP:
       POP_SUBR_ARGS;
-      KB_setmp(args);
+      // not implemented
       break;
 
     case sb_KEYBOARDSTATE:
       POP_SUBR_ARGS;
-      KB_enable(args);
+      if (args[0] == ATOM_T) {
+      } else if (args[0] == NIL) {
+      } else {
+        error("KB_enable: illegal arg \n");
+        printf("KB_enable: arg = %d\n", args[0]);
+      }
       break;
 
     case sb_VMEMSAVE:
@@ -501,38 +455,24 @@ void OP_subrcall(int subr_no, int argnum) {
     /* Communications with Unix Subprocess */
 
     case sb_UNIX_HANDLECOMM: POP_SUBR_ARGS;
-      TopOfStack = Unix_handlecomm(args);
+      TopOfStack = NIL; // not implemented
       break;
-
-    /*
-            case 0166: POP_SUBR_ARGS;
-                             error("called SUBR 0166, not defined!!");
-                                  {int temp;
-                             N_GETNUMBER(TopOfStack, temp, badarg);
-                             temp = (UNSIGNED) NativeAligned4FromLAddr(temp);
-                             ARITH_SWITCH(temp, TopOfStack);
-                             break;
-                    badarg:	TopOfStack = NIL;
-                            break;
-                            }
-    */
-    /* OS message print routines */
 
     case sb_MESSAGE_READP:
       POP_SUBR_ARGS;
-      TopOfStack = mess_readp();
+      TopOfStack = NIL; // not implemented
       break;
 
     case sb_MESSAGE_READ:
       POP_SUBR_ARGS;
-      TopOfStack = mess_read(args);
+      TopOfStack = NIL; // not implemented
       break;
 
     /* RPC routines */
 
     case sb_RPC_CALL:
       POP_SUBR_ARGS;
-      TopOfStack = rpc(args);
+      TopOfStack = NIL_PTR; // not implemented
       break;
 
     /* Unix username/password utilities */
@@ -575,10 +515,6 @@ void OP_subrcall(int subr_no, int argnum) {
 
     case sb_MONITOR_CONTROL:
       POP_SUBR_ARGS;
-/* MONITOR CONTROL STOP(0) or RESUME(1) */
-#ifdef PROFILE
-      moncontrol(args[0] & 1);
-#endif /* PROFILE */
       break;
 
     /*****************/
@@ -624,26 +560,6 @@ void OP_subrcall(int subr_no, int argnum) {
       TopOfStack = subr_TCP_ops(args[0], args[1], args[2], args[3], args[4], args[5]);
       break;
 
-#ifdef TRUECOLOR
-    case sb_PICTURE_OP:
-      POP_SUBR_ARGS;
-      TopOfStack = Picture_Op(args);
-      break;
-
-    case sb_TRUE_COLOR_OP:
-      POP_SUBR_ARGS;
-      TopOfStack = TrueColor_Op(args);
-      break;
-
-#ifdef VIDEO
-    case sb_VIDEO_OP:
-      POP_SUBR_ARGS;
-      TopOfStack = Video_Op(args);
-      break;
-#endif /* VIDEO */
-
-#endif /* TRUECOLOR */
-
     case sb_PUPLEVEL1STATE:
       POP_SUBR_ARGS; /* Do nothing with PUP on sun */
       break;
@@ -662,107 +578,6 @@ void OP_subrcall(int subr_no, int argnum) {
       TopOfStack = ATOM_T;
       break;
 
-#ifdef MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE
-    /*****************************************/
-    /*  foreign-function-call support subrs  */
-    /*****************************************/
-    case sb_CALL_C_FUNCTION: {
-      POP_SUBR_ARGS;
-      TopOfStack = call_c_fn(args); /* args[0]=fnaddr, args[1]=fn type */
-      break;
-    }
-    case sb_DLD_LINK: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_link(args);
-      break;
-    }
-    case sb_DLD_UNLINK_BY_FILE: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_unlink_by_file(args);
-      break;
-    }
-    case sb_DLD_UNLINK_BY_SYMBOL: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_unlink_by_symbol(args);
-      break;
-    }
-    case sb_DLD_GET_SYMBOL: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_get_symbol(args);
-      break;
-    }
-    case sb_DLD_GET_FUNC: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_get_func(args);
-      break;
-    }
-    case sb_DLD_FUNCTION_EXECUTABLE_P: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_function_executable_p(args);
-      break;
-    }
-    case sb_DLD_LIST_UNDEFINED_SYMBOLS: {
-      POP_SUBR_ARGS;
-      TopOfStack = Mdld_list_undefined_sym();
-      break;
-    }
-    case sb_C_MALLOC: {
-      POP_SUBR_ARGS;
-      TopOfStack = c_malloc(args);
-      break;
-    }
-    case sb_C_FREE: {
-      POP_SUBR_ARGS;
-      TopOfStack = c_free(args);
-      break;
-    }
-    case sb_C_PUTBASEBYTE: {
-      POP_SUBR_ARGS;
-      TopOfStack = put_c_basebyte(args);
-      break;
-    }
-    case sb_C_GETBASEBYTE: {
-      POP_SUBR_ARGS;
-      TopOfStack = get_c_basebyte(args);
-      break;
-    }
-    case sb_SMASHING_APPLY: {
-      POP_SUBR_ARGS;
-      TopOfStack = smashing_c_fn(args);
-      break;
-    }
-#endif /* MAIKO_ENABLE_FOREIGN_FUNCTION_INTERFACE */
-
-#ifdef MNW
-    case sb_FILL_IN: {
-      POP_SUBR_ARGS;
-      TopOfStack = init_mnw_instance(args);
-      break;
-    }
-    case sb_QUERY_WINDOWS: {
-      break;
-    }
-    case sb_MNW_OP: {
-      POP_SUBR_ARGS;
-      TopOfStack = dispatch_mnw_method(args);
-      break;
-    }
-#endif /* MNW */
-
-#ifdef LPSOLVE
-    /* Linear-programming solver interface from Lisp */
-    case sb_LP_SETUP: {
-      POP_SUBR_ARGS;
-      TopOfStack = lpsetup(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7],
-                           args[8], args[9], args[10]);
-      break;
-    }
-    case sb_LP_RUN: {
-      POP_SUBR_ARGS;
-      TopOfStack = lpmain(args[0]);
-      break;
-    }
-#endif /* LPSOLVE */
   case sb_YIELD: {
       struct timespec rqts = {0, 833333};
       unsigned sleepnanos;

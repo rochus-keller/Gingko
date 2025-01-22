@@ -10,7 +10,6 @@
 #include "version.h"
 
 #ifndef DOS
-#include <dirent.h>         // for closedir, MAXNAMLEN, dirent, readdir, ope...
 #include <pwd.h>            // for getpwuid, passwd
 #include <sys/param.h>      // for MAXPATHLEN
 #endif /* DOS */

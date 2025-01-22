@@ -26,14 +26,8 @@
 #include <unistd.h>
 
 #ifndef DOS
-#include <dirent.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/file.h>
-#include <sys/stat.h>
 #include <sys/param.h>
-#include <sys/time.h>
-#include <sys/ioctl.h>
 #endif /* DOS */
 
 #include "lispemul.h"
