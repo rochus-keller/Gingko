@@ -64,7 +64,6 @@ SOURCES += \
     uutils.c \
     perrno.c \
     lisp2c.c \
-    dbgtool.c \
     testtool.c \
     kprint.c \
     byteswap.c \
@@ -93,8 +92,7 @@ SOURCES += \
     gcoflow.c \
     sdl.c \
     usrsubr.c \
-    display.c \
-    uraid.c
+    display.c
 
 HEADERS += \
     address.h \
@@ -117,7 +115,6 @@ HEADERS += \
     chardevdefs.h \
     commondefs.h \
     conspagedefs.h \
-    dbgtooldefs.h \
     dbprint.h \
     debug.h \
     devconf.h \
@@ -214,8 +211,6 @@ HEADERS += \
     ubf3defs.h \
     ufsdefs.h \
     unwinddefs.h \
-    uraiddefs.h \
-    uraidextdefs.h \
     usrsubrdefs.h \
     uutilsdefs.h \
     vars3defs.h \

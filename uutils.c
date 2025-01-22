@@ -33,7 +33,6 @@
 #include "lspglob.h"
 #include "lsptypes.h"    // for GETWORD, OneDArray, GetTypeNumber, THIN_CHAR...
 #include "osmsg.h"       // for OSMESSAGE_PRINT
-#include "uraiddefs.h"   // for device_after_raid, device_before_raid
 #include "uutilsdefs.h"  // for c_string_to_lisp_string, check_unix_password
 
 /************************************************************************/
@@ -277,15 +276,16 @@ extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd56
 
 LispPTR suspend_lisp(LispPTR *args) {
   extern DLword *CTopKeyevent;
-  extern LispPTR *KEYBUFFERING68k;
 
   DLword w, r;
   KBEVENT *kbevent;
 
+#if 0
   if (device_before_raid() < 0) {
     OSMESSAGE_PRINT(printf("Can't suspend\n"));
     return NIL;
   }
+#endif
 
   OSMESSAGE_PRINT(printf("suspending...\n"));
 
@@ -295,7 +295,9 @@ LispPTR suspend_lisp(LispPTR *args) {
   killpg(getpgrp(), SIGTSTP);
 
   OSMESSAGE_PRINT(printf("resuming\n"));
+#if 0
   device_after_raid();
+#endif
 
   r = RING_READ(CTopKeyevent);
   w = RING_WRITE(CTopKeyevent);

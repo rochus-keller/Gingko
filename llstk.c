@@ -24,7 +24,6 @@
 #include "address.h"      // for LOLOC
 #include "adr68k.h"       // for NativeAligned2FromStackOffset, StackOffsetFromNative
 #include "commondefs.h"   // for error, warn
-#include "dbgtooldefs.h"  // for sff
 #include "ifpage.h"       // for IFPAGE
 #include "kprintdefs.h"   // for print
 #include "lispemul.h"     // for DLword, state, CurrentStackPTR, CURRENTFX

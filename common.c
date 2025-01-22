@@ -21,8 +21,6 @@
 #include "kprintdefs.h"    // for print
 #include "lispemul.h"      // for NIL, DLword, LispPTR
 #include "lspglob.h"
-#include "uraiddefs.h"     // for device_after_raid, device_before_raid, ura...
-#include "uraidextdefs.h"  // for URMAXFXNUM, URaid_inputstring, URaid_FXarray
 
 void stab(void) { DBPRINT(("Now in stab\n")); }
 
@@ -59,57 +57,17 @@ extern int BT_temp; /* holds the continue-character the user typed */
 LispPTR Uraid_mess = NIL;
 
 int error(const char *cp) {
-  char *ptr;
+#if 0
   if (device_before_raid() < 0) {
     (void)fprintf(stderr, "Can't Enter URAID.\n");
     exit(-1);
   }
+#endif
   /* comm read */
-  URaid_errmess = cp;
   (void)fprintf(stderr, "\n*Error* %s\n", cp);
   fflush(stdin);
-  (void)fprintf(stderr, "Enter the URaid\n");
-  print(Uraid_mess);
-  putchar('\n');
-  /* XXX: make sure output is flushed so we can see where we are */
-  fflush(stdout); fflush(stderr);
-  URaid_currentFX = URMAXFXNUM + 1;
-  memset(URaid_FXarray, 0, URMAXFXNUM * 4);
-  {
-    int stat = fcntl(fileno(stdin), F_GETFL, 0);
-    if (stat != O_RDONLY && stat != O_RDWR)
-      if (freopen("/dev/tty", "r", stdin) == NULL) {
-        perror("Reopen of stdin failed.");
-        exit(0);
-      }
-  }
-uraidloop:
-  if (setjmp(BT_jumpbuf) == 1) goto uraidloop;
-  if (setjmp(SD_jumpbuf) == 1) goto uraidloop;
-  for (;;) { /* URAID LOOP */
 
-    uraid_commclear();
-    BT_temp = 0; /* So we get the "more" option on screen-full */
-    printf("\n< ");
-    for (ptr = URaid_inputstring; (*ptr = getchar()) != '\n'; ptr++) {}
-    URaid_argnum = sscanf(URaid_inputstring, "%1s%s%s", URaid_comm, URaid_arg1, URaid_arg2);
-
-    if (uraid_commands() == NIL) break;
-    /* XXX: make sure output is flushed so we can see where we are */
-    fflush(stdout); fflush(stderr);
-  } /* for end */
-
-  /**TopOfStack = NIL;if error is called from subr TOS will be set NIL**/
-  if (device_after_raid() < 0) {
-    printf("Can't return to Lisp. Return to UNIX?");
-    {
-      int c;
-      c = getchar();
-      if ((c == 'Y') || (c == 'y')) exit(-1);
-    }
-    fflush(stdin);
-    goto uraidloop;
-  }
+  exit(-1);
   return (0);
 }
 

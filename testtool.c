@@ -51,7 +51,6 @@
 #include "array.h"         // for arrayheader
 #include "cell.h"          // for conspage, PNCell, GetDEFCELL68k, GetPnameCell
 #include "commondefs.h"    // for error
-#include "dbgtooldefs.h"   // for get_fn_fvar_name
 #include "debug.h"         // for PACKAGE
 #include "gcarraydefs.h"   // for aref1
 #include "kprintdefs.h"    // for print, prindatum
@@ -62,7 +61,6 @@
 #include "mkatomdefs.h"    // for compare_chars, make_atom
 #include "stack.h"         // for Bframe, FX, fnhead, frameex1, BFRAMEPTR
 #include "testtooldefs.h"  // for print_package_name, GETTOPVAL, MAKEATOM
-#include "uraidextdefs.h"  // for URaid_scanlink
 
 #define URSCAN_ALINK 0
 #define URSCAN_CLINK 1
@@ -674,6 +672,46 @@ const char *opcode_table[256] = {
 
 };
 
+/************************************************************************/
+/*									*/
+/*			g e t _ f n _ f v a r _ n a m e			*/
+/*									*/
+/*	Given (LISP) codeblock addr and an offset return fvar's name	*/
+/*									*/
+/************************************************************************/
+
+#ifdef BIGATOMS
+#define VTY_FVAR 0xC0000000
+#define NAMETABLE LispPTR
+#else
+#define VTY_FVAR 0xC000
+#define NAMETABLE DLword
+#endif
+
+LispPTR get_fn_fvar_name(struct fnhead *fnobj, DLword offset) {
+  NAMETABLE *first_table;
+  NAMETABLE *second_table;
+
+  first_table = (NAMETABLE *)((DLword *)fnobj + fnobj->fvaroffset);
+  second_table = (NAMETABLE *)((DLword *)first_table + fnobj->ntsize);
+#ifdef BIGATOMS
+  while (*(second_table) != (VTY_FVAR | offset))
+#else
+  while (GETWORD(second_table) != (VTY_FVAR | offset))
+#endif /* BIGATOMS */
+
+  {
+    first_table++;
+    second_table++;
+  }
+#ifdef BIGATOMS
+  return ((LispPTR) * (first_table));
+#else
+  return ((LispPTR)GETWORD(first_table));
+#endif /* BIGATOMS */
+
+} /* end get_fvar_name */
+
 int print_opcode(int pc, DLbyte *addr, struct fnhead *fnobj) {
   /* Print the opcode at addr, including args, and return length */
   /* if this opcode is the last, return -1			   */
@@ -956,23 +994,6 @@ void dump_CSTK(int before) {
 /******************************************/
 /* BTV */
 
-void btv(void) {
-  struct frameex1 *fx_addr68k;
-  struct frameex1 *get_nextFX(FX * fx);
-
-  fx_addr68k = CURRENTFX;
-
-loop:
-  dump_stackframe(fx_addr68k);
-  if (fx_addr68k->alink == 0) {
-    printf("\n BTV end");
-    return;
-  }
-
-  fx_addr68k = get_nextFX(fx_addr68k);
-  goto loop;
-} /*end btv*/
-
 int get_framename(struct frameex1 *fx_addr68k) {
   struct fnhead *fnheader;
   LispPTR scratch;
@@ -997,14 +1018,6 @@ int get_framename(struct frameex1 *fx_addr68k) {
   return (fnheader->framename);
 } /* get_framename end */
 
-FX *get_nextFX(FX *fx) {
-
-  if (URaid_scanlink == URSCAN_ALINK)
-    return ((FX *)NativeAligned4FromStackOffset(GETALINK(fx)));
-  else
-    return ((FX *)NativeAligned4FromStackOffset(GETCLINK(fx)));
-
-} /* get_nextFX end */
 
 LispPTR MAKEATOM(char *string) {
     return (make_atom(string, 0, strlen(string)));

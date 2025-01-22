@@ -18,11 +18,8 @@
 
 #include <stdio.h>
 #include <signal.h>
-#include <sys/types.h>
 #include <string.h>
 #ifndef DOS
-#include <sys/file.h>
-#include <sys/ioctl.h>
 #include <sys/time.h>
 #endif /* DOS */
 

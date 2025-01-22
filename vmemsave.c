@@ -24,11 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #ifndef DOS
-#include <dirent.h>
-#include <string.h>
 #include <sys/param.h>
 #include <pwd.h>
-#include <unistd.h>
 #endif /* DOS */
 
 

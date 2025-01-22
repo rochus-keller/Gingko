@@ -52,7 +52,6 @@
 #include "subrs.h"         // for sb_BITBLTSUB, sb_BITBLT_BITMAP, sb_BLTCHAR
 #include "timerdefs.h"     // for subr_copytimestats, subr_gettime, subr_set...
 #include "ufsdefs.h"       // for UFS_deletefile, UFS_directorynamep, UFS_ge...
-#include "uraidextdefs.h"  // for Uraid_mess
 #include "uutilsdefs.h"    // for suspend_lisp, check_unix_password, unix_fu...
 #include "vmemsavedefs.h"  // for lisp_finish, vmem_save0
 
@@ -97,10 +96,10 @@ void OP_subrcall(int subr_no, int argnum) {
 
     case sb_RAID:
       POP_SUBR_ARGS;
-      Uraid_mess = args[0];
+      //Uraid_mess = args[0];
       PC += 3; /* for the case of hardreset */
       error("URAID Called:");
-      Uraid_mess = NIL;
+      //Uraid_mess = NIL;
       TopOfStack = NIL;
       return; /* Direct return;avoid to increment PC */
               /* break; */

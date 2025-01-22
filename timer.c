@@ -17,8 +17,6 @@
 /************************************************************************/
 
 #include "version.h"
-#define __USE_BSD
-#define __USE_XOPEN2K8
 
 #include <errno.h>
 #include <fcntl.h>
@@ -27,8 +25,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/file.h>
-#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -36,11 +32,6 @@
 #include <sys/resource.h>
 #include <sys/time.h>
 #endif /* DOS */
-
-#if defined(USE_DLPI)
-#include <stropts.h>
-extern int ether_fd;
-#endif
 
 #include "lispemul.h"
 #include "lspglob.h"
@@ -482,17 +473,6 @@ static void int_io_init(void) {
   } else {
     DBPRINT(("I/O interrupts enabled\n"));
   }
-
-#if defined(USE_DLPI)
-  DBPRINT(("INIT ETHER:  Doing I_SETSIG.\n"));
-  if (ether_fd > 0)
-    if (ioctl(ether_fd, I_SETSIG, S_INPUT) != 0) {
-      perror("init_ether: I_SETSIG failed:\n");
-      close(ether_fd);
-      ether_fd = -1;
-      return;
-    }
-#endif /* USE_DLPI */
 }
 
 /************************************************************************/
