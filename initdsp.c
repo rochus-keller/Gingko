@@ -15,8 +15,6 @@
  *	Author	:	Osamu Nakamura
  */
 
-#define __USE_BSD
-#include <unistd.h>       // for getpagesize
 #ifdef BYTESWAP
 #include "byteswapdefs.h"
 #endif

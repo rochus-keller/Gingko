@@ -16,8 +16,7 @@
 #include <stdlib.h>         // for strtoul
 #include <string.h>         // for strcpy, strcmp, strlen, strncpy, strchr
 #include <sys/stat.h>       // for stat, fstat, mkdir, S_ISREG, st_atime, chmod
-#include <sys/types.h>      // for ino_t, time_t, off_t
-#include <unistd.h>         // for unlink, close, link, lseek, access, chdir
+#include <dirent.h>
 
 #include "adr68k.h"         // for NativeAligned4FromLAddr
 #include "arith.h"          // for GetSmallp
@@ -38,6 +37,7 @@
 #include <sys/param.h>      // for MAXPATHLEN
 #include <sys/statvfs.h>    // for statvfs
 #include <sys/time.h>       // for timeval, utimes
+#include <unistd.h> /* F_OK */
 #endif
 
 extern int *Lisp_errno;

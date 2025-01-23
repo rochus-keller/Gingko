@@ -17,7 +17,6 @@
 
 #include "version.h"
 
-#define __USE_BSD
 #ifndef DOS
 #include <pwd.h>           // for getpwuid, passwd
 #endif
@@ -25,7 +24,6 @@
 #include <stdlib.h>        // for malloc, exit
 #include <string.h>        // for strlen, strncpy
 #include <time.h>          // for time_t
-#include <unistd.h>        // for gethostid, getuid
 #include "adr68k.h"        // for NativeAligned2FromLAddr, NativeAligned4FromLAddr
 #ifdef BYTESWAP
 #include "byteswapdefs.h"   // for word_swap_page

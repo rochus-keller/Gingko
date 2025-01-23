@@ -23,7 +23,6 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <string.h>
-#include <unistd.h>
 
 #ifndef DOS
 #include <stdio.h>

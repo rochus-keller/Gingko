@@ -18,7 +18,6 @@
 #include <netdb.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <unistd.h>
 /* if using inet_ntop you must #include <arpa/inet.h> */
 #endif /* DOS */
 

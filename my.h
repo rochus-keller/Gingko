@@ -16,7 +16,6 @@
 /*	Manufactured in the United States of America.			*/
 /*									*/
 /************************************************************************/
-#include <sys/types.h>   // for uint8_t
 #include "version.h"     // for BIGVM
 #include "adr68k.h"      // for NativeAligned2FromLAddr, NativeAligned4FromLAddr, LAddrFromNative
 #include "arith.h"       // for N_ARITH_SWITCH, N_GETNUMBER

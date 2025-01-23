@@ -18,7 +18,6 @@
 */
 /**********************************************************************/
 #include "version.h" /* for BIGVM, BIGATOMS */
-#include <stdint.h> /* for int32_t */
 #include "lispemul.h" /* for LispPTR, DLword */
 
 /************************************************************************/

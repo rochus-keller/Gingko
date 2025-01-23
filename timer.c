@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
 
 #ifndef DOS
 #include <sys/resource.h>

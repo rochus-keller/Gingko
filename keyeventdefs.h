@@ -1,6 +1,5 @@
 #ifndef KEYEVENTDEFS_H
 #define KEYEVENTDEFS_H 1
-#include <sys/types.h>
 void process_io_events(void);
 void kb_trans(uint16_t keycode, uint16_t upflg);
 void taking_mouse_down(void);

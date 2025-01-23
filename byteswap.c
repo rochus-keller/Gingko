@@ -19,7 +19,6 @@
 /*                                                                         */
 /***************************************************************************/
 
-#include <arpa/inet.h>
 #include "byteswapdefs.h"
 #include "lsptypes.h"
 

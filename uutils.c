@@ -26,7 +26,6 @@
 #include <stdio.h>       // for printf, NULL, snprintf, size_t
 #include <stdlib.h>      // for getenv
 #include <string.h>      // for strcmp, strcpy, strlen, strncpy
-#include <unistd.h>      // for getuid, gethostid, gethostname, getpgrp
 #include "adr68k.h"      // for NativeAligned4FromLAddr
 #include "keyboard.h"    // for KBEVENT, KB_ALLUP, RING, KEYEVENTSIZE, MAXKE...
 #include "lispemul.h"    // for LispPTR, DLword, NIL, ATOM_T

@@ -24,7 +24,6 @@
 #endif
 #include <sys/stat.h>     // for stat, fstat
 #include <sys/types.h>    // for off_t
-#include <unistd.h>       // for lseek, read, close, getpagesize
 #include "adr68k.h"       // for NativeAligned2FromLAddr
 #ifdef BYTESWAP
 #include "byteswapdefs.h" // for word_swap_page

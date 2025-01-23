@@ -18,7 +18,6 @@
 #include <stdlib.h>         // for calloc, free, strtoul, malloc, qsort
 #include <string.h>         // for strcpy, strcmp, strlen, strrchr, strcat
 #include <sys/stat.h>       // for stat, S_ISDIR, st_atime, st_mtime
-#include <sys/time.h>       // for timespec_t
 #include "adr68k.h"         // for NativeAligned4FromLAddr
 #include "arith.h"          // for GetSmallp
 #include "dirdefs.h"        // for COM_finish_finfo, COM_gen_files, COM_next...
@@ -29,6 +28,39 @@
 #include "lsptypes.h"
 #include "timeout.h"        // for S_TOUT, TIMEOUT0, TIMEOUT, ERRSETJMP
 #include "ufsdefs.h"        // for quote_dname, quote_fname, quote_fname_ufs
+#include <dirent.h>
+
+typedef struct fprop {
+  unsigned length;   /* Byte length of this file. */
+  unsigned wdate;    /* Written (Creation) date in Lisp sense. */
+  unsigned rdate;    /* Read date in Lisp sense. */
+  unsigned protect;  /* Protect mode of this file. */
+  size_t au_len;     /* Byte length of author. */
+  char author[256];  /* Author in Lisp sense. */
+} FPROP;
+
+/* This structure has a pointer at each end to force alignment to
+   be correct when a pointer is 8 bytes long. */
+typedef struct finfo {
+  FPROP *prop;           /* File properties Lisp needs. */
+  char lname[MAXNAMLEN + 1]; /* Name in Lisp Format. */
+  char no_ver_name[MAXNAMLEN + 1];
+  /*
+   * Name in UNIX Format.  Does not
+   * include Version field.
+   * All lower case.
+   */
+  size_t lname_len;     /* Byte length of lname. */
+  unsigned dirp;       /* If 1, this file is a directory. */
+  unsigned version;   /* Version in Lisp sense. */
+  ino_t ino;          /* I-node number of this file. */
+  struct finfo *next; /* Last entry is indicated by NULL pointer. */
+} FINFO;
+
+typedef struct dfinfo {
+  FINFO *head; /* Head of the linked FINFO structures. */
+  FINFO *next; /* FINFO structure generated next time. */
+} DFINFO;
 
 extern int *Lisp_errno;
 extern int Dummy_errno;

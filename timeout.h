@@ -9,7 +9,6 @@
 /*									*/
 /************************************************************************/
 #include <setjmp.h> /* for jmp_buf */
-#include <unistd.h> /* for alarm */
 
 extern jmp_buf jmpbuf;
 
