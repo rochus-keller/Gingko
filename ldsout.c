@@ -11,19 +11,9 @@
 
 #include "version.h"
 
-#include <fcntl.h>        // for open, O_RDONLY
 #include <stdio.h>        // for perror, fprintf, printf, stderr, sprintf
 #include <stdlib.h>       // for exit, free, malloc
 #include <string.h>       // for memset
-#include <sys/mman.h>     // for mmap, MAP_FAILED
-#ifndef MAP_FAILED
-#define MAP_FAILED	((void *)-1)
-#endif
-#ifndef MAP_ANONYMOUS
-#  define MAP_ANONYMOUS	0x20		/* Don't use a file.  */
-#endif
-#include <sys/stat.h>     // for stat, fstat
-#include <sys/types.h>    // for off_t
 #include "adr68k.h"       // for NativeAligned2FromLAddr
 #ifdef BYTESWAP
 #include "byteswapdefs.h" // for word_swap_page
@@ -47,6 +37,8 @@
 /* Flag for indication whether process space is going to expand or not */
 int Storage_expanded; /*  T or NIL */
 
+extern void* vmem_alloc(long size);
+
 /************************************************************************/
 /*                                                                      */
 /*                       s y s o u t _ l o a d e r                      */
@@ -57,7 +49,7 @@ int Storage_expanded; /*  T or NIL */
 
 /* sys_size is sysout size in megabytes */
 unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
-  int sysout; /* SysoutFile descriptor */
+  FILE* sysout; /* SysoutFile descriptor */
 
   IFPAGE ifpage; /* IFPAGE */
 
@@ -67,16 +59,15 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 #else
   DLword *fptovp; /* FPTOVP */
 #endif                /* BIGVM */
-  off_t fptovp_offset; /* FPTOVP start offset */
+  long fptovp_offset; /* FPTOVP start offset */
 
   char *lispworld_scratch; /* scratch area for lispworld */
   size_t lispworld_offset;   /* lispworld offset */
 
   unsigned sysout_size; /* sysout size in page */
-  struct stat stat_buf; /* file stat buf */
 
   char errmsg[255];
-  off_t cfp = -1;  /* tracks current file position in sysout, or -1 */
+  long cfp = -1;  /* tracks current file position in sysout, or -1 */
 
   /* Checks for specifying the process size (phase I) */
   /* If sys_size == 0 figure out the proper size later */
@@ -93,21 +84,28 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
    */
 
   /* open SysoutFile */
-  sysout = open(sysout_file_name, O_RDONLY);
-  if (sysout == -1) {
+  sysout = fopen(sysout_file_name, "rb");
+  if (sysout == NULL) {
     sprintf(errmsg, "sysout_loader: can't open sysout file: %s", sysout_file_name);
     perror(errmsg);
     exit(-1);
   }
 
+  if (fseek(sysout, 0, SEEK_END) != 0) {
+      sprintf(errmsg, "sysout_loader: can't seek end of sysout file: %s", sysout_file_name);
+      perror(errmsg);
+      exit(-1);
+  }
+  const long file_size = ftell(sysout);
+
   /* seek to IFPAGE */
-  if (lseek(sysout, IFPAGE_ADDRESS, SEEK_SET) == -1) {
+  if (fseek(sysout, IFPAGE_ADDRESS, SEEK_SET) != 0) {
     perror("sysout_loader: can't seek to IFPAGE");
     exit(-1);
   }
 
   /* reads IFPAGE into scratch_page */
-  if (read(sysout, &ifpage, sizeof(IFPAGE)) == -1) {
+  if (fread(&ifpage, 1, sizeof(IFPAGE), sysout) != sizeof(IFPAGE)) {
     perror("sysout_loader: can't read IFPAGE");
     exit(-1);
   }
@@ -169,8 +167,8 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 
   /* allocate Virtual Memory Space */
 
-  lispworld_scratch = (char*)mmap(0, sys_size * MBYTE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-  if (lispworld_scratch == MAP_FAILED) {
+  lispworld_scratch = (char*)vmem_alloc(sys_size * MBYTE);
+  if (lispworld_scratch == 0) {
     (void)fprintf(stderr, "sysout_loader: can't allocate Lisp %dMBytes VM \n", sys_size);
     exit(-1);
   }
@@ -191,11 +189,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
   DBPRINT(("FPTOVP Location %ld \n", (long)fptovp_offset));
 
   /* get sysout file size in halfpage(256) */
-  if (fstat(sysout, &stat_buf) == -1) {
-    perror("sysout_loader: can't get sysout file size");
-    exit(-1);
-  }
-  sysout_size = (unsigned)(stat_buf.st_size / BYTESPER_PAGE * 2);
+  sysout_size = (unsigned)(file_size / BYTESPER_PAGE * 2);
 
   DBPRINT(("sysout size / 2 = 0x%x\n", sysout_size / 2));
   DBPRINT(("vmem size = 0x%x\n", ifpage.nactivepages));
@@ -207,9 +201,9 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
     exit(1);
   }
 
-  if ((stat_buf.st_size & (BYTESPER_PAGE - 1)) != 0)
+  if ((file_size & (BYTESPER_PAGE - 1)) != 0)
     printf("CAUTION::not an integral number of pages.  sysout & 0x1ff = 0x%x\n",
-           (int)(stat_buf.st_size & (BYTESPER_PAGE - 1)));
+           (int)(file_size & (BYTESPER_PAGE - 1)));
 
   if (ifpage.nactivepages != (sysout_size / 2)) {
     printf("sysout_loader:IFPAGE says sysout size is %d\n", ifpage.nactivepages);
@@ -227,7 +221,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 #else
   fptovp_offset = (fptovp_offset - 1) * BYTESPER_PAGE + 2;
 #endif
-  if (lseek(sysout, fptovp_offset, SEEK_SET) == -1) {
+  if (fseek(sysout, fptovp_offset, SEEK_SET) != 0) {
     perror("sysout_loader: can't seek to FPTOVP");
     exit(-1);
   }
@@ -237,7 +231,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 #ifdef BIGVM
   /* fptovp is now in cells, not words */
   fptovp = (unsigned int*)malloc(sysout_size * 2 + 4);
-  if (read(sysout, fptovp, sysout_size * 2) == -1) {
+  if (fread(fptovp, 1, sysout_size * 2, sysout) != sysout_size * 2) {
     perror("sysout_loader: can't read FPTOVP");
     free(fptovp);
     exit(-1);
@@ -251,7 +245,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 #else
 
   fptovp = (DLword*)malloc(sysout_size + 2);
-  if (read(sysout, fptovp, sysout_size) == -1) {
+  if (fread(fptovp, 1, sysout_size, sysout) != sysout_size) {
     perror("sysout_loader: can't read FPTOVP");
     free(fptovp);
     exit(-1);
@@ -274,7 +268,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
     if (GETPAGEOK(fptovp, i) != 0177777) {
       /* only seek if not already at desired position */
       if (i * BYTESPER_PAGE != cfp) {
-	if (lseek(sysout, i * BYTESPER_PAGE, SEEK_SET) == -1) {
+    if (fseek(sysout, i * BYTESPER_PAGE, SEEK_SET) != 0) {
 	  perror("sysout_loader: can't seek sysout file");
 	  free(fptovp);
 	  exit(-1);
@@ -282,7 +276,7 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
 	cfp = i * BYTESPER_PAGE; /* now at known position */
       }
       lispworld_offset = GETFPTOVP(fptovp, i) * BYTESPER_PAGE;
-      if (read(sysout, lispworld_scratch + lispworld_offset, BYTESPER_PAGE) == -1) {
+      if (fread(lispworld_scratch + lispworld_offset, 1, BYTESPER_PAGE, sysout) != BYTESPER_PAGE) {
         printf("sysout_loader: can't read sysout file at %d\n", i);
         printf("               offset was 0x%zx (0x%x pages).\n", lispworld_offset,
                GETFPTOVP(fptovp, i));
@@ -308,6 +302,6 @@ unsigned sysout_loader(const char *sysout_file_name, unsigned sys_size) {
   TPRINT(("After Flushing display buffer\n"));
 #endif /* DISPLAYBUFFER */
 
-  close(sysout);
+  fclose(sysout);
   return (sys_size);
 }

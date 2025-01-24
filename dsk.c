@@ -1623,7 +1623,7 @@ LispPTR COM_readpage(LispPTR *args)
   char *bufp;
   int fd, npage, rval;
   ssize_t count;
-  off_t offval;
+  long offval;
   struct stat sbuf;
 
   ERRSETJMP(NIL);
@@ -1709,7 +1709,7 @@ LispPTR COM_writepage(LispPTR *args)
   char *bufp;
   int count;
   ssize_t rval;
-  off_t offval;
+  long offval;
 
   ERRSETJMP(NIL);
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[4]);
@@ -1799,8 +1799,8 @@ LispPTR COM_truncatefile(LispPTR *args)
      */
     return (ATOM_T);
   }
-  if ((off_t)length != sbuf.st_size) {
-    TIMEOUT(rval = ftruncate(fd, (off_t)length));
+  if ((long)length != sbuf.st_size) {
+    TIMEOUT(rval = ftruncate(fd, (long)length));
     if (rval != 0) {
       *Lisp_errno = errno;
       return (NIL);

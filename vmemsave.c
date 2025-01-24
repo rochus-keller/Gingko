@@ -277,7 +277,7 @@ LispPTR vmem_save(char *sysout_file_name)
   int i;
   char tempname[MAXPATHLEN];
   ssize_t rsize;
-  off_t roff;
+  long roff;
   int rval;
 
 /* remove cursor image from screen */

@@ -9,15 +9,10 @@
 
 #include "version.h"
 
-#ifndef DOS
-#include <pwd.h>            // for getpwuid, passwd
-#include <sys/param.h>      // for MAXPATHLEN
-#endif /* DOS */
 #include <errno.h>          // for errno, EINTR, ENOENT
 #include <stdio.h>          // for NULL, sprintf, size_t
 #include <stdlib.h>         // for calloc, free, strtoul, malloc, qsort
 #include <string.h>         // for strcpy, strcmp, strlen, strrchr, strcat
-#include <sys/stat.h>       // for stat, S_ISDIR, st_atime, st_mtime
 #include "adr68k.h"         // for NativeAligned4FromLAddr
 #include "arith.h"          // for GetSmallp
 #include "dirdefs.h"        // for COM_finish_finfo, COM_gen_files, COM_next...
@@ -28,7 +23,7 @@
 #include "lsptypes.h"
 #include "timeout.h"        // for S_TOUT, TIMEOUT0, TIMEOUT, ERRSETJMP
 #include "ufsdefs.h"        // for quote_dname, quote_fname, quote_fname_ufs
-#include <dirent.h>
+#include "tinydir.h"
 
 typedef struct fprop {
   unsigned length;   /* Byte length of this file. */
@@ -53,7 +48,7 @@ typedef struct finfo {
   size_t lname_len;     /* Byte length of lname. */
   unsigned dirp;       /* If 1, this file is a directory. */
   unsigned version;   /* Version in Lisp sense. */
-  ino_t ino;          /* I-node number of this file. */
+  unsigned long ino;          /* I-node number of this file. */
   struct finfo *next; /* Last entry is indicated by NULL pointer. */
 } FINFO;
 
@@ -383,56 +378,42 @@ static int get_finfo_id(void) {
 
 static int enum_dsk_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
 {
-  struct dirent *dp;
   FINFO *prevp;
   FINFO *nextp;
-  int n, rval;
+  int n;
   size_t len;
-  DIR *dirp;
-  struct passwd *pwd;
-  struct stat sbuf;
-  char namebuf[MAXPATHLEN];
+  tinydir_dir dirp;
+  char namebuf[_TINYDIR_PATH_MAX];
   char fver[VERSIONLEN];
 
   errno = 0;
-  TIMEOUT0(dirp = opendir(dir));
-  if (dirp == NULL) {
+  if( tinydir_open(&dirp, dir) != 0 ) {
     *Lisp_errno = errno;
     return (-1);
   }
 
-  for (S_TOUT(dp = readdir(dirp)), nextp = prevp = (FINFO *)NULL, n = 0;
-       dp != (struct dirent *)NULL || errno == EINTR;
-       errno = 0, S_TOUT(dp = readdir(dirp)), prevp = nextp)
-    if (dp) {
-      if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0 || dp->d_ino == 0) continue;
-      MatchP((char *)dp->d_name, name, ver, match, unmatch);
+  for (nextp = prevp = (FINFO *)NULL, n = 0;
+       dirp.has_next;
+       errno = 0, tinydir_next(&dirp), prevp = nextp) {
+
+      tinydir_file dp;
+      tinydir_readfile(&dirp, &dp);
+
+      if (strcmp(dp.name, ".") == 0 || strcmp(dp.name, "..") == 0 || dirp._e->d_ino == 0) continue;
+      MatchP((char *)dp.name, name, ver, match, unmatch);
     unmatch:
       continue;
     match:
       AllocFinfo(nextp);
       if (nextp == (FINFO *)NULL) {
         FreeFinfo(prevp);
-        closedir(dirp);
+        tinydir_close(&dirp);
         *Lisp_errno = errno;
         return (-1);
       }
       nextp->next = prevp;
-      sprintf(namebuf, "%s/%s", dir, dp->d_name);
-      TIMEOUT(rval = stat(namebuf, &sbuf));
-      if (rval == -1 && errno != ENOENT) {
-        /*
-         * ENOENT error might be caused by missing symbolic
-         * link. We should ignore such error here.
-         */
-        FreeFinfo(nextp);
-        closedir(dirp);
-        *Lisp_errno = errno;
-        return (-1);
-      }
-
-      strcpy(namebuf, dp->d_name);
-      if (S_ISDIR(sbuf.st_mode)) {
+      strcpy(namebuf, dp.name);
+      if ( dp.is_dir ) {
         nextp->dirp = 1;
         quote_dname(namebuf);
         strcpy(nextp->lname, namebuf);
@@ -450,7 +431,7 @@ static int enum_dsk_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->lname_len = len;
       }
 
-      strcpy(namebuf, dp->d_name);
+      strcpy(namebuf, dp.name);
       len = strlen(namebuf);
       separate_version(namebuf, fver, 1);
       DOWNCASE(namebuf);
@@ -459,23 +440,26 @@ static int enum_dsk_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->version = 0;
       else
         nextp->version = strtoul(fver, (char **)NULL, 10);
-      nextp->ino = sbuf.st_ino;
-      nextp->prop->length = (unsigned)sbuf.st_size;
-      nextp->prop->wdate = (unsigned)ToLispTime(sbuf.st_mtime);
-      nextp->prop->rdate = (unsigned)ToLispTime(sbuf.st_atime);
-      nextp->prop->protect = (unsigned)sbuf.st_mode;
-      TIMEOUT0(pwd = getpwuid(sbuf.st_uid));
+      nextp->ino = dp._s.st_ino;
+      nextp->prop->length = (unsigned)dp._s.st_size;
+      nextp->prop->wdate = (unsigned)ToLispTime(dp._s.st_mtime);
+      nextp->prop->rdate = (unsigned)ToLispTime(dp._s.st_atime);
+      nextp->prop->protect = (unsigned)dp._s.st_mode;
+      nextp->prop->au_len = 0;
+#if 0
+      // RK: authors not supported
+      (pwd = getpwuid(sbuf.st_uid));
       if (pwd == (struct passwd *)NULL) {
-        nextp->prop->au_len = 0;
       } else {
         len = strlen(pwd->pw_name);
         strcpy(nextp->prop->author, pwd->pw_name);
         *(nextp->prop->author + len) = '\0';
         nextp->prop->au_len = len;
       }
+#endif
       n++;
     }
-  closedir(dirp);
+  tinydir_close(&dirp);
   if (n > 0) *finfo_buf = prevp;
   return (n);
 }
@@ -502,55 +486,42 @@ static int enum_dsk_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
 
 static int enum_dsk(char *dir, char *name, char *ver, FINFO **finfo_buf)
 {
-  struct dirent *dp;
   FINFO *prevp;
   FINFO *nextp;
-  int n, rval;
+  int n;
   size_t len;
-  DIR *dirp;
-  struct stat sbuf;
-  char namebuf[MAXPATHLEN];
+  tinydir_dir dirp;
+  char namebuf[_TINYDIR_PATH_MAX];
   char fver[VERSIONLEN];
 
   errno = 0;
-  TIMEOUT0(dirp = opendir(dir));
-  if (dirp == NULL) {
+  if( tinydir_open(&dirp, dir) != 0 ) {
     *Lisp_errno = errno;
     return (-1);
   }
 
-  for (S_TOUT(dp = readdir(dirp)), nextp = prevp = (FINFO *)NULL, n = 0;
-       dp != (struct dirent *)NULL || errno == EINTR;
-       errno = 0, S_TOUT(dp = readdir(dirp)), prevp = nextp)
-    if (dp) {
-      if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0 || dp->d_ino == 0) continue;
-      MatchP((char *)dp->d_name, name, ver, match, unmatch);
+  for (nextp = prevp = (FINFO *)NULL, n = 0;
+       dirp.has_next;
+       errno = 0, tinydir_next(&dirp), prevp = nextp) {
+
+      tinydir_file dp;
+      tinydir_readfile(&dirp, &dp);
+
+      if (strcmp(dp.name, ".") == 0 || strcmp(dp.name, "..") == 0 || dirp._e->d_ino == 0) continue;
+      MatchP((char *)dp.name, name, ver, match, unmatch);
     unmatch:
       continue;
     match:
       AllocFinfo(nextp);
       if (nextp == (FINFO *)NULL) {
         FreeFinfo(prevp);
-        closedir(dirp);
+        tinydir_close(&dirp);
         *Lisp_errno = errno;
         return (-1);
       }
       nextp->next = prevp;
-      sprintf(namebuf, "%s/%s", dir, dp->d_name);
-      TIMEOUT(rval = stat(namebuf, &sbuf));
-      if (rval == -1 && errno != ENOENT) {
-        /*
-         * ENOENT error might be caused by missing symbolic
-         * link. We should ignore such error here.
-         */
-        FreeFinfo(nextp);
-        closedir(dirp);
-        *Lisp_errno = errno;
-        return (-1);
-      }
-
-      strcpy(namebuf, dp->d_name);
-      if (S_ISDIR(sbuf.st_mode)) {
+      strcpy(namebuf, dp.name);
+      if ( dp.is_dir ) {
         nextp->dirp = 1;
         quote_dname(namebuf);
         strcpy(nextp->lname, namebuf);
@@ -568,7 +539,7 @@ static int enum_dsk(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->lname_len = len;
       }
 
-      strcpy(namebuf, dp->d_name);
+      strcpy(namebuf, dp.name);
       len = strlen(namebuf);
       separate_version(namebuf, fver, 1);
       DOWNCASE(namebuf);
@@ -577,10 +548,10 @@ static int enum_dsk(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->version = 0;
       else
         nextp->version = strtoul(fver, (char **)NULL, 10);
-      nextp->ino = sbuf.st_ino;
+      nextp->ino = dp._s.st_ino;
       n++;
     }
-  closedir(dirp);
+  tinydir_close(&dirp);
   if (n > 0) *finfo_buf = prevp;
   return (n);
 }
@@ -610,55 +581,42 @@ static int enum_dsk(char *dir, char *name, char *ver, FINFO **finfo_buf)
 
 static int enum_ufs_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
 {
-  struct dirent *dp;
   FINFO *prevp;
   FINFO *nextp;
-  int n, rval;
+  int n;
   size_t len;
-  DIR *dirp;
+  tinydir_dir dirp;
   /* struct passwd *pwd; -- From author support */
-  struct stat sbuf;
-  char namebuf[MAXPATHLEN];
+  char namebuf[_TINYDIR_PATH_MAX];
 
   errno = 0;
-  TIMEOUT0(dirp = opendir(dir));
-  if (dirp == NULL) {
+  if( tinydir_open(&dirp, dir) != 0 ) {
     *Lisp_errno = errno;
     return (-1);
   }
 
-  for (S_TOUT(dp = readdir(dirp)), nextp = prevp = (FINFO *)NULL, n = 0;
-       dp != (struct dirent *)NULL || errno == EINTR;
-       errno = 0, S_TOUT(dp = readdir(dirp)), prevp = nextp)
-    if (dp) {
-      if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0 || dp->d_ino == 0) continue;
-      MatchP_Case((char *)dp->d_name, name, ver, match, unmatch);
+  for (nextp = prevp = (FINFO *)NULL, n = 0;
+       dirp.has_next;
+       errno = 0, tinydir_next(&dirp), prevp = nextp) {
+
+      tinydir_file dp;
+      tinydir_readfile(&dirp, &dp);
+
+      if (strcmp(dp.name, ".") == 0 || strcmp(dp.name, "..") == 0 || dirp._e->d_ino == 0) continue;
+      MatchP_Case((char *)dp.name, name, ver, match, unmatch);
     unmatch:
       continue;
     match:
       AllocFinfo(nextp);
       if (nextp == (FINFO *)NULL) {
         FreeFinfo(prevp);
-        closedir(dirp);
+        tinydir_close(&dirp);
         *Lisp_errno = errno;
         return (-1);
       }
       nextp->next = prevp;
-      sprintf(namebuf, "%s/%s", dir, dp->d_name);
-      TIMEOUT(rval = stat(namebuf, &sbuf));
-      if (rval == -1 && errno != ENOENT) {
-        /*
-         * ENOENT error might be caused by missing symbolic
-         * link. We should ignore such error here.
-         */
-        FreeFinfo(nextp);
-        closedir(dirp);
-        *Lisp_errno = errno;
-        return (-1);
-      }
-
-      strcpy(namebuf, dp->d_name);
-      if (S_ISDIR(sbuf.st_mode)) {
+      strcpy(namebuf, dp.name);
+      if ( dp.is_dir ) {
         nextp->dirp = 1;
         quote_dname(namebuf);
         strcpy(nextp->lname, namebuf);
@@ -676,13 +634,13 @@ static int enum_ufs_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->lname_len = len;
       }
 
-      strcpy(namebuf, dp->d_name);
+      strcpy(namebuf, dp.name);
       len = strlen(namebuf);
-      nextp->ino = sbuf.st_ino;
-      nextp->prop->length = (unsigned)sbuf.st_size;
-      nextp->prop->wdate = (unsigned)ToLispTime(sbuf.st_mtime);
-      nextp->prop->rdate = (unsigned)ToLispTime(sbuf.st_atime);
-      nextp->prop->protect = (unsigned)sbuf.st_mode;
+      nextp->ino = dp._s.st_ino;
+      nextp->prop->length = (unsigned)dp._s.st_size;
+      nextp->prop->wdate = (unsigned)ToLispTime(dp._s.st_mtime);
+      nextp->prop->rdate = (unsigned)ToLispTime(dp._s.st_atime);
+      nextp->prop->protect = (unsigned)dp._s.st_mode;
       /*
                       TIMEOUT(pwd = getpwuid(sbuf.st_uid));
                       if (pwd == (struct passwd *)NULL) {
@@ -696,7 +654,7 @@ static int enum_ufs_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
       */
       n++;
     }
-  closedir(dirp);
+  tinydir_close(&dirp);
   if (n > 0) *finfo_buf = prevp;
   return (n);
 }
@@ -723,54 +681,41 @@ static int enum_ufs_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
 
 static int enum_ufs(char *dir, char *name, char *ver, FINFO **finfo_buf)
 {
-  struct dirent *dp;
   FINFO *prevp;
   FINFO *nextp;
-  int n, rval;
+  int n;
   size_t len;
-  DIR *dirp;
-  struct stat sbuf;
-  char namebuf[MAXPATHLEN];
+  tinydir_dir dirp;
+  char namebuf[_TINYDIR_PATH_MAX];
 
   errno = 0;
-  TIMEOUT0(dirp = opendir(dir));
-  if (dirp == NULL) {
+  if( tinydir_open(&dirp, dir) != 0 ) {
     *Lisp_errno = errno;
     return (-1);
   }
 
-  for (S_TOUT(dp = readdir(dirp)), nextp = prevp = (FINFO *)NULL, n = 0;
-       dp != (struct dirent *)NULL || errno == EINTR;
-       errno = 0, S_TOUT(dp = readdir(dirp)), prevp = nextp)
-    if (dp) {
-      if (strcmp(dp->d_name, ".") == 0 || strcmp(dp->d_name, "..") == 0 || dp->d_ino == 0) continue;
-      MatchP_Case((char *)dp->d_name, name, ver, match, unmatch);
+  for (nextp = prevp = (FINFO *)NULL, n = 0;
+       dirp.has_next;
+       errno = 0, tinydir_next(&dirp), prevp = nextp) {
+
+      tinydir_file dp;
+      tinydir_readfile(&dirp, &dp);
+
+      if (strcmp(dp.name, ".") == 0 || strcmp(dp.name, "..") == 0 || dirp._e->d_ino == 0) continue;
+      MatchP_Case((char *)dp.name, name, ver, match, unmatch);
     unmatch:
       continue;
     match:
       AllocFinfo(nextp);
       if (nextp == (FINFO *)NULL) {
         FreeFinfo(prevp);
-        closedir(dirp);
+        tinydir_close(&dirp);
         *Lisp_errno = errno;
         return (-1);
       }
       nextp->next = prevp;
-      sprintf(namebuf, "%s/%s", dir, dp->d_name);
-      TIMEOUT(rval = stat(namebuf, &sbuf));
-      if (rval == -1 && errno != ENOENT) {
-        /*
-         * ENOENT error might be caused by missing symbolic
-         * link. We should ignore such error here.
-         */
-        FreeFinfo(nextp);
-        closedir(dirp);
-        *Lisp_errno = errno;
-        return (-1);
-      }
-
-      strcpy(namebuf, dp->d_name);
-      if (S_ISDIR(sbuf.st_mode)) {
+      strcpy(namebuf, dp.name);
+      if ( dp.is_dir ) {
         nextp->dirp = 1;
         quote_dname(namebuf);
         strcpy(nextp->lname, namebuf);
@@ -788,12 +733,12 @@ static int enum_ufs(char *dir, char *name, char *ver, FINFO **finfo_buf)
         nextp->lname_len = len;
       }
 
-      strcpy(namebuf, dp->d_name);
+      strcpy(namebuf, dp.name);
       len = strlen(namebuf);
-      nextp->ino = sbuf.st_ino;
+      nextp->ino = dp._s.st_ino;
       n++;
     }
-  closedir(dirp);
+  tinydir_close(&dirp);
   if (n > 0) *finfo_buf = prevp;
   return (n);
 }
@@ -1488,7 +1433,7 @@ typedef struct ufsgfs {
 
 LispPTR COM_gen_files(LispPTR *args)
 {
-  char fbuf[MAXPATHLEN + 5], dir[MAXPATHLEN], pattern[MAXPATHLEN];
+  char fbuf[_TINYDIR_PATH_MAX + 5], dir[_TINYDIR_PATH_MAX], pattern[_TINYDIR_PATH_MAX];
   char host[MAXNAMLEN], name[MAXNAMLEN], ver[VERSIONLEN];
   int dskp, count, highestp, fid;
   unsigned propp, version;
@@ -1508,9 +1453,9 @@ LispPTR COM_gen_files(LispPTR *args)
    */
   count = dskp ? count + 4 + 1 : count + 2 + 1;
   /* Add 5 for the host name field in Lisp format. */
-  if (count > MAXPATHLEN + 5) FileNameTooLong((SMALLP_MINUSONE));
+  if (count > _TINYDIR_PATH_MAX + 5) FileNameTooLong((SMALLP_MINUSONE));
 
-  LispStringToCString(args[0], fbuf, MAXPATHLEN);
+  LispStringToCString(args[0], fbuf, _TINYDIR_PATH_MAX);
   separate_host(fbuf, host);
 
   UPCASE(host);

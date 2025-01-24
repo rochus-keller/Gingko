@@ -92,7 +92,8 @@ SOURCES += \
     gcoflow.c \
     sdl.c \
     usrsubr.c \
-    display.c
+    display.c \
+    vmem_alloc.c
 
 HEADERS += \
     address.h \
