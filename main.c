@@ -21,10 +21,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifndef DOS
-#include <sys/param.h>
-#include <unistd.h>
-#endif /* DOS */
+#include "tinydir.h"
 
 #include "adr68k.h"
 #include "stack.h"
@@ -208,10 +205,10 @@ int display_max = 65536 * 16 * 2;
 /* diagnostic flag for sysout dumping */
 extern unsigned maxpages;
 
-char sysout_name_cl[MAXPATHLEN] = "\0"; /* sysout name as per -sysout command line arg ; Set by read_Xoption, in the X version. */
-char sysout_name_xrm[MAXPATHLEN] = "\0"; /* sysout name as per X resource manager, if any */
-char sysout_name_first_arg[MAXPATHLEN] = "\0"; /* sysout name as per 1st command line arg, if any */
-char sysout_name[MAXPATHLEN] = "\0"; /* "final" sysout name chosen from above */
+char sysout_name_cl[_TINYDIR_PATH_MAX] = "\0"; /* sysout name as per -sysout command line arg ; Set by read_Xoption, in the X version. */
+char sysout_name_xrm[_TINYDIR_PATH_MAX] = "\0"; /* sysout name as per X resource manager, if any */
+char sysout_name_first_arg[_TINYDIR_PATH_MAX] = "\0"; /* sysout name as per 1st command line arg, if any */
+char sysout_name[_TINYDIR_PATH_MAX] = "\0"; /* "final" sysout name chosen from above */
 
 unsigned sysout_size = 0;    /* ditto */
 
@@ -247,9 +244,9 @@ const char *helpstring =
 int main(int argc, char *argv[])
 {
   int i = 0;
-  char *envname;
+  const char *envname;
   extern int TIMER_INTERVAL;
-  extern fd_set LispReadFds;
+  // extern fd_set LispReadFds;
   long tmpint;
   int width = 1024, height = 768;
   int pixelscale = 1;
@@ -265,7 +262,7 @@ int main(int argc, char *argv[])
   // and save it away if it is in case the X windows
   // arg processing changes argc/argv
   if (argc > 1 && argv[1][0] != '-') {
-    strncpy(sysout_name_first_arg, argv[1], MAXPATHLEN);
+    strncpy(sysout_name_first_arg, argv[1], _TINYDIR_PATH_MAX);
     i++;
   }
 
@@ -294,7 +291,7 @@ int main(int argc, char *argv[])
    /* Check for -sysout arg */
     if (!strcmp(argv[i], "-sysout")) {
       if (argc > ++i) {
-        strncpy(sysout_name_cl, argv[i], MAXPATHLEN);
+        strncpy(sysout_name_cl, argv[i], _TINYDIR_PATH_MAX);
       }
     }
 
@@ -403,21 +400,21 @@ int main(int argc, char *argv[])
   //
   int derive_medley_path = 0;
   if (sysout_name_cl[0] != '\0') {
-      strncpy(sysout_name, sysout_name_cl, MAXPATHLEN);
+      strncpy(sysout_name, sysout_name_cl, _TINYDIR_PATH_MAX);
       derive_medley_path = 1;
   } else if (sysout_name_first_arg[0] != '\0') {
-      strncpy(sysout_name, sysout_name_first_arg, MAXPATHLEN);
+      strncpy(sysout_name, sysout_name_first_arg, _TINYDIR_PATH_MAX);
       derive_medley_path = 1;
-  } else if ((envname = getenv("LDESRCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
-  else if ((envname = getenv("LDESOURCESYSOUT")) != NULL) { strncpy(sysout_name, envname, MAXPATHLEN); }
-  else if (sysout_name_xrm[0] != '\0') { strncpy(sysout_name, sysout_name_xrm, MAXPATHLEN); }
+  } else if ((envname = getenv("LDESRCESYSOUT")) != NULL) { strncpy(sysout_name, envname, _TINYDIR_PATH_MAX); }
+  else if ((envname = getenv("LDESOURCESYSOUT")) != NULL) { strncpy(sysout_name, envname, _TINYDIR_PATH_MAX); }
+  else if (sysout_name_xrm[0] != '\0') { strncpy(sysout_name, sysout_name_xrm, _TINYDIR_PATH_MAX); }
   else {
-    if ((envname = getenv("HOME")) != NULL) {
-      strncpy(sysout_name, envname, MAXPATHLEN);
-      strncat(sysout_name, "/lisp.virtualmem", MAXPATHLEN - 17);
+    if ((envname = get_home_dir()) != NULL) {
+      strncpy(sysout_name, envname, _TINYDIR_PATH_MAX);
+      strncat(sysout_name, "lisp.virtualmem", _TINYDIR_PATH_MAX - 17);
     }
   }
-  if ((sysout_name[0] == '\0') || (access(sysout_name, R_OK))) {
+  if ((sysout_name[0] == '\0') || (can_read_file(sysout_name))) {
     perror("Couldn't find a sysout to run");
     fprintf(stderr, "Looking for: %s\n", sysout_name);
     (void)fprintf(stderr, "%s", helpstring);
@@ -440,7 +437,6 @@ int main(int argc, char *argv[])
            printf("Gingko set MEDLEYDIR to '%s'\n", sysout_name);
            *found = '/';
            setenv("LDESOURCESYSOUT", sysout_name, 1);
-           setenv("LDEDESTSYSOUT", "${HOME}/lisp.virtualmem", 1);
            setenv("INMEDLEY", "1", 1);
            strcpy(sysout_name_cl,found);
            strcpy(found,"/greetfiles/MEDLEYDIR-INIT");
@@ -460,15 +456,9 @@ int main(int argc, char *argv[])
 
 
 /* Sanity checks. */
-  if (getuid() != geteuid()) {
-    (void)fprintf(stderr, "Effective user is not real user.  Resetting uid\n");
-    if (setuid(getuid()) == -1) {
-      (void)fprintf(stderr, "Unable to reset user id to real user id\n");
-      exit(1);
-    }
-  }
 
-  FD_ZERO(&LispReadFds);
+
+  // FD_ZERO(&LispReadFds);
 
   /* Fork Unix was called in kickstarter; if we forked, look up the */
   /* pipe handles to the subprocess and set them up.		      */
@@ -479,6 +469,8 @@ int main(int argc, char *argv[])
   init_SDL(windowtitle, width, height, pixelscale);
 #endif /* SDL */
   /* Load sysout to VM space and returns real sysout_size(not 0) */
+  printf("loading sysout from %s\n", sysout_name);
+  fflush(stdout);
   sysout_size = sysout_loader(sysout_name, sysout_size);
 
   build_lisp_map(); /* built up map */

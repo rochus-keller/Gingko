@@ -141,7 +141,7 @@ LispPTR check_unix_password(LispPTR *args) {
 LispPTR unix_username(LispPTR *args) {
   struct passwd *pwd;
 
-  if ((pwd = getpwuid(getuid())) == NULL) return NIL;
+  if ((pwd = getpwuid(getuid())) == NULL) return NIL; // TODO
   if (c_string_to_lisp_string(pwd->pw_name, args[0])) return NIL;
   return ATOM_T;
 }
@@ -207,15 +207,15 @@ LispPTR unix_getparm(LispPTR *args) {
 #endif
   }
   else if (strcmp(envname, "HOSTNAME") == 0) {
-    if (gethostname(result, sizeof result)) return NIL;
+    if (gethostname(result, sizeof result)) return NIL; // TODO
     envvalue = result;
   } else if (strcmp(envname, "LOGNAME") == 0) {
     struct passwd *pwd;
-    if ((pwd = getpwuid(getuid())) == NULL) return NIL;
+    if ((pwd = getpwuid(getuid())) == NULL) return NIL; // TODO
     envvalue = pwd->pw_name;
   } else if (strcmp(envname, "FULLUSERNAME") == 0) {
     struct passwd *pwd;
-    if ((pwd = getpwuid(getuid())) == NULL) return NIL;
+    if ((pwd = getpwuid(getuid())) == NULL) return NIL; // TODO
     envvalue = pwd->pw_gecos;
   } 
   else if (strcmp(envname, "HOSTID") == 0) {
@@ -291,7 +291,7 @@ LispPTR suspend_lisp(LispPTR *args) {
 /* Send a terminal-stop signal to the whole process-group, not
    just this process, so that if we are running as part of a
    C-shell file the shell will be suspended too. */
-  killpg(getpgrp(), SIGTSTP);
+  killpg(getpgrp(), SIGTSTP); // TODO
 
   OSMESSAGE_PRINT(printf("resuming\n"));
 #if 0

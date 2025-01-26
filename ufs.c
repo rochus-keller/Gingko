@@ -17,11 +17,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#ifndef DOS
-#include <pwd.h>
-#include <sys/param.h>
-#include <unistd.h> /* F_OK */
-#endif /* DOS */
+#include "tinydir.h"
 
 #include "lispemul.h"
 #include "lispmap.h"
@@ -85,16 +81,16 @@ LispPTR UFS_getfilename(LispPTR *args)
   char *base;
   size_t len;
   int rval;
-  char lfname[MAXPATHLEN], file[MAXPATHLEN];
+  char lfname[_TINYDIR_PATH_MAX], file[_TINYDIR_PATH_MAX];
 
   ERRSETJMP(NIL);
   Lisp_errno = (int *)(NativeAligned4FromLAddr(args[3]));
 
   LispStringLength(args[0], len, rval);
   len += 1; /* Add 1 for terminating NULL char. */
-  if (len > MAXPATHLEN) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
 /*
  * Convert a Lisp file name to UNIX one.  This is a UNIX device method.
  * Thus we don't need to convert a version field.  Third argument for
@@ -109,7 +105,7 @@ LispPTR UFS_getfilename(LispPTR *args)
        * "Old" and "Oldest" means the "existing" file.  All we have to do
        * is to make sure it is an existing file or not.
        */
-      TIMEOUT(rval = access(file, F_OK));
+      TIMEOUT(rval = file_exists(file));
       if (rval == -1) {
         *Lisp_errno = errno;
         return (NIL);
@@ -142,7 +138,7 @@ LispPTR UFS_getfilename(LispPTR *args)
   StrNCpyFromCToLisp(base, lfname, len + 1);
 #endif /* BYTESWAP */
 
-  return (GetSmallp(len));
+  return GetSmallp(len);
 }
 
 /*
@@ -166,7 +162,7 @@ LispPTR UFS_getfilename(LispPTR *args)
 
 LispPTR UFS_deletefile(LispPTR *args)
 {
-  char file[MAXPATHLEN], fbuf[MAXPATHLEN];
+  char file[_TINYDIR_PATH_MAX], fbuf[_TINYDIR_PATH_MAX];
   struct stat sbuf;
   int len, rval;
 
@@ -175,9 +171,9 @@ LispPTR UFS_deletefile(LispPTR *args)
 
   LispStringLength(args[0], len, rval);
   len += 1;
-  if (len > MAXPATHLEN) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], fbuf, MAXPATHLEN);
+  LispStringToCString(args[0], fbuf, _TINYDIR_PATH_MAX);
 
   if (unixpathname(fbuf, file, 0, 0) == 0) return (NIL);
   /* check if we're operating on directory or file */
@@ -228,7 +224,7 @@ LispPTR UFS_deletefile(LispPTR *args)
 
 LispPTR UFS_renamefile(LispPTR *args)
 {
-  char fbuf[MAXPATHLEN], src[MAXPATHLEN], dst[MAXPATHLEN];
+  char fbuf[_TINYDIR_PATH_MAX], src[_TINYDIR_PATH_MAX], dst[_TINYDIR_PATH_MAX];
   int rval, len;
 
   ERRSETJMP(NIL);
@@ -236,15 +232,15 @@ LispPTR UFS_renamefile(LispPTR *args)
 
   LispStringLength(args[0], len, rval);
   len += 1;
-  if (len > MAXPATHLEN) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
   LispStringLength(args[1], len, rval);
   len += 1;
-  if (len > MAXPATHLEN) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], fbuf, MAXPATHLEN);
+  LispStringToCString(args[0], fbuf, _TINYDIR_PATH_MAX);
   if (unixpathname(fbuf, src, 0, 0) == 0) return (NIL);
-  LispStringToCString(args[1], fbuf, MAXPATHLEN);
+  LispStringToCString(args[1], fbuf, _TINYDIR_PATH_MAX);
   if (unixpathname(fbuf, dst, 0, 0) == 0) return (NIL);
 
   TIMEOUT(rval = rename(src, dst));
@@ -290,8 +286,8 @@ LispPTR UFS_renamefile(LispPTR *args)
 
 LispPTR UFS_directorynamep(LispPTR *args)
 {
-  char dirname[MAXPATHLEN];
-  char fullname[MAXPATHLEN];
+  char dirname[_TINYDIR_PATH_MAX];
+  char fullname[_TINYDIR_PATH_MAX];
   size_t len;
   int rval;
   char *base;
@@ -303,9 +299,9 @@ LispPTR UFS_directorynamep(LispPTR *args)
   LispStringLength(args[0], len, rval);
   len += 1;
   /* -2 for the initial and trail directory delimiter. */
-  if (len > MAXPATHLEN - 2) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX - 2) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], dirname, MAXPATHLEN);
+  LispStringToCString(args[0], dirname, _TINYDIR_PATH_MAX);
 
 /* Convert Xerox Lisp file naming convention to Unix one. */
   if (unixpathname(dirname, fullname, 0, 0) == 0) return (NIL);
@@ -372,7 +368,7 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
   char *cp, *dp, *np;
   int newdirflg;
   char name[64];
-  char lfname[MAXPATHLEN], fbuf1[MAXPATHLEN], fbuf2[MAXPATHLEN];
+  char lfname[_TINYDIR_PATH_MAX], fbuf1[_TINYDIR_PATH_MAX], fbuf2[_TINYDIR_PATH_MAX];
   char ver1[VERSIONLEN], ver2[VERSIONLEN];
   struct passwd *pwd;
 
@@ -415,7 +411,7 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
              * "..>" or ".." means the parent directory of the
              * user's current working directory.
              */
-            if (getcwd(dst, MAXPATHLEN) == 0) return (0);
+            if (getcwd(dst, _TINYDIR_PATH_MAX) == 0) return (0);
             dp = strrchr(dst, '/');
 
             dp++;
@@ -430,7 +426,7 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
           break;
         case '>':
           /* ".>" means the user's current working directory. */
-          if (getcwd(dst, MAXPATHLEN) == 0) return (0);
+          if (getcwd(dst, _TINYDIR_PATH_MAX) == 0) return (0);
           while (*dp != '\0') dp++;
 
           *dp++ = DIRSEP;
@@ -439,7 +435,7 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
 
         case '\0':
           /* "." also means the user's current working directory. */
-          if (getcwd(dst, MAXPATHLEN) == 0) return (0);
+          if (getcwd(dst, _TINYDIR_PATH_MAX) == 0) return (0);
           while (*dp != '\0') dp++;
 
           *dp++ = DIRSEP;
@@ -455,10 +451,8 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
     case '~':
       if (*(cp + 1) == '>' || *(cp + 1) == '\0') {
         /* "~>" or "~" means the user's home directory. */
-        TIMEOUT0(pwd = getpwuid(getuid()));
-        if (pwd == NULL) return (0);
 
-        strcpy(dst, pwd->pw_dir);
+        strcpy(dst, get_home_dir());
         while (*dp != '\0') dp++;
         if (*(dp - 1) != DIRSEP) {
           /*
@@ -479,10 +473,8 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
          */
         for (++cp, np = name; *cp != '\0' && *cp != '>';) *np++ = *cp++;
         *np = '\0';
-        TIMEOUT0(pwd = getpwnam(name));
-        if (pwd == NULL) return (0);
 
-        strcpy(dst, pwd->pw_dir);
+        strcpy(dst, get_home_dir());
         while (*dp != '\0') dp++;
         if (*(dp - 1) != DIRSEP) {
           /*
@@ -701,7 +693,7 @@ int unixpathname(char *src, char *dst, int versionp, int genp)
 int lisppathname(char *fullname, char *lispname, int dirp, int versionp)
 {
   char *cp, *dp, *lnamep, *cnamep;
-  char namebuf[MAXPATHLEN], fbuf[MAXPATHLEN], ver[VERSIONLEN];
+  char namebuf[_TINYDIR_PATH_MAX], fbuf[_TINYDIR_PATH_MAX], ver[VERSIONLEN];
   int i, mask, extensionp;
 
   if (strcmp(fullname, DIRSEPSTR) == 0) {

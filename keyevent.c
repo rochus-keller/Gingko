@@ -17,11 +17,7 @@
  */
 
 #include <stdio.h>
-#include <signal.h>
 #include <string.h>
-#ifndef DOS
-#include <sys/time.h>
-#endif /* DOS */
 
 #include "lispemul.h"
 #include "lspglob.h"
@@ -55,16 +51,18 @@
 extern DLword *EmMouseX68K, *EmMouseY68K, *EmKbdAd068K, *EmRealUtilin68K, *EmUtilin68K;
 extern DLword *EmKbdAd168K, *EmKbdAd268K, *EmKbdAd368K, *EmKbdAd468K, *EmKbdAd568K;
 extern int RS232C_Fd, RS232C_remain_data;
+#if 0
 extern fd_set LispIOFds;
 fd_set LispReadFds;
 extern volatile sig_atomic_t XLocked;
 extern volatile sig_atomic_t XNeedSignal;
+#endif
 
 extern int LogFileFd;
 
 extern DLword *DisplayRegion68k;
 
-static struct timeval SelectTimeout = {0, 0};
+//static struct timeval SelectTimeout = {0, 0};
 
 LispPTR *LASTUSERACTION68k;
 LispPTR *CLastUserActionCell68k;
@@ -162,10 +160,11 @@ DLword ColorCursor_savebitmap[CURSORWIDTH / COLORPIXELS_IN_DLWORD * CURSORHEIGHT
 
 void process_io_events(void)
 {
-  fd_set rfds;
+#if 0
   uint32_t iflags;
   int i;
 
+  fd_set rfds;
   memcpy(&rfds, &LispReadFds, sizeof(rfds));
 
   if (select(32, &rfds, NULL, NULL, &SelectTimeout) > 0) {
@@ -184,7 +183,7 @@ void process_io_events(void)
       Irq_Stk_End = Irq_Stk_Check = 0;
     }
   }
-/* #endif */
+#endif
 } /* end process_io_events */
 
 

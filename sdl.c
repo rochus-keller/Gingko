@@ -652,3 +652,8 @@ int init_SDL(const char *windowtitle, int w, int h, int s) {
   fflush(stdout);
   return 0;
 }
+
+const char* get_home_dir()
+{
+    return SDL_GetPrefPath("interlisp.org", "gingko");
+}

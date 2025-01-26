@@ -11,8 +11,6 @@
 
 #include "version.h"
 
-#include <fcntl.h>         // for fcntl, F_GETFL, O_RDONLY, O_RDWR
-#include <setjmp.h>        // for setjmp, jmp_buf
 #include <stdio.h>         // for fflush, fprintf, printf, getchar, stderr
 #include <stdlib.h>        // for exit
 #include <string.h>        // for memset
@@ -21,6 +19,7 @@
 #include "kprintdefs.h"    // for print
 #include "lispemul.h"      // for NIL, DLword, LispPTR
 #include "lspglob.h"
+#include "tinydir.h"
 
 void stab(void) { DBPRINT(("Now in stab\n")); }
 
@@ -39,8 +38,6 @@ extern struct screen LispScreen;
 extern int displaywidth, displayheight;
 extern DLword *DisplayRegion68k;
 extern int FrameBufferFd;
-extern jmp_buf BT_jumpbuf;
-extern jmp_buf SD_jumpbuf;
 extern int BT_temp; /* holds the continue-character the user typed */
 
 /* Currentry Don't care Ether re-initial */
@@ -81,3 +78,25 @@ int error(const char *cp) {
 
 void warn(const char *s)
 { printf("\nWARN: %s \n", s); }
+
+
+
+int file_exists(const char* path)
+{
+    tinydir_file file;
+    return tinydir_file_open(&file, path);
+}
+
+int can_read_file(const char* path)
+{
+    tinydir_file file;
+    const int res = tinydir_file_open(&file, path);
+    if( res < 0 )
+        return res;
+    if( !(file._s.st_mode & S_IRUSR) )
+    {
+        errno = EACCES;
+        return -1;
+    }
+    return 0;
+}

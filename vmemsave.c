@@ -17,17 +17,10 @@
 */
 
 #include <errno.h>
-#include <fcntl.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <stddef.h>	// for ptrdiff_t
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef DOS
-#include <sys/param.h>
-#include <pwd.h>
-#endif /* DOS */
 
+#include "tinydir.h"
 
 #include "lispemul.h"
 #include "lispmap.h"
@@ -124,33 +117,30 @@ int lispstringP(LispPTR Lisp)
 LispPTR vmem_save0(LispPTR *args)
 {
   char *def;
-  char pathname[MAXPATHLEN], sysout[MAXPATHLEN], host[MAXNAMLEN];
-  struct passwd *pwd;
+  char pathname[_TINYDIR_PATH_MAX], sysout[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
 
   Lisp_errno = &Dummy_errno;
 
   if ((args[0] != NIL) && lispstringP(args[0])) {
     /* Check of lispstringP is safer for LispStringToCString */
-    LispStringToCString(args[0], pathname, MAXPATHLEN);
+    LispStringToCString(args[0], pathname, _TINYDIR_PATH_MAX);
     separate_host(pathname, host);
     if (!unixpathname(pathname, sysout, 0, 0)) return (BADFILENAME);
     return (vmem_save(sysout));
   } else {
     if ((def = getenv("LDEDESTSYSOUT")) == 0) {
-      pwd = getpwuid(getuid()); /* NEED TIMEOUT */
-      if (pwd == (struct passwd *)NULL) return (FILETIMEOUT);
-      strcpy(sysout, pwd->pw_dir);
-      strcat(sysout, "/lisp.virtualmem");
+      strcpy(sysout, get_home_dir());
+      strcat(sysout, "lisp.virtualmem");
     } else {
       if (*def == '~' && (*(def + 1) == '/' || *(def + 1) == '\0')) {
-        pwd = getpwuid(getuid()); /* NEED TIMEOUT */
-        if (pwd == (struct passwd *)NULL) return (FILETIMEOUT);
-        strcpy(sysout, pwd->pw_dir);
+        strcpy(sysout, get_home_dir());
         strcat(sysout, def + 1);
       } else {
         strcpy(sysout, def);
       }
     }
+    printf("saving sysout to %s\n", sysout);
+    fflush(stdout);
     return (vmem_save(sysout));
   }
 }
@@ -267,7 +257,7 @@ unsigned maxpages = 65536;
 
 LispPTR vmem_save(char *sysout_file_name)
 {
-  int sysout; /* SysoutFile descriptor */
+  FILE* sysout; /* SysoutFile descriptor */
 #ifdef BIGVM
   unsigned int *fptovp;
 #else
@@ -275,10 +265,8 @@ LispPTR vmem_save(char *sysout_file_name)
 #endif          /* BIGVM */
   int vmemsize; /* VMEMSIZE */
   int i;
-  char tempname[MAXPATHLEN];
-  ssize_t rsize;
-  long roff;
-  int rval;
+  char tempname[_TINYDIR_PATH_MAX];
+  long rsize;
 
 /* remove cursor image from screen */
 
@@ -301,16 +289,16 @@ LispPTR vmem_save(char *sysout_file_name)
 
   /* Confirm protection of specified file by open/close */
 
-  TIMEOUT(sysout = open(sysout_file_name, O_WRONLY, 0666));
-  if (sysout == -1) {
+  sysout = fopen(sysout_file_name, "wb");
+  if (sysout == NULL) {
     /* No file error skip return. */
     if (errno != ENOENT) return (FILECANNOTOPEN); /* No such file error.*/
   } else
-    TIMEOUT(rval = close(sysout));
+    fclose(sysout);
 
   /* open temp file */
-  TIMEOUT(sysout = open(tempname, O_WRONLY | O_CREAT | O_TRUNC, 0666));
-  if (sysout == -1) {
+  sysout = fopen(tempname, "wb");
+  if (sysout == NULL) {
     err_mess("open", errno);
     return (FILECANNOTOPEN);
   }
@@ -349,9 +337,8 @@ LispPTR vmem_save(char *sysout_file_name)
       unsigned int contig_pages = 0;
       DLword *base_addr;
 
-      TIMEOUT(roff = lseek(sysout, i * BYTESPER_PAGE, SEEK_SET));
-      if (roff == -1) {
-        err_mess("lseek", errno);
+      if (fseek(sysout, i * BYTESPER_PAGE, SEEK_SET) != 0) {
+        err_mess("fseek", errno);
         return (FILECANNOTSEEK);
       }
       base_addr = Lisp_world + (GETFPTOVP(fptovp, i) * DLWORDSPER_PAGE);
@@ -371,7 +358,7 @@ LispPTR vmem_save(char *sysout_file_name)
         DLword *ba = base_addr;
         unsigned int pc = contig_pages;
         while (pc > maxpages) {
-          TIMEOUT(rsize = write(sysout, ba, (size_t)maxpages * BYTESPER_PAGE));
+          rsize = fwrite(ba, 1, (size_t)maxpages * BYTESPER_PAGE, sysout);
           if (rsize == -1) {
             err_mess("write", errno);
             return ((errno == ENOSPC) || (errno == EDQUOT)) ? NOFILESPACE : FILECANNOTWRITE;
@@ -379,14 +366,9 @@ LispPTR vmem_save(char *sysout_file_name)
           ba += maxpages * DLWORDSPER_PAGE;
           pc -= maxpages;
         }
-        if (pc > 0) TIMEOUT(rsize = write(sysout, ba, pc * BYTESPER_PAGE));
+        if (pc > 0) rsize = fwrite(ba, 1, pc * BYTESPER_PAGE, sysout);
       } else {
-        unsigned int oldTT = TIMEOUT_TIME;
-        /* As we can spend longer than TIMEOUT_TIME doing a big
-           write, we adjust the timeout temporarily here */
-        TIMEOUT_TIME += contig_pages >> 3;
-        TIMEOUT(rsize = write(sysout, base_addr, contig_pages * BYTESPER_PAGE));
-        TIMEOUT_TIME = oldTT;
+        rsize = fwrite(base_addr, 1, contig_pages * BYTESPER_PAGE, sysout);
       }
 #ifdef BYTESWAP
       word_swap_page(base_addr, contig_pages * CELLSPER_PAGE);
@@ -400,16 +382,15 @@ LispPTR vmem_save(char *sysout_file_name)
   }
 
   /* seek to IFPAGE */
-  TIMEOUT(roff = lseek(sysout, (long)FP_IFPAGE, SEEK_SET));
-  if (roff == -1) {
-    err_mess("lseek", errno);
+  if ( fseek(sysout, (long)FP_IFPAGE, SEEK_SET) != 0 ) {
+    err_mess("fseek", errno);
     return (FILECANNOTSEEK);
   }
 #ifdef BYTESWAP
   word_swap_page(InterfacePage, CELLSPER_PAGE);
 #endif /* BYTESWAP */
 
-  TIMEOUT(rsize = write(sysout, (char *)InterfacePage, BYTESPER_PAGE));
+  rsize = fwrite((char *)InterfacePage, 1, BYTESPER_PAGE, sysout);
 #ifdef BYTESWAP
   word_swap_page(InterfacePage, CELLSPER_PAGE);
 #endif /* BYTESWAP */
@@ -419,18 +400,9 @@ LispPTR vmem_save(char *sysout_file_name)
 	return ((errno == ENOSPC) || (errno == EDQUOT)) ? NOFILESPACE : FILECANNOTWRITE;
   }
 
-  TIMEOUT(rval = close(sysout));
-  if (rval == -1) { return (FILECANNOTWRITE); }
+  fclose(sysout);
 
-  TIMEOUT(rval = unlink(sysout_file_name));
-  if (rval == -1) {
-    /* No file error skip return. */
-    if (errno != ENOENT) /* No such file error.*/
-      return (FILECANNOTOPEN);
-  }
-
-  TIMEOUT(rval = rename(tempname, sysout_file_name));
-  if (rval == -1) {
+  if ( rename(tempname, sysout_file_name) != 0 ) {
     (void)fprintf(stderr, "sysout is saved to temp file, %s.", tempname);
     return (FILECANNOTWRITE);
   }
@@ -452,19 +424,9 @@ LispPTR vmem_save(char *sysout_file_name)
 /* Make sure that we kill off any Unix subprocesses before we go away */
 
 void lisp_finish(void) {
-  char d[4];
 
   DBPRINT(("finish lisp_finish\n"));
 
-  if (please_fork) { /* if lde runs with -NF(No fork), */
-                     /* following 5 lines don't work well. */
-    d[0] = 'E';
-    d[3] = 1;
-    /* These only happen if the fork really succeeded: */
-    /* if (UnixPipeOut >= 0) write(UnixPipeOut, d, 4); */
-    /* if (UnixPipeIn >= 0 read(UnixPipeIn, d, 4);*/ /* Make sure it's finished */
-    /* if (UnixPID >= 0) kill(UnixPID, SIGKILL);*/   /* Then kill fork_Unix itself */
-  }
   device_before_exit();
   exit(0);
 }

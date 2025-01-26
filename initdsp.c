@@ -123,7 +123,7 @@ void init_display2(DLword *display_addr, unsigned display_max)
   DisplayType = SUN2BW;
 #endif /* SDL */
   init_cursor();
-  DisplayByteSize = ((displaywidth * displayheight / 8 + ((unsigned)getpagesize() - 1)) & (unsigned)-getpagesize());
+  DisplayByteSize = ((displaywidth * displayheight / 8 + ((unsigned)getpagesize() - 1)) & (unsigned)-getpagesize()); // TODO
 
   DBPRINT(("Display address: %p\n", (void *)DisplayRegion68k));
   DBPRINT(("        length : 0x%x\n", DisplayByteSize));

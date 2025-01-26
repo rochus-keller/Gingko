@@ -17,6 +17,7 @@
 #include <string.h>         // for strcpy, strcmp, strlen, strncpy, strchr
 #include <sys/stat.h>       // for stat, fstat, mkdir, S_ISREG, st_atime, chmod
 #include <dirent.h>
+#include "tinydir.h"
 
 #include "adr68k.h"         // for NativeAligned4FromLAddr
 #include "arith.h"          // for GetSmallp
@@ -34,7 +35,7 @@
 
 #ifndef DOS
 #include <pwd.h>            // for getpwuid, passwd
-#include <sys/param.h>      // for MAXPATHLEN
+#include <sys/param.h>      // for _TINYDIR_PATH_MAX
 #include <sys/statvfs.h>    // for statvfs
 #include <sys/time.h>       // for timeval, utimes
 #include <unistd.h> /* F_OK */
@@ -44,13 +45,13 @@ extern int *Lisp_errno;
 extern int Dummy_errno;
 
 typedef struct filename_entry {
-  char name[MAXPATHLEN]; /* With version, foo.~3~ or foo */
+  char name[_TINYDIR_PATH_MAX]; /* With version, foo.~3~ or foo */
   unsigned version_no;
 } FileName;
 
 typedef struct current_varray {
-  char path[MAXPATHLEN]; /* pathname of directory */
-  char file[MAXPATHLEN]; /* file name  (down cased name) */
+  char path[_TINYDIR_PATH_MAX]; /* pathname of directory */
+  char file[_TINYDIR_PATH_MAX]; /* file name  (down cased name) */
   time_t mtime;
 } CurrentVArray;
 
@@ -163,8 +164,8 @@ void separate_host(char *lfname, char *host)
 
 LispPTR COM_openfile(LispPTR *args)
 {
-  char lfname[MAXPATHLEN + 5], file[MAXPATHLEN], host[MAXNAMLEN];
-  char dir[MAXPATHLEN], name[MAXNAMLEN], ver[VERSIONLEN];
+  char lfname[_TINYDIR_PATH_MAX + 5], file[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
+  char dir[_TINYDIR_PATH_MAX], name[MAXNAMLEN], ver[VERSIONLEN];
   int fatp, dskp, rval, fd, link_check_flg, flags, *bufp;
   size_t slen;
   struct stat sbuf;
@@ -180,9 +181,9 @@ LispPTR COM_openfile(LispPTR *args)
    */
   slen = fatp ? slen + 4 + 1 : slen + 2 + 1;
   /* Add five for the host name field in Lisp format. */
-  if (slen > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (slen > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
 
   separate_host(lfname, host);
   UPCASE(host);
@@ -370,7 +371,7 @@ LispPTR COM_openfile(LispPTR *args)
      * without pre-linking a versionless to version 1, the final
      * clean up maintain_version will link the versionless to version 3.
      */
-    TIMEOUT(rval = access(file, F_OK));
+    TIMEOUT(rval = file_exists(file));
     if (rval == -1) {
       if (errno == ENOENT) {
         /*
@@ -478,8 +479,8 @@ LispPTR COM_closefile(LispPTR *args)
 {
   int fd, fatp, dskp, rval;
   time_t cdate;
-  char lfname[MAXPATHLEN + 5], host[MAXNAMLEN];
-  char file[MAXPATHLEN], dir[MAXPATHLEN], name[MAXNAMLEN + 1];
+  char lfname[_TINYDIR_PATH_MAX + 5], host[MAXNAMLEN];
+  char file[_TINYDIR_PATH_MAX], dir[_TINYDIR_PATH_MAX], name[MAXNAMLEN + 1];
   char ver[VERSIONLEN];
   DIR *dirp;
   struct dirent *dp;
@@ -499,9 +500,9 @@ LispPTR COM_closefile(LispPTR *args)
    */
   rval = fatp ? rval + 4 + 1 : rval + 2 + 1;
   /* Add five for the host name field in Lisp format. */
-  if (rval > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
 
   separate_host(lfname, host);
   UPCASE(host);
@@ -641,11 +642,11 @@ LispPTR DSK_getfilename(LispPTR *args)
   int rval;
   int dirp;
   int fatp;
-  char lfname[MAXPATHLEN];
+  char lfname[_TINYDIR_PATH_MAX];
   char aname[MAXNAMLEN];
-  char vname[MAXPATHLEN];
-  char file[MAXPATHLEN];
-  char dir[MAXPATHLEN];
+  char vname[_TINYDIR_PATH_MAX];
+  char file[_TINYDIR_PATH_MAX];
+  char dir[_TINYDIR_PATH_MAX];
   char name[MAXNAMLEN];
   char ver[VERSIONLEN];
 
@@ -660,9 +661,9 @@ LispPTR DSK_getfilename(LispPTR *args)
    * terminating character.
    */
   len = fatp ? len + 4 + 1 : len + 2 + 1;
-  if (len > MAXPATHLEN) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
 
 /*
  * Convert a Lisp file name to UNIX one.  This is a DSK device method.
@@ -897,8 +898,8 @@ LispPTR DSK_getfilename(LispPTR *args)
 
 LispPTR DSK_deletefile(LispPTR *args)
 {
-  char file[MAXPATHLEN], fbuf[MAXPATHLEN], vless[MAXPATHLEN];
-  char dir[MAXPATHLEN], ver[VERSIONLEN];
+  char file[_TINYDIR_PATH_MAX], fbuf[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX];
+  char dir[_TINYDIR_PATH_MAX], ver[VERSIONLEN];
   int rval, fatp;
   FileName *varray;
 
@@ -913,9 +914,9 @@ LispPTR DSK_deletefile(LispPTR *args)
    * terminating character.
    */
   rval = fatp ? rval + 4 + 1 : rval + 2 + 1;
-  if (rval > MAXPATHLEN) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], fbuf, MAXPATHLEN);
+  LispStringToCString(args[0], fbuf, _TINYDIR_PATH_MAX);
   unixpathname(fbuf, file, 1, 0);
 
   if (unpack_filename(file, dir, fbuf, ver, 1) == 0) return (NIL);
@@ -1034,9 +1035,9 @@ LispPTR DSK_deletefile(LispPTR *args)
 
 LispPTR DSK_renamefile(LispPTR *args)
 {
-  char src[MAXPATHLEN], dst[MAXPATHLEN];
-  char fbuf[MAXPATHLEN], vless[MAXPATHLEN], svless[MAXPATHLEN];
-  char dir[MAXPATHLEN], ver[VERSIONLEN];
+  char src[_TINYDIR_PATH_MAX], dst[_TINYDIR_PATH_MAX];
+  char fbuf[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX], svless[_TINYDIR_PATH_MAX];
+  char dir[_TINYDIR_PATH_MAX], ver[VERSIONLEN];
   int rval, fatp;
   int need_maintain_flg;
   FileName *varray;
@@ -1052,16 +1053,16 @@ LispPTR DSK_renamefile(LispPTR *args)
    * terminating character.
    */
   rval = fatp ? rval + 4 + 1 : rval + 2 + 1;
-  if (rval > MAXPATHLEN) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
   LispStringLength(args[1], rval, fatp);
   rval = fatp ? rval + 4 + 1 : rval + 2 + 1;
-  if (rval > MAXPATHLEN) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], fbuf, MAXPATHLEN);
+  LispStringToCString(args[0], fbuf, _TINYDIR_PATH_MAX);
   unixpathname(fbuf, src, 1, 0);
 
-  LispStringToCString(args[1], fbuf, MAXPATHLEN);
+  LispStringToCString(args[1], fbuf, _TINYDIR_PATH_MAX);
   unixpathname(fbuf, dst, 1, 0);
 
   if (unpack_filename(dst, dir, fbuf, ver, 1) == 0) return (NIL);
@@ -1244,8 +1245,8 @@ LispPTR DSK_renamefile(LispPTR *args)
 
 LispPTR DSK_directorynamep(LispPTR *args)
 {
-  char dirname[MAXPATHLEN];
-  char fullname[MAXPATHLEN];
+  char dirname[_TINYDIR_PATH_MAX];
+  char fullname[_TINYDIR_PATH_MAX];
   size_t len;
   int fatp;
   char *base;
@@ -1262,9 +1263,9 @@ LispPTR DSK_directorynamep(LispPTR *args)
    */
   len = fatp ? len + 4 + 1 : len + 2 + 1;
   /* -2 for the initial and trail directory delimiter. */
-  if (len > MAXPATHLEN - 2) FileNameTooLong(NIL);
+  if (len > _TINYDIR_PATH_MAX - 2) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], dirname, MAXPATHLEN);
+  LispStringToCString(args[0], dirname, _TINYDIR_PATH_MAX);
 
 /* Convert Xerox Lisp file naming convention to Unix one. */
   if (unixpathname(dirname, fullname, 1, 0) == 0) return (NIL);
@@ -1326,8 +1327,8 @@ LispPTR COM_getfileinfo(LispPTR *args)
   unsigned *bufp;
   struct passwd *pwd;
   char *base;
-  char lfname[MAXPATHLEN + 5], file[MAXPATHLEN], host[MAXNAMLEN];
-  char dir[MAXPATHLEN], name[MAXNAMLEN], ver[VERSIONLEN];
+  char lfname[_TINYDIR_PATH_MAX + 5], file[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
+  char dir[_TINYDIR_PATH_MAX], name[MAXNAMLEN], ver[VERSIONLEN];
   struct stat sbuf;
   LispPTR laddr;
 
@@ -1343,9 +1344,9 @@ LispPTR COM_getfileinfo(LispPTR *args)
    */
   rval = dskp ? rval + 4 + 1 : rval + 2 + 1;
   /* Add 5 for the host name field in Lisp format. */
-  if (rval > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
   separate_host(lfname, host);
 
   UPCASE(host);
@@ -1505,8 +1506,8 @@ LispPTR COM_getfileinfo(LispPTR *args)
 LispPTR COM_setfileinfo(LispPTR *args)
 {
   int dskp, rval, date;
-  char lfname[MAXPATHLEN + 5], file[MAXPATHLEN], host[MAXNAMLEN];
-  char dir[MAXPATHLEN], name[MAXNAMLEN], ver[VERSIONLEN];
+  char lfname[_TINYDIR_PATH_MAX + 5], file[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
+  char dir[_TINYDIR_PATH_MAX], name[MAXNAMLEN], ver[VERSIONLEN];
   struct stat sbuf;
   struct timeval time[2];
 
@@ -1522,9 +1523,9 @@ LispPTR COM_setfileinfo(LispPTR *args)
    */
   rval = dskp ? rval + 4 + 1 : rval + 2 + 1;
   /* Add 5 for the host name field in Lisp format. */
-  if (rval > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
 
   separate_host(lfname, host);
   UPCASE(host);
@@ -1840,7 +1841,7 @@ LispPTR COM_truncatefile(LispPTR *args)
 LispPTR COM_changedir(LispPTR *args)
 {
   int dskp, rval;
-  char lfname[MAXPATHLEN + 5], dir[MAXPATHLEN], host[MAXNAMLEN];
+  char lfname[_TINYDIR_PATH_MAX + 5], dir[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
 
   ERRSETJMP(NIL);
   Lisp_errno = &Dummy_errno;
@@ -1854,9 +1855,9 @@ LispPTR COM_changedir(LispPTR *args)
    */
   rval = dskp ? rval + 4 + 1 : rval + 2 + 1;
   /* Add 5 for the host name field in Lisp format. */
-  if (rval > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
   separate_host(lfname, host);
   UPCASE(host);
   if (strcmp(host, "DSK") == 0)
@@ -1918,8 +1919,8 @@ LispPTR COM_changedir(LispPTR *args)
 LispPTR COM_getfreeblock(LispPTR *args)
 {
   int dskp, rval, *buf;
-  char lfname[MAXPATHLEN + 5], dir[MAXPATHLEN], host[MAXNAMLEN];
-  char name[MAXNAMLEN + 1], file[MAXPATHLEN], ver[VERSIONLEN];
+  char lfname[_TINYDIR_PATH_MAX + 5], dir[_TINYDIR_PATH_MAX], host[MAXNAMLEN];
+  char name[MAXNAMLEN + 1], file[_TINYDIR_PATH_MAX], ver[VERSIONLEN];
   struct statvfs sfsbuf;
 
   ERRSETJMP(NIL);
@@ -1931,9 +1932,9 @@ LispPTR COM_getfreeblock(LispPTR *args)
    */
   rval += 1;
   /* Add 5 for the host name field in Lisp format. */
-  if (rval > MAXPATHLEN + 5) FileNameTooLong(NIL);
+  if (rval > _TINYDIR_PATH_MAX + 5) FileNameTooLong(NIL);
 
-  LispStringToCString(args[0], lfname, MAXPATHLEN);
+  LispStringToCString(args[0], lfname, _TINYDIR_PATH_MAX);
   buf = (int *)NativeAligned4FromLAddr(args[1]);
   separate_host(lfname, host);
   UPCASE(host);
@@ -2129,7 +2130,7 @@ int unpack_filename(char *file, char *dir, char *name, char *ver, int checkp)
 
 int true_name(char *path)
 {
-  char dir[MAXPATHLEN];
+  char dir[_TINYDIR_PATH_MAX];
   char name[MAXNAMLEN];
   char c, *sp, *cp;
   int type;
@@ -2203,7 +2204,7 @@ int true_name(char *path)
 
 static int locate_file(char *dir, char *name)
 {
-  char path[MAXPATHLEN];
+  char path[_TINYDIR_PATH_MAX];
   char nb1[MAXNAMLEN], nb2[MAXNAMLEN];
   int type;
   size_t len;
@@ -2287,7 +2288,7 @@ static int make_directory(char *dir)
 {
   char *cp, *dp;
   int maked, rval;
-  char dir_buf[MAXPATHLEN];
+  char dir_buf[_TINYDIR_PATH_MAX];
 
   maked = 0;
 
@@ -2621,8 +2622,8 @@ static int get_version_array(char *dir, char *file, FileName varray[], CurrentVA
 
 static int maintain_version(char *file, FileName *varray, int forcep)
 {
-  char dir[MAXPATHLEN], fname[MAXNAMLEN], ver[VERSIONLEN];
-  char old_file[MAXPATHLEN], vless[MAXPATHLEN];
+  char dir[_TINYDIR_PATH_MAX], fname[MAXNAMLEN], ver[VERSIONLEN];
+  char old_file[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX];
   int highest_p;
   int rval, max_no;
   FileName *entry;
@@ -2828,7 +2829,7 @@ static int check_vless_link(char *vless, FileName *varray, char *to_file, int *h
   unsigned max_no;
   ino_t vless_ino;
   struct stat sbuf;
-  char dir[MAXPATHLEN], name[MAXNAMLEN], ver[VERSIONLEN];
+  char dir[_TINYDIR_PATH_MAX], name[MAXNAMLEN], ver[VERSIONLEN];
   FileName *max_entry, *linked_entry;
 
   TIMEOUT(rval = stat(vless, &sbuf));
@@ -2926,7 +2927,7 @@ static int check_vless_link(char *vless, FileName *varray, char *to_file, int *h
 
 static int get_old(char *dir, FileName *varray, char *afile, char *vfile)
 {
-  char name[MAXPATHLEN], vless[MAXPATHLEN], to_file[MAXPATHLEN];
+  char name[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX], to_file[_TINYDIR_PATH_MAX];
   char ver[VERSIONLEN], vbuf[VERSIONLEN];
   unsigned ver_no, max_no;
   int highest_p;
@@ -3125,7 +3126,7 @@ static int get_old(char *dir, FileName *varray, char *afile, char *vfile)
 
 static int get_oldest(char *dir, FileName *varray, char *afile, char *vfile)
 {
-  char name[MAXPATHLEN], vless[MAXPATHLEN], to_file[MAXPATHLEN];
+  char name[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX], to_file[_TINYDIR_PATH_MAX];
   char ver[VERSIONLEN], vbuf[VERSIONLEN];
   unsigned ver_no, min_no;
   int highest_p;
@@ -3322,7 +3323,7 @@ static int get_oldest(char *dir, FileName *varray, char *afile, char *vfile)
 
 static int get_new(char *dir, FileName *varray, char *afile, char *vfile)
 {
-  char name[MAXPATHLEN], vless[MAXPATHLEN], to_file[MAXPATHLEN];
+  char name[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX], to_file[_TINYDIR_PATH_MAX];
   char ver[VERSIONLEN], vbuf[VERSIONLEN];
   unsigned ver_no, max_no;
   int highest_p;
@@ -3612,7 +3613,7 @@ static int get_new(char *dir, FileName *varray, char *afile, char *vfile)
 
 static int get_old_new(char *dir, FileName *varray, char *afile, char *vfile)
 {
-  char name[MAXPATHLEN], vless[MAXPATHLEN], to_file[MAXPATHLEN];
+  char name[_TINYDIR_PATH_MAX], vless[_TINYDIR_PATH_MAX], to_file[_TINYDIR_PATH_MAX];
   char ver[VERSIONLEN], vbuf[VERSIONLEN];
   unsigned ver_no, max_no;
   int highest_p;

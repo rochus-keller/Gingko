@@ -255,8 +255,8 @@ do  {				\
 	int lf_rval;					\
 		strcpy(buf, path);			\
 		strcat(buf, file);			\
-		TIMEOUT( lf_rval=access(buf, F_OK) );	\
-		if( access(buf, F_OK) == 0){		\
+        TIMEOUT( lf_rval=file_exists(buf) );	\
+        if( file_exists(buf) == 0){		\
 			strcat(path, file);		\
 			return(1);			\
 		}					\

@@ -38,8 +38,8 @@ void perrorn(char *s, int n) {
 /*									*/
 /************************************************************************/
 
-void err_mess(char *from, int no) {
-  int save_errno = errno; /* Save errno around OSMESSAGE_PRINT */
+void err_mess(const char *from, int no) {
+  const int save_errno = errno; /* Save errno around OSMESSAGE_PRINT */
 
   OSMESSAGE_PRINT({
     (void)fprintf(stderr, "System call error: %s errno=%d ", from, no);

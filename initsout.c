@@ -133,7 +133,7 @@ void init_ifpage(unsigned sysout_size) {
 #endif /* BIGVM */
 
   /* unfortunately, Lisp only looks at a 16 bit serial number */
-  InterfacePage->serialnumber = 0xffff & gethostid();
+  InterfacePage->serialnumber = 0xffff & gethostid(); // TODO
 
 /* get user name and stuff into vmem; this is the VMEM buffer;
 This is a BCPL string -- it starts with a length count. C strings
@@ -146,7 +146,7 @@ are null terminated instead */
     /* Get username from getpwuid */
     /* The page/offset we are using is hardcoded in LLFAULT in functions */
     /*  \MAIKO.NEWFAULTINIT and \MAIKO.ASSIGNBUFFERS */
-    if ((pwd = getpwuid(getuid())) != NULL) {
+    if ((pwd = getpwuid(getuid())) != NULL) { // TODO
       InterfacePage->usernameaddr = 0155001;
       s = (char *)NativeAligned2FromLAddr(InterfacePage->usernameaddr);
       len = (int)strlen(pwd->pw_name);

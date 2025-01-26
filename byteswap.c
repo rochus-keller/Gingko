@@ -29,7 +29,7 @@
 /****************************************************************/
 void word_swap_page(void *page, unsigned longwordcount) {
   unsigned int *longpage = (unsigned int *)page;
-  for (unsigned int i = 0; i < longwordcount; i++) { *(longpage + i) = ntohl(*(longpage + i)); }
+  for (unsigned int i = 0; i < longwordcount; i++) { *(longpage + i) = ntohl(*(longpage + i)); } // TODO
 }
 
 /****************************************************************/

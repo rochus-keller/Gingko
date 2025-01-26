@@ -23,11 +23,8 @@
 #include <setjmp.h>
 #include <signal.h>
 #include <string.h>
-
-#ifndef DOS
 #include <stdio.h>
-#include <sys/param.h>
-#endif /* DOS */
+#include "tinydir.h"
 
 #include "lispemul.h"
 #include "lispmap.h"
@@ -71,11 +68,11 @@ LispPTR CHAR_openfile(LispPTR *args)
   int fd;    /* return value  of open system call. */
   int flags; /* open system call's argument */
   /* struct stat statbuf; */
-  char pathname[MAXPATHLEN];
+  char pathname[_TINYDIR_PATH_MAX];
 
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[2]);
 
-  LispStringToCString(args[0], pathname, MAXPATHLEN);
+  LispStringToCString(args[0], pathname, _TINYDIR_PATH_MAX);
   flags = O_NONBLOCK;
   ERRSETJMP(NIL);
   /*    TIMEOUT( rval=stat(pathname, &statbuf) );
@@ -168,7 +165,7 @@ LispPTR CHAR_ioctl(LispPTR *args)
   request = LispNumToCInt(args[1]);
   data = NativeAligned4FromLAddr(args[2]);
   ERRSETJMP(NIL);
-  TIMEOUT(rval = ioctl(fd, request, data));
+  TIMEOUT(rval = ioctl(fd, request, data)); // TODO
   if (rval != 0) {
     err_mess("ioctl", errno);
     *Lisp_errno = errno;
@@ -190,13 +187,13 @@ LispPTR CHAR_ioctl(LispPTR *args)
 
 LispPTR CHAR_bin(int fd, LispPTR errn)
 {
-  ssize_t rval;
+  long rval;
   unsigned char ch[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
   ERRSETJMP(NIL);
   fd = LispNumToCInt(fd);
 
-  TIMEOUT(rval = read(fd, ch, 1));
+  TIMEOUT(rval = read(fd, ch, 1)); // TODO
   if (rval == 0) {
     *Lisp_errno = EWOULDBLOCK;
     return (NIL);
@@ -220,14 +217,14 @@ LispPTR CHAR_bin(int fd, LispPTR errn)
 
 LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
 {
-  ssize_t rval;
+  long rval;
   char buf[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
   ERRSETJMP(NIL);
   fd = LispNumToCInt(fd);
   buf[0] = LispNumToCInt(ch);
 
-  TIMEOUT(rval = write(fd, buf, 1));
+  TIMEOUT(rval = write(fd, buf, 1)); // TODO
 
   if (rval == -1) {
     *Lisp_errno = errno;
@@ -264,7 +261,7 @@ LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
 LispPTR CHAR_bins(LispPTR *args)
 {
   int fd;
-  ssize_t rval;
+  long rval;
   char *buffer;
   int nbytes;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[4]);
@@ -314,7 +311,7 @@ LispPTR CHAR_bins(LispPTR *args)
 LispPTR CHAR_bouts(LispPTR *args)
 {
   int fd;
-  ssize_t rval;
+  long rval;
   char *buffer;
   int nbytes;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[4]);

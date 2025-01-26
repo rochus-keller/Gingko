@@ -241,7 +241,7 @@ void subr_settime(LispPTR args[])
   struct timeval timev;
   timev.tv_sec = *((int *)NativeAligned4FromLAddr(args[0])) - UNIX_ALTO_TIME_DIFF;
   timev.tv_usec = 0;
-  settimeofday(&timev, NULL);
+  settimeofday(&timev, NULL); // TODO
 #endif
 } /* end subr_settime */
 
@@ -414,7 +414,7 @@ void int_io_open(int fd)
 {
   DBPRINT(("int_io_open %d\n", fd));
 #if defined(O_ASYNC)
-  if (fcntl(fd, F_SETOWN, getpid()) == -1) perror("fcntl F_SETOWN error");
+  if (fcntl(fd, F_SETOWN, getpid()) == -1) perror("fcntl F_SETOWN error"); // TODO
   if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_ASYNC) == -1) perror("fcntl F_SETFL on error");
 #elif defined(FASYNC) && defined(FNDELAY)
   if (fcntl(fd, F_SETOWN, getpid()) == -1) perror("fcntl F_SETOWN error");
@@ -648,7 +648,7 @@ and do a 'v' before trying anything else.";
     case SIGBUS:
     case SIGILL:
     case SIGSEGV:
-      snprintf(errormsg, sizeof(errormsg), "%s at address %p.\n%s", strsignal(sig), info->si_addr, stdmsg);
+      snprintf(errormsg, sizeof(errormsg), "%s at address %p.\n%s", strsignal(sig), info->si_addr, stdmsg); // TODO
       break;
     case SIGPIPE:
       snprintf(errormsg, sizeof(errormsg), "Broken PIPE.\n%s", stdmsg);
@@ -656,7 +656,7 @@ and do a 'v' before trying anything else.";
     case SIGHUP:
       snprintf(errormsg, sizeof(errormsg), "HANGUP signalled.\n%s", stdmsg);
       /* Assume that a user tried to exit UNIX shell */
-      killpg(getpgrp(), SIGKILL);
+      killpg(getpgrp(), SIGKILL); // TODO
       exit(0);
     case SIGFPE:
       snprintf(errormsg, sizeof(errormsg), "%s (%d) at address %p.\n%s", strsignal(sig), info->si_code, info->si_addr, stdmsg);

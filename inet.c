@@ -9,22 +9,10 @@
 
 #include "version.h"
 
+// TODO #include <SDL2/SDL_net.h>
 #include <ctype.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <string.h> /* for mem... fns */
-
-#ifndef DOS
-#include <netdb.h>
-#include <signal.h>
-#include <sys/time.h>
-/* if using inet_ntop you must #include <arpa/inet.h> */
-#endif /* DOS */
-
-#if (defined(__CYGWIN__)) && !defined(O_ASYNC)
-/* Cygwin and Solaris don't define O_ASYNC, yet still define FASYNC. */
-#define O_ASYNC FASYNC
-#endif
 
 #include "lispemul.h"
 #include "lispmap.h"
@@ -64,15 +52,18 @@
 #define	SIG_UNBLOCK   1		 /* Unblock signals.  */
 
 extern int *Lisp_errno;
-extern fd_set LispReadFds;
-fd_set LispIOFds;
 
 LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, LispPTR bufaddr, LispPTR maxlen)
 {
+  return NIL;
+
+#if 0
+  // TODO
   int sock, len, buflen, res;
   unsigned ures;
   char namestring[100];
   char servstring[50];
+
   struct sockaddr_in addr;
   struct hostent *host;
   struct servent *service;
@@ -177,7 +168,7 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
       FD_CLR(sock, &LispIOFds);
       FD_CLR(sock, &LispReadFds);
       shutdown(sock, 2);
-      close(sock);
+      close(sock); // TODO
       return (ATOM_T);
 
     case TCPListen: /* socket# to listen on */
@@ -188,7 +179,7 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
       farend.sin_addr.s_addr = INADDR_ANY;
       if (bind(result, (struct sockaddr *)&farend, sizeof(farend)) < 0) {
         perror("TCP bind");
-        close(result);
+        close(result); // TODO
         return (NIL);
       }
       { /* Do this without taking IO interrupts */
@@ -321,4 +312,5 @@ LispPTR subr_TCP_ops(int op, LispPTR nameConn, LispPTR proto, LispPTR length, Li
 
     default: return (NIL);
   }
+#endif
 }
