@@ -220,7 +220,8 @@ HEADERS += \
     vmemsavedefs.h \
     xcdefs.h \
     xrdoptdefs.h \
-    z2defs.h
+    z2defs.h \
+    tinydir.h
 
 
 

@@ -18,10 +18,9 @@
 /*                                                                      */
 /************************************************************************/
 
+// NOTE RK: this code is likely no longer used since we kicked out tty
+
 #include <errno.h>
-#include <fcntl.h>
-#include <setjmp.h>
-#include <signal.h>
 #include <string.h>
 #include <stdio.h>
 #include "tinydir.h"
@@ -31,7 +30,6 @@
 #include "adr68k.h"
 #include "lsptypes.h"
 #include "arith.h"
-#include "timeout.h"
 #include "locfile.h"
 #include "osmsg.h"
 #include "dbprint.h"
@@ -66,33 +64,29 @@ LispPTR CHAR_openfile(LispPTR *args)
 /* args[2]            errno */
 {
   int fd;    /* return value  of open system call. */
-  int flags; /* open system call's argument */
+  const char* flags = ""; /* open system call's argument */
   /* struct stat statbuf; */
   char pathname[_TINYDIR_PATH_MAX];
 
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[2]);
 
   LispStringToCString(args[0], pathname, _TINYDIR_PATH_MAX);
-  flags = O_NONBLOCK;
-  ERRSETJMP(NIL);
-  /*    TIMEOUT( rval=stat(pathname, &statbuf) );
-      if(rval == 0){      } */
+
   switch (args[1]) {
-    case ACCESS_INPUT: flags |= O_RDONLY; break;
-    case ACCESS_OUTPUT: flags |= (O_WRONLY | O_CREAT); break;
-    case ACCESS_APPEND: flags |= (O_APPEND | O_RDWR | O_CREAT); break;
-    case ACCESS_BOTH: flags |= (O_RDWR | O_CREAT); break;
+    case ACCESS_INPUT: flags = "r"; break;
+    case ACCESS_OUTPUT: flags = "w"; break;
+    case ACCESS_APPEND: flags = "a+"; break;
+    case ACCESS_BOTH: flags = "r+"; break;
     default: return (NIL);
   }
-  TIMEOUT(fd = open(pathname, flags));
+  fd = create_file_descriptor(fopen(pathname, flags));
   if (fd == -1) {
     err_mess("open", errno);
     *Lisp_errno = errno;
     return (NIL);
   }
-  /* Prevent I/O requests from blocking -- make them error */
-  /* if no char is available, or there's no room in pipe.  */
-  fcntl(fd, F_SETFL, fcntl(fd, F_GETFL, 0) | O_NONBLOCK);
+
+  // NOTE: original code is non-blocking; we could use libuv if this feature becomes relevant.
 
   return (GetSmallp(fd));
 }
@@ -116,24 +110,11 @@ LispPTR CHAR_closefile(LispPTR *args)
 /* args[1]            errno   */
 {
   int fd; /* file descriptor */
-  int rval;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[1]);
   fd = LispNumToCInt(args[0]);
-  ERRSETJMP(NIL);
-  TIMEOUT(rval = close(fd));
-  if (rval == -1) {
-    /** This if is a patch for an apparent problem **/
-    /** in SunOS 4 that causes a close on /dev/ttya **/
-    /** to error with 'not owner' **/
-    if (errno == 1) {
-      DBPRINT(("Got errno 1 on a CLOSE!"));
-      return (ATOM_T);
-    }
-    DBPRINT(("Closing char device descriptor #%d.\n", fd));
-    err_mess("close", errno);
-    *Lisp_errno = errno;
-    return (NIL);
-  }
+
+  fclose(get_file_pointer(fd));
+  free_file_descriptor(fd);
   return (ATOM_T);
 }
 
@@ -159,18 +140,23 @@ LispPTR CHAR_ioctl(LispPTR *args)
 {
   int fd, request;
   void *data;
-  int rval;
+  //int rval;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[3]);
   fd = LispNumToCInt(args[0]);
   request = LispNumToCInt(args[1]);
   data = NativeAligned4FromLAddr(args[2]);
-  ERRSETJMP(NIL);
-  TIMEOUT(rval = ioctl(fd, request, data)); // TODO
+
+#if 0
+  rval = ioctl(fd, request, data);
   if (rval != 0) {
     err_mess("ioctl", errno);
     *Lisp_errno = errno;
     return (NIL);
   }
+#else
+  printf("note that ioctl is not supported\n");
+  fflush(stdout);
+#endif
   return (ATOM_T);
 }
 
@@ -190,15 +176,11 @@ LispPTR CHAR_bin(int fd, LispPTR errn)
   long rval;
   unsigned char ch[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
-  ERRSETJMP(NIL);
+
   fd = LispNumToCInt(fd);
 
-  TIMEOUT(rval = read(fd, ch, 1)); // TODO
-  if (rval == 0) {
-    *Lisp_errno = EWOULDBLOCK;
-    return (NIL);
-  }
-  if (rval == -1) {
+  rval = fread(ch, 1, 1, get_file_pointer(fd));
+  if (rval != 1) {
     *Lisp_errno = errno;
     return (NIL);
   }
@@ -220,18 +202,14 @@ LispPTR CHAR_bout(int fd, LispPTR ch, LispPTR errn)
   long rval;
   char buf[4];
   Lisp_errno = (int *)NativeAligned4FromLAddr(errn);
-  ERRSETJMP(NIL);
+
   fd = LispNumToCInt(fd);
   buf[0] = LispNumToCInt(ch);
 
-  TIMEOUT(rval = write(fd, buf, 1)); // TODO
+  rval = fwrite(buf, 1, 1, get_file_pointer(fd));
 
-  if (rval == -1) {
+  if (rval != 1) {
     *Lisp_errno = errno;
-    return (NIL);
-  }
-  if (rval == 0) {
-    *Lisp_errno = EWOULDBLOCK;
     return (NIL);
   }
   return (ATOM_T);
@@ -265,17 +243,14 @@ LispPTR CHAR_bins(LispPTR *args)
   char *buffer;
   int nbytes;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[4]);
-  ERRSETJMP(NIL);
+
   fd = LispNumToCInt(args[0]);
   buffer = ((char *)(NativeAligned2FromLAddr(args[1]))) + LispNumToCInt(args[2]);
   nbytes = LispNumToCInt(args[3]);
+
   /* Read PAGE_SIZE bytes file contents from filepointer. */
-  TIMEOUT(rval = read(fd, buffer, nbytes));
-  if (rval == 0) {
-    *Lisp_errno = EWOULDBLOCK;
-    return (NIL);
-  }
-  if (rval == -1) {
+  rval = fread(buffer, 1, nbytes, get_file_pointer(fd));
+  if (rval != nbytes) {
     *Lisp_errno = errno;
     return (NIL);
   }
@@ -315,7 +290,7 @@ LispPTR CHAR_bouts(LispPTR *args)
   char *buffer;
   int nbytes;
   Lisp_errno = (int *)NativeAligned4FromLAddr(args[4]);
-  ERRSETJMP(NIL);
+
   fd = LispNumToCInt(args[0]);
   buffer = ((char *)(NativeAligned2FromLAddr(args[1]))) + LispNumToCInt(args[2]);
   nbytes = LispNumToCInt(args[3]);
@@ -324,17 +299,13 @@ LispPTR CHAR_bouts(LispPTR *args)
   word_swap_page((unsigned short *)buffer, (nbytes + 3) >> 2);
 #endif /* BYTESWAP */
 
-  TIMEOUT(rval = write(fd, buffer, nbytes));
+  rval = fwrite(buffer, 1, nbytes, get_file_pointer(fd));
 #ifdef BYTESWAP
   word_swap_page((unsigned short *)buffer, (nbytes + 3) >> 2);
 #endif /* BYTESWAP */
 
-  if (rval == -1) {
+  if (rval != nbytes) {
     *Lisp_errno = errno;
-    return (NIL);
-  }
-  if (rval == 0) {
-    *Lisp_errno = EWOULDBLOCK;
     return (NIL);
   }
   return (GetSmallp(rval));

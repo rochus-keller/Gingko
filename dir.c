@@ -21,7 +21,6 @@
 #include "locfile.h"        // for VERSIONLEN, DOWNCASE, ToLispTime, STRING_...
 #include "lspglob.h"
 #include "lsptypes.h"
-#include "timeout.h"        // for S_TOUT, TIMEOUT0, TIMEOUT, ERRSETJMP
 #include "ufsdefs.h"        // for quote_dname, quote_fname, quote_fname_ufs
 #include "tinydir.h"
 
@@ -641,17 +640,6 @@ static int enum_ufs_prop(char *dir, char *name, char *ver, FINFO **finfo_buf)
       nextp->prop->wdate = (unsigned)ToLispTime(dp._s.st_mtime);
       nextp->prop->rdate = (unsigned)ToLispTime(dp._s.st_atime);
       nextp->prop->protect = (unsigned)dp._s.st_mode;
-      /*
-                      TIMEOUT(pwd = getpwuid(sbuf.st_uid));
-                      if (pwd == (struct passwd *)NULL) {
-                              nextp->prop->au_len = 0;
-                      } else {
-                              len = strlen(pwd->pw_name);
-                              strcpy(nextp->prop->author, pwd->pw_name);
-                              *(nextp->prop->author + len) = '\0';
-                              nextp->prop->au_len = len;
-                      }
-      */
       n++;
     }
   tinydir_close(&dirp);
@@ -1440,8 +1428,6 @@ LispPTR COM_gen_files(LispPTR *args)
   char *cp;
   FINFO *fp;
 
-  ERRSETJMP(SMALLP_MINUSONE);
-
   Lisp_errno = (int *)(NativeAligned4FromLAddr(args[3]));
 
   LispStringLength(args[0], count, dskp);
@@ -1591,7 +1577,6 @@ LispPTR COM_next_file(LispPTR *args)
   int finfoid;
   unsigned propp;
 
-  ERRSETJMP(SMALLP_MINUSONE);
   Lisp_errno = &Dummy_errno;
 
   gfsp = (UFSGFS *)(NativeAligned4FromLAddr(args[0]));
@@ -1658,8 +1643,6 @@ LispPTR COM_finish_finfo(LispPTR *args)
   DFINFO *dfp;
   FINFO *fp;
   int finfoid;
-
-  ERRSETJMP(NIL);
 
   Lisp_errno = &Dummy_errno;
 

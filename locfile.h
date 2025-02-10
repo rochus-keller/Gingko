@@ -219,7 +219,7 @@ do  {				\
 	int	lf_result;				\
 	struct stat	lf_statbuf;				\
 								\
-	TIMEOUT(lf_result = stat(name, &lf_statbuf));		\
+    lf_result = stat(name, &lf_statbuf);		\
 	if (lf_result < 0) {					\
 		*Lisp_errno = errno;				\
 		(type) = 0;					\

@@ -20,6 +20,12 @@
 #include "lispemul.h"      // for NIL, DLword, LispPTR
 #include "lspglob.h"
 #include "tinydir.h"
+#ifdef _WIN32
+#include <direct.h>
+#define _mkdir mkdir
+#else
+#include <sys/stat.h>
+#endif
 
 void stab(void) { DBPRINT(("Now in stab\n")); }
 
@@ -80,6 +86,8 @@ void warn(const char *s)
 { printf("\nWARN: %s \n", s); }
 
 
+//////////////////////////////////////////////////////////////////////////
+
 
 int file_exists(const char* path)
 {
@@ -100,3 +108,42 @@ int can_read_file(const char* path)
     }
     return 0;
 }
+
+#define MAX_FILE_DESCRIPTOR 100
+
+static FILE* file_descriptors[MAX_FILE_DESCRIPTOR] = {0};
+
+int create_file_descriptor(FILE* file)
+{
+    if( file == NULL )
+        return -1;
+    for( int i = 0; i < MAX_FILE_DESCRIPTOR; i++ )
+    {
+        if( file_descriptors[i] == 0 )
+        {
+            file_descriptors[i] = file;
+            return i;
+        }
+    }
+    return -1;
+}
+
+FILE* get_file_pointer(int fd)
+{
+    if( fd < 0 || fd >= MAX_FILE_DESCRIPTOR )
+        return 0;
+    return file_descriptors[fd];
+}
+
+void free_file_descriptor(int fd)
+{
+    if( fd < 0 || fd >= MAX_FILE_DESCRIPTOR )
+        return;
+    file_descriptors[fd] = 0;
+}
+
+int create_dir(const char* path)
+{
+    return mkdir(path, 0777);
+}
+

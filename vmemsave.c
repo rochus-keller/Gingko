@@ -26,7 +26,6 @@
 #include "lispmap.h"
 #include "lspglob.h"
 #include "vmemsave.h"
-#include "timeout.h"
 #include "adr68k.h"
 #include "lsptypes.h"
 #include "locfile.h"
@@ -284,7 +283,6 @@ LispPTR vmem_save(char *sysout_file_name)
           (3) the temporary file is renamed to the specified file.
   */
 
-  SETJMP(FILETIMEOUT);
   sprintf(tempname, "%s-temp", sysout_file_name);
 
   /* Confirm protection of specified file by open/close */

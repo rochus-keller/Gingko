@@ -732,7 +732,7 @@ int tinydir_file_open(tinydir_file *file, const _tinydir_char_t *path)
 		memset(file, 0, sizeof * file);
 		file->is_dir = 1;
 		file->is_reg = 0;
-		_tinydir_strcpy(file->path, dir_name);
+        _tinydir_strcpy(file->path, dir_name);
 		file->extension = file->path + _tinydir_strlen(file->path);
 		return 0;
 	}
